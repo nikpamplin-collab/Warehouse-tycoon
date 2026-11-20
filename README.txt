@@ -1,17 +1,34 @@
-WAREHOUSE TYCOON V1
+WAREHOUSE TYCOON - VERSION 2
 
-Free, installable iPhone web game. No external services or subscriptions.
+UPDATING YOUR EXISTING GITHUB PAGES SITE (iPHONE)
+1. In the iPhone Files app, tap warehouse-tycoon-v2.zip to extract it.
+2. Open the extracted warehouse-tycoon-v2 folder.
+3. In Safari, open https://github.com/nikpamplin-collab/warehouse-tycoon/upload/main
+4. Upload the FIVE app files from inside the folder, NOT the ZIP or folder:
+   index.html, manifest.webmanifest, sw.js, icon.png, icon-512.png
+5. Scroll down and tap Commit changes. Keep the files at the repository ROOT.
+6. Your existing GitHub Pages configuration should continue to work.
+7. Open https://nikpamplin-collab.github.io/warehouse-tycoon/ in Safari.
+8. Refresh. If the old version persists, close and reopen the home-screen app
+   or Safari page, then refresh again. The offline cache version was updated.
 
-PUBLISH ON GITHUB PAGES
-1. Create a new PUBLIC repository named warehouse-tycoon.
-2. Upload all five files from this folder to the repository ROOT (not the zip).
-3. In repository Settings > Pages choose Deploy from a branch, main, /(root), Save.
-4. Visit https://YOUR-USERNAME.github.io/warehouse-tycoon/ in Safari.
-5. Safari Share > Add to Home Screen.
+SAVED PROGRESS
+Version 2 starts a new game in a separate browser save slot.
+Your Version 1 progress is not overwritten by the Version 2 save.
+However, once you replace the hosted game, the Version 1 interface will no
+longer be available unless you restore the old files. Browser storage is
+local to the device and browser.
 
-HOW TO PLAY
-Each month choose staffing, buy racking, and bid for customer tenders. Tap Complete Month to resolve competing bids and run the P&L. Manage your cash and reputation. Four AI rivals compete with distinct behaviours. Progress saves on your device.
+CHANGES
+- 25,000/month fixed overhead; 2,500/month employee; 2,500 moves/month
+- 15,000 for each 250-space racking block (unchanged)
+- Optional 4,000/month H&S manager: incident risk 40% without, 10% with
+- Small, medium and large incidents with costs and movement disruption
+- Higher movement-volume tenders; rebalanced suggested bid rates
+- Unrestricted nonnegative storage and handling bid amounts
+- Fixed Rivals tab
+- Same overdraft, loans, and maximum storage capacity
 
-Prototype assumptions: rent 10000/month, staff 3000/month, 600 movements/staff, racking 15000/250 spaces, storage bid default 12/pallet/month, handling bid default 8/movement. Loan interest 10% yearly, overdraft 25000 free.
+No hard 26x24 outbound throughput ceiling is imposed or displayed.
 
-This is an early prototype; economic balancing and physical iPhone testing are still needed.
+This version is a game model, not a financial forecast or safety risk model.
