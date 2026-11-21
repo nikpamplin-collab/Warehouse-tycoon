@@ -1,5 +1,7 @@
-WAREHOUSE TYCOON V3
+Warehouse Tycoon V4
 
-Upload index.html, sw.js, manifest.webmanifest, icon.png, icon-512.png to the ROOT of the existing GitHub repository and commit. GitHub Pages should use main / (root).
+Upload index.html, manifest.webmanifest, sw.js, icon.png and icon-512.png to the root of your GitHub Pages repository. Commit to main.
 
-V3 uses a separate local save. Projects progress at each month end and their progress appears in the month-end report. Expansion takes 2 months, automation 3 months, racking 1 month, CI 3 months.
+Version 4 uses a new local save key and does not overwrite V3.
+
+Features: UK territories, established incumbents, tender market growth, acquisitions, month-end handling report, investment progress, iOS modal scrolling fix.
