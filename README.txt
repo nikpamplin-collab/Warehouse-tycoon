@@ -1,9 +1,9 @@
-Warehouse Tycoon V5
+Warehouse Tycoon V6 - GitHub Pages release
 
-Upload all six application files (index.html, manifest.webmanifest, sw.js, icon.png, icon-512.png, README.txt) to the root of your GitHub Pages repository. Replace existing files and commit.
+Upload all extracted files to the root of your existing GitHub Pages repository. Replace existing files.
 
-V5 copies an existing V4 local browser save on first launch, then saves separately under warehouse_tycoon_v5. V4 data remains available in the same browser.
+Changes: first-game setup and instructions, editable company and site names, random rival names and hidden rival profiles, pallet moves labels, green expansion button, 36% annual loan interest with automatic 36-month principal repayments, site profit in Office, and much tougher South East economics.
 
-New: editable tender standard rates; site-specific staffing, forecast and handling capacity; project cancellation with 75% refund; company valuation; visual warehouse, performance trend and territory cards; occasional events, competitor updates and achievements.
+V6 attempts to migrate V5 saves. A new game is needed for randomised rival names and the setup flow. Previous V5 save remains stored separately.
 
-Events appear every fourth game month. You must respond before completing another month. This is a static browser game; no server or build step required.
+Note: debt principal is a cash outflow, not a profit expense. Interest is included in profit.
