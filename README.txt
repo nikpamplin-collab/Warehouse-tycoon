@@ -1,9 +1,10 @@
-Warehouse Tycoon V6 - GitHub Pages release
+Warehouse Tycoon V7
 
-Upload all extracted files to the root of your existing GitHub Pages repository. Replace existing files.
+Upload all files in this ZIP to the root of your GitHub Pages repository, replacing existing files.
 
-Changes: first-game setup and instructions, editable company and site names, random rival names and hidden rival profiles, pallet moves labels, green expansion button, 36% annual loan interest with automatic 36-month principal repayments, site profit in Office, and much tougher South East economics.
+Changes from V6:
+- Restored full rival comparison including finances, contracts, estate, shares and acquisition opportunities. Removed strategy descriptions.
+- Office now shows an illustrative UK warehouse map. Pins and site list update when sites open and link to the Warehouses tab.
+- V7 save key imports existing V6 progress where available.
 
-V6 attempts to migrate V5 saves. A new game is needed for randomised rival names and the setup flow. Previous V5 save remains stored separately.
-
-Note: debt principal is a cash outflow, not a profit expense. Interest is included in profit.
+Browser gameplay testing is recommended before public release.
