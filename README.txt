@@ -1,7 +1,9 @@
-Warehouse Tycoon V4
+Warehouse Tycoon V5
 
-Upload index.html, manifest.webmanifest, sw.js, icon.png and icon-512.png to the root of your GitHub Pages repository. Commit to main.
+Upload all six application files (index.html, manifest.webmanifest, sw.js, icon.png, icon-512.png, README.txt) to the root of your GitHub Pages repository. Replace existing files and commit.
 
-Version 4 uses a new local save key and does not overwrite V3.
+V5 copies an existing V4 local browser save on first launch, then saves separately under warehouse_tycoon_v5. V4 data remains available in the same browser.
 
-Features: UK territories, established incumbents, tender market growth, acquisitions, month-end handling report, investment progress, iOS modal scrolling fix.
+New: editable tender standard rates; site-specific staffing, forecast and handling capacity; project cancellation with 75% refund; company valuation; visual warehouse, performance trend and territory cards; occasional events, competitor updates and achievements.
+
+Events appear every fourth game month. You must respond before completing another month. This is a static browser game; no server or build step required.
