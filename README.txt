@@ -1,10 +1,9 @@
-Warehouse Tycoon V10.2 - GitHub Pages
+Warehouse Tycoon v11
 
-Upload the six files to the root of your GitHub Pages repository.
-V10.2 uses a new localStorage key and imports existing V10 saves without overwriting the original. Back up your browser save before upgrading.
+Install: extract all files to the same directory and open index.html, or host the folder over HTTPS for PWA installation.
 
-Changes: non-compounding 30% automation by section; 120-month replacement lifecycle; 3-month 75/50/75 replacement disruption; boom/steady/bust cycles affecting tender count, volume and prices; regional market limits; management hiring and overhead; milestones and score retained.
+Changes: stronger 5-9 year economic cycles and recession impact; two new active rivals and tougher AI; monthly movements capped at 5x stored pallets; site-level management alongside labour and H&S; removed random additional work; refreshed category colours and icons; corrected economic outlook NaN% display; updated finances and preserved v10 save key with migration.
 
-Legacy automation installation dates cannot be recovered. Existing automated sections receive a fresh 120-month life when first opened in V10.2.
+Future backlog: review marketplace size after testing two additional rivals.
 
-V10.2.1 navigation fix: empty territories can open Warehouse without automation panel errors. Updated offline cache version.
+Versioned ZIP convention: warehouse-tycoon-v11.zip
