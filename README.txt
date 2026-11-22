@@ -1,15 +1,8 @@
-Warehouse Tycoon V10.0 - first playable V10 release
+Warehouse Tycoon V10.2 - GitHub Pages
 
-Deploy: extract the ZIP contents into the root of your GitHub Pages repository.
+Upload the six files to the root of your GitHub Pages repository.
+V10.2 uses a new localStorage key and imports existing V10 saves without overwriting the original. Back up your browser save before upgrading.
 
-Included:
-- Office management dashboard, priorities, rolling profit, service, occupancy and company score
-- Strategic milestones and persistent achievements
-- Investment appraisal previews for expansion and automation
-- Monthly report and finances cash reconciliation
-- Visible rival strategy and rolling financial performance
-- Rival racking, expansion, automation and CI now use project lead times
-- V9.1 save import with new V10 save key (original V9 data retained)
-- Existing V8 incident recovery and V9.1 bankruptcy replacement retained
+Changes: non-compounding 30% automation by section; 120-month replacement lifecycle; 3-month 75/50/75 replacement disruption; boom/steady/bust cycles affecting tender count, volume and prices; regional market limits; management hiring and overhead; milestones and score retained.
 
-Scope note: This is V10.0, not completion of the proposed V10.1/V10.2 economic and rival AI redesign. The investment forecasts are indicative, not demand-based profit forecasts. Browser visual QA is not complete.
+Legacy automation installation dates cannot be recovered. Existing automated sections receive a fresh 120-month life when first opened in V10.2.
