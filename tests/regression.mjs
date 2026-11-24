@@ -55,7 +55,7 @@ test('service worker: precache release visuals, offline navigation and scope iso
  let available=true;
  vm.runInNewContext(fs.readFileSync(path.join(here,'sw.js'),'utf8'),{URL,Request,Response,caches:cache,self:{registration:{scope:'https://local.test/game/'},addEventListener:(n,f)=>listeners.set(n,f),skipWaiting:async()=>{},clients:{claim:async()=>{}}},fetch:async()=>{if(!available)throw Error('offline');return new Response('<title>Warehouse Tycoon '+release+'</title>');}});
  let p;listeners.get('install')({waitUntil:x=>p=x});await p;
- for(const f of ['index.html','dotv13.js','dotv13.css','dotv14.js','dotv14.css','icon.png','manifest.webmanifest', 'v15.js','v15.css']){assert.ok(names.has(f));assert.ok(fs.existsSync(path.join(here,f)));}
+ for(const f of ['index.html','dotv13.js','dotv13.css','dotv14.js','dotv14.css','icon.png','manifest.webmanifest', 'v15.js','v15.css', 'v16.js','v16.css']){assert.ok(names.has(f));assert.ok(fs.existsSync(path.join(here,f)));}
  listeners.get('activate')({waitUntil:x=>p=x});await p;assert.deepEqual(requests,['warehouse-tycoon:/game/:12.0.0']);
  available=false;
  listeners.get('fetch')({request:{url:'https://local.test/game/',method:'GET',mode:'navigate'},respondWith:x=>p=x});assert.equal(await p,'cached ./index.html');
