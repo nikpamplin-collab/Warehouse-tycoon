@@ -1,41 +1,31 @@
-WAREHOUSE TYCOON v12.0 | GitHub Pages upload
+WAREHOUSE TYCOON | DOTv13 development candidate
 
-1. Unzip. Upload the files inside this ZIP to the same folder your existing
-   index.html is served from. Replace matching files. Do not upload the ZIP
-   itself or add another enclosing folder.
-2. Keep the same Pages address and use the same browser profile to keep
-   existing device saves. The release uses the previous save key. Do not
-   clear Safari website data; it contains your save. If you see the old
-   version after Pages has published, close and reopen the tab or refresh
-   again. The new footer begins “Version 12”.
-3. For a quick check on your phone: open each tab, tap a map region and your
-   warehouse, then check the warehouse scene. Start a new game only if you
-   are happy to replace your ongoing save, or use a separate test browser.
+DOTv13 changes how the game looks, not how it runs its businesses.
+The live version stays where it is until this branch is reviewed and merged.
 
-What changed
-- Fresh rivals and bankruptcy replacements get a commercially viable
-  opening portfolio if a suitable one is available. Qualification checks
-  stressed runway, expected operating profit, storage and handling.
-  Actual months can still make a loss when there is an incident or shock.
-- Six rival profiles and Protect recession rules are retained. Existing
-  saves are not rebalanced; old entrants keep their portfolios.
-- Office has an updated visual shell, clickable UK regions, and a cutaway
-  warehouse driven by real racking, pallet commitments, staff and projects.
-  The map's links and regional centres are illustrative. The artwork
-  does not change game outcomes.
-- Uses HTML, CSS, JS and SVG only. All assets are local to the build.
-  No account, API key, backend, build step, or third-party runtime required.
+- Office opens with a warehouse cutaway and a dispatch brief.
+- Floor, Pallet flow and Build queue layers use the actual site state.
+- Warehouse size, racking, staff, working stock, automation and investments
+  determine what the cutaway shows. Props and routes are illustrative.
+- The UK map shows current tenders, sites and operators by region.
+- Touch controls, keyboard focus and reduced-motion preferences are supported.
+- v12 economics, six rival profiles, Protect rules and save key are unchanged.
+- The desktop/static game needs no dependencies or build step.
 
-Validation
-- Compared the uploaded Protect build and v12 over 16 paired seeds and two
-  automated Midlands player policies (32 games per version; 84 months).
-- Month one: 93 of 192 rival observations profitable in Protect, 191 in v12.
-  All 192 v12 opening portfolios passed the forecast gate.
-- Month 84: median replacements fell from 3 to 1 under both player policies;
-  median profitable rivals rose from 2 to 5 at standard pricing and from 2
-  to 4.5 at discounted pricing. All tested players survived in both versions.
-  The original Elite rival still failed in every test at that horizon.
-  These are simulated outcomes under two policies, not a universal guarantee.
-- Game-script smoke checks passed: new setup, old save, all five screens,
-  map selection, investments, advancing a turn and rival replacement.
-  A physical iPhone Safari test was not run.
+Checks:
+  node --test tests/regression.mjs
+  WT_V12_FOLDER=/path/to/v12 node --test tests/regression.mjs
+
+With the exact v12 fixture the suite compares complete game states through
+16 seed-matched runs of 72 months and exercises a real v12 save in the JS
+test harness. The targeted suite checks screens, map and layer actions,
+investment, turn advance, reload and service-worker cache behavior.
+
+Browser tests (separate from the game):
+  npm install --ignore-scripts --no-audit --no-fund --no-save playwright@1.62.1
+  npx playwright install chromium webkit
+  WT_V12_FOLDER=/path/to/v12 node tests/browser.mjs
+
+The browser test serves both v12 and DOTv13 at the same local origin using
+a disposable save. Desktop Chromium and an emulated WebKit iPhone profile
+do not replace a quick real iPhone Safari play-through before release.
