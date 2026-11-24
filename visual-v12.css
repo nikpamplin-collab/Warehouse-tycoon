@@ -1,0 +1,23 @@
+:root{--ink:#0b2033;--gold:#fbd386;--mint:#76ead2;--sky:#8ee1ff;--line:#416384}
+body{background:radial-gradient(ellipse at 60% 0,#21466c,#0d1b31 62%);min-height:100vh}
+header{background:#10243cf2;border-bottom:1px solid var(--line);padding-top:max(12px,env(safe-area-inset-top));backdrop-filter:blur(12px)}
+header h1{letter-spacing:.01em;font-weight:850}main{max-width:1130px}
+.tabs{overflow:visible;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.tabs button{min-height:45px;min-width:0;padding:6px 3px;font-size:clamp(11px,2vw,14px);font-weight:760}
+.tabs button.active{background:var(--gold);color:var(--ink)}
+.metric strong{font-variant-numeric:tabular-nums}.metric{animation:arrive .22s ease-out}.round-action .btn{background:var(--gold);color:var(--ink)}
+.scene-v12{margin:0 0 12px;background:#0d253a;border:1px solid #426986;border-radius:12px;overflow:hidden}
+.scene-v12 svg{display:block;width:100%;height:auto}
+.scene-data,.map-key,.event-tiles{display:flex;flex-wrap:wrap;gap:6px}
+.scene-data{padding:8px}.scene-data span,.map-key span,.event-tiles span{background:#173b52;border:1px solid #436780;padding:5px 8px;border-radius:7px;font-size:12px}
+.scene-data b{color:#9bebdd}.network-board{min-width:0;background:#102b43;border:1px solid #437091;border-radius:12px;display:grid;place-items:center}
+.network-board svg{display:block;max-height:370px;width:100%;height:auto}
+.map-key{margin:9px 0}.map-key i{display:inline-block;width:9px;height:9px;border-radius:100%;background:var(--dot);margin-right:4px}
+.network-site[aria-pressed=true]{outline:2px solid var(--gold);outline-offset:1px}
+.event-tiles{margin-top:8px}.event-tiles span:first-child{border-color:#f6c26e}
+.scene-load{animation:flow 2.7s ease-in-out infinite alternate}
+@keyframes flow{from{transform:translateX(0)}to{transform:translateX(17px)}}
+@keyframes arrive{from{opacity:.8;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.visual-grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.metric{padding:8px}.metric strong{font-size:clamp(13px,3vw,18px);overflow-wrap:anywhere}.metric label{font-size:10px}.panel{padding:11px}header{position:relative}}
+@media(prefers-reduced-motion:reduce){.scene-load,.metric{animation:none!important}}
+.vt-map-pin{cursor:pointer}.vt-map-pin:focus{outline:none}.vt-map-pin:focus>circle{stroke:#ffdb8c;stroke-width:4}
