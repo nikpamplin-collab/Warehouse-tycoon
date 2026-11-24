@@ -1,9 +1,9 @@
 // Versioned static app cache. Restrict fetches and cleanup to this deployment.
-const VERSION='DOTv15';
-const FILES=['./manifest.webmanifest','./icon.png','./icon-512.png','./dotv13.css','./dotv13.js','./dotv14.css','./dotv14.js','./v15.css','./v15.js'];
+const VERSION='DOTv16';
+const FILES=['./manifest.webmanifest','./icon.png','./icon-512.png','./dotv13.css','./dotv13.js','./dotv14.css','./dotv14.js','./v15.css','./v15.js','./v16.css','./v16.js'];
 const scope=new URL(self.registration.scope);
 const family="warehouse-tycoon:"+scope.pathname+":";
-const CACHE=family+"15.0.0";
+const CACHE=family+"16.0.0";
 const shell=new URL('index.html',scope);shell.searchParams.set('release',VERSION);
 const assets=new Set([...FILES,'./','./index.html'].map(f=>new URL(f,scope).pathname));
 self.addEventListener('install',event=>event.waitUntil((async()=>{

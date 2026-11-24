@@ -1,4 +1,4 @@
-WAREHOUSE TYCOON | DOTv15 development candidate
+WAREHOUSE TYCOON | DOTv16 development candidate
 
 DOTv13 changes how the game looks, not how it runs its businesses.
 The live version stays where it is until this branch is reviewed and merged.
@@ -37,3 +37,7 @@ Map links are illustrative and do not portray tracked shipments.
 DOTv15 makes warehouse flow and construction visible from existing forecasts,
 projects and incidents. Floor zones link to the existing controls without
 placing orders or changing staffing. Yard animations are bounded and optional.
+
+DOTv16 adds visual network news and finance trends with actual recorded data.
+Operating costs, borrowing costs and recorded open project costs are kept
+separate. Unknown amounts are not reported as zero cash spend.
