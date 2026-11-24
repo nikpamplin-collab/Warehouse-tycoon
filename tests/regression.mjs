@@ -47,12 +47,15 @@ test('existing v11 save key retained and data unaltered',()=>{
 });
 test('service worker: precache v13 visuals, offline navigation and scope isolation',async()=>{
  const names=new Set(), listeners=new Map(), requests=[];
- const store={addAll:async paths=>paths.forEach(x=>names.add(x)),match:async x=>names.has('./'+x.split('/').at(-1))?'cached ./'+x.split('/').at(-1):undefined};
+ const store={addAll:async requests=>requests.forEach(x=>names.add(new URL(x.url).pathname.split('/').at(-1))),
+  put:async x=>names.add(new URL(x).pathname.split('/').at(-1)),match:async x=>names.has(new URL(x).pathname.split('/').at(-1))?'cached ./'+new URL(x).pathname.split('/').at(-1):undefined};
  const cache={open:async()=>store,keys:async()=>['warehouse-tycoon:/game/:12.0.0','warehouse-tycoon:/else/:9','unrelated'],delete:async k=>requests.push(k)};
- vm.runInNewContext(fs.readFileSync(path.join(here,'sw.js'),'utf8'),{URL,caches:cache,self:{registration:{scope:'https://local.test/game/'},addEventListener:(n,f)=>listeners.set(n,f),skipWaiting:async()=>{},clients:{claim:async()=>{}}},fetch:async()=>{throw Error('offline')}});
+ let available=true;
+ vm.runInNewContext(fs.readFileSync(path.join(here,'sw.js'),'utf8'),{URL,Request,Response,caches:cache,self:{registration:{scope:'https://local.test/game/'},addEventListener:(n,f)=>listeners.set(n,f),skipWaiting:async()=>{},clients:{claim:async()=>{}}},fetch:async()=>{if(!available)throw Error('offline');return new Response('<title>Warehouse Tycoon DOTv13</title>');}});
  let p;listeners.get('install')({waitUntil:x=>p=x});await p;
- for(const f of ['index.html','dotv13.js','dotv13.css','icon.png','manifest.webmanifest']){assert.ok(names.has('./'+f));assert.ok(fs.existsSync(path.join(here,f)));}
+ for(const f of ['index.html','dotv13.js','dotv13.css','icon.png','manifest.webmanifest']){assert.ok(names.has(f));assert.ok(fs.existsSync(path.join(here,f)));}
  listeners.get('activate')({waitUntil:x=>p=x});await p;assert.deepEqual(requests,['warehouse-tycoon:/game/:12.0.0']);
+ available=false;
  listeners.get('fetch')({request:{url:'https://local.test/game/',method:'GET',mode:'navigate'},respondWith:x=>p=x});assert.equal(await p,'cached ./index.html');
  let claimed=false;listeners.get('fetch')({request:{url:'https://local.test/else/',method:'GET',mode:'navigate'},respondWith:()=>claimed=true});assert.equal(claimed,false);
 });

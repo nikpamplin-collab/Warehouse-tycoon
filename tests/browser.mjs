@@ -38,7 +38,7 @@ try{
    folder=current;
    await page.reload();await page.getByText('Dispatch brief').waitFor();
    await page.waitForFunction(()=>caches.keys().then(keys=>keys.some(k=>k==='warehouse-tycoon:/game/:13.0.0')));
-   await ready(page);
+   await page.waitForFunction(()=>navigator.serviceWorker.controller?.scriptURL.includes('v=DOTv13'));
    const after=await state(page);assert.equal(after.month,2);assert.deepEqual(after.player,before.player);
    for(const name of ['Tenders','Rivals','Finances','Office','Warehouses','Office']){
     await press(page.locator('#tabs').getByRole('button',{name,exact:true}));assert.equal(await page.locator('#tabs [aria-current="page"]').innerText(),name);
@@ -52,6 +52,12 @@ try{
    // A real network failure should fall back to the v13 cache, not a v12 shell.
    await page.waitForFunction(()=>caches.keys().then(keys=>keys.includes('warehouse-tycoon:/game/:13.0.0')&&!keys.includes('warehouse-tycoon:/game/:12.0.0')));
    // Stop the origin instead of toggling the testing protocol's network interceptor.
+   const savedTitle=await page.evaluate(async()=>{
+    const cache=await caches.open('warehouse-tycoon:/game/:13.0.0');
+    const response=await cache.match(new URL('index.html?release=DOTv13',location.href).href);
+    return (await response?.text())?.match(/<title>([^<]+)<\/title>/)?.[1];
+   });
+   assert.equal(savedTitle,'Warehouse Tycoon DOTv13');
    online=false;
    try{
     await page.reload();await page.getByText('Dispatch brief').waitFor({timeout:10000});
