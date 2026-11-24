@@ -26,12 +26,12 @@ test('map and all yard views are read only and each mode changes the view',()=>{
  g.click({region:'mid'});g.click({index:'0'});assert.equal(g.run('tab'),'warehouse');
  g.click({sceneMode:'flow'});assert.match(g.u(),/Put-away/);assert.match(g.u(),/data-scene-mode="flow" aria-pressed="true"/);
  g.click({sceneMode:'build'});assert.match(g.u(),/No investment work is queued/);
- g.click({sceneMode:'floor'});assert.match(g.u(),/aria-label="Storage"/);
+ g.click({sceneMode:'floor'});assert.match(g.u(),/aria-label="Storage committed"/);
  assert.equal(g.run('JSON.stringify(state)'),before);
 });
 test('queue, staffing, completion and reloading a saved month',()=>{
  const g=boot(compiler);setup(g);g.run("go('warehouse');buyRack();staff(1)");
- g.click({sceneMode:'build'});assert.match(g.u(),/Racking<\/b> · 1m left/);
+ g.click({sceneMode:'build'});assert.match(g.u(),/Racking<\/b>[\s\S]{0,150}1 month left/);
  g.run('nextMonth()');assert.equal(g.run('state.month'),2);
  assert.equal(g.run('state.player.sites[0].racks'),1);
  assert.match(g.el('dialog').innerHTML,/Handling performance/);
@@ -55,7 +55,7 @@ test('service worker: precache release visuals, offline navigation and scope iso
  let available=true;
  vm.runInNewContext(fs.readFileSync(path.join(here,'sw.js'),'utf8'),{URL,Request,Response,caches:cache,self:{registration:{scope:'https://local.test/game/'},addEventListener:(n,f)=>listeners.set(n,f),skipWaiting:async()=>{},clients:{claim:async()=>{}}},fetch:async()=>{if(!available)throw Error('offline');return new Response('<title>Warehouse Tycoon '+release+'</title>');}});
  let p;listeners.get('install')({waitUntil:x=>p=x});await p;
- for(const f of ['index.html','dotv13.js','dotv13.css','dotv14.js','dotv14.css','icon.png','manifest.webmanifest']){assert.ok(names.has(f));assert.ok(fs.existsSync(path.join(here,f)));}
+ for(const f of ['index.html','dotv13.js','dotv13.css','dotv14.js','dotv14.css','icon.png','manifest.webmanifest', 'v15.js','v15.css']){assert.ok(names.has(f));assert.ok(fs.existsSync(path.join(here,f)));}
  listeners.get('activate')({waitUntil:x=>p=x});await p;assert.deepEqual(requests,['warehouse-tycoon:/game/:12.0.0']);
  available=false;
  listeners.get('fetch')({request:{url:'https://local.test/game/',method:'GET',mode:'navigate'},respondWith:x=>p=x});assert.equal(await p,'cached ./index.html');

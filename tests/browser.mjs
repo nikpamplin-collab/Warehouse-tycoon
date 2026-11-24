@@ -49,6 +49,11 @@ try{
     if(name==='Finances'&&release==='DOTv16')await page.getByRole('heading',{name:'Trading & cash',exact:true}).waitFor();
    }
    await press(page.locator('.vt-region[data-region=north][aria-pressed]'));assert.equal(await page.locator('.vt-region[data-region=north][aria-pressed]').getAttribute('aria-pressed'),'true');
+   const beforeLink=await state(page);
+   await press(page.locator('a[href="#d15-staff"][data-d15-open-site]'));
+   await page.locator('#d15-staff').waitFor();
+   assert.deepEqual(await state(page),beforeLink);
+   await page.locator('#tabs').getByRole('button',{name:'Office',exact:true}).click();
    await page.getByRole('button',{name:'Manage site',exact:true}).click();await page.getByRole('button',{name:'Pallet flow',exact:true}).click();await page.getByText('Put-away',{exact:true}).waitFor();
    await page.getByRole('button',{name:'Build queue',exact:true}).click();await page.getByText('No investment work is queued.').waitFor();
    const w=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,view:innerWidth}));assert.ok(w.doc<=w.view+1,JSON.stringify(w));

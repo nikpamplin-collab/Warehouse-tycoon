@@ -1,4 +1,4 @@
-WAREHOUSE TYCOON | DOTv14 development candidate
+WAREHOUSE TYCOON | DOTv15 development candidate
 
 DOTv13 changes how the game looks, not how it runs its businesses.
 The live version stays where it is until this branch is reviewed and merged.
@@ -33,3 +33,7 @@ do not replace a quick real iPhone Safari play-through before release.
 DOTv14 adds route activity based on regional forecasts, warehouse-size and
 status markers, and branded rival cards with site and capacity information.
 Map links are illustrative and do not portray tracked shipments.
+
+DOTv15 makes warehouse flow and construction visible from existing forecasts,
+projects and incidents. Floor zones link to the existing controls without
+placing orders or changing staffing. Yard animations are bounded and optional.
