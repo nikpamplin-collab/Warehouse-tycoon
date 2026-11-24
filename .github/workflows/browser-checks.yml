@@ -1,7 +1,7 @@
 name: Warehouse Tycoon regression checks
 on:
   pull_request:
-    branches: [main]
+    branches: [main, DOTv13, DOTv14, DOTv15]
     paths:
       - index.html
       - '*.css'

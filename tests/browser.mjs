@@ -6,6 +6,9 @@ import {fileURLToPath} from 'node:url';
 import {chromium,webkit,devices} from 'playwright';
 const current=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const legacy=process.env.WT_V12_FOLDER;
+const release=(await fs.readFile(path.join(current,'index.html'),'utf8')).match(/<title>Warehouse Tycoon (DOTv[0-9]+)<\/title>/)?.[1];
+assert.ok(release,'Expected a versioned app title');
+const cacheKey='warehouse-tycoon:/game/:'+release.replace('DOTv','')+'.0.0';
 assert.ok(legacy,'Provide WT_V12_FOLDER, a clean copy of v12.');
 let folder=legacy, online=true;
 const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.webmanifest':'application/manifest+json'};
@@ -37,27 +40,29 @@ try{
    assert.equal(before.month,2);assert.equal(before.player.name,'Test Pallet Co');
    folder=current;
    await page.reload();await page.getByText('Dispatch brief').waitFor();
-   await page.waitForFunction(()=>caches.keys().then(keys=>keys.some(k=>k==='warehouse-tycoon:/game/:13.0.0')));
-   await page.waitForFunction(()=>navigator.serviceWorker.controller?.scriptURL.includes('v=DOTv13'));
+   await page.waitForFunction(key=>caches.keys().then(keys=>keys.includes(key)),cacheKey);
+   await page.waitForFunction(version=>navigator.serviceWorker.controller?.scriptURL.includes('v='+version),release);
    const after=await state(page);assert.equal(after.month,2);assert.deepEqual(after.player,before.player);
    for(const name of ['Tenders','Rivals','Finances','Office','Warehouses','Office']){
     await press(page.locator('#tabs').getByRole('button',{name,exact:true}));assert.equal(await page.locator('#tabs [aria-current="page"]').innerText(),name);
+    if(name==='Rivals')await page.getByRole('heading',{name:'Rival operators',exact:true}).waitFor();
+    if(name==='Finances'&&release==='DOTv16')await page.getByRole('heading',{name:'Trading & cash',exact:true}).waitFor();
    }
-   await press(page.locator('.vt-region[data-region=north]'));assert.equal(await page.locator('.vt-region[data-region=north]').getAttribute('aria-pressed'),'true');
+   await press(page.locator('.vt-region[data-region=north][aria-pressed]'));assert.equal(await page.locator('.vt-region[data-region=north][aria-pressed]').getAttribute('aria-pressed'),'true');
    await page.getByRole('button',{name:'Manage site',exact:true}).click();await page.getByRole('button',{name:'Pallet flow',exact:true}).click();await page.getByText('Put-away',{exact:true}).waitFor();
    await page.getByRole('button',{name:'Build queue',exact:true}).click();await page.getByText('No investment work is queued.').waitFor();
    const w=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,view:innerWidth}));assert.ok(w.doc<=w.view+1,JSON.stringify(w));
    await page.locator('#tabs').getByRole('button',{name:'Office',exact:true}).click();
    await page.getByRole('button',{name:/Complete February/}).click();assert.equal((await state(page)).month,3);
    // A real network failure should fall back to the v13 cache, not a v12 shell.
-   await page.waitForFunction(()=>caches.keys().then(keys=>keys.includes('warehouse-tycoon:/game/:13.0.0')&&!keys.includes('warehouse-tycoon:/game/:12.0.0')));
+   await page.waitForFunction(key=>caches.keys().then(keys=>keys.includes(key)&&!keys.includes('warehouse-tycoon:/game/:12.0.0')),cacheKey);
    // Stop the origin instead of toggling the testing protocol's network interceptor.
-   const savedTitle=await page.evaluate(async()=>{
-    const cache=await caches.open('warehouse-tycoon:/game/:13.0.0');
-    const response=await cache.match(new URL('index.html?release=DOTv13',location.href).href);
+   const savedTitle=await page.evaluate(async({cacheKey,release})=>{
+    const cache=await caches.open(cacheKey);
+    const response=await cache.match(new URL('index.html?release='+release,location.href).href);
     return (await response?.text())?.match(/<title>([^<]+)<\/title>/)?.[1];
-   });
-   assert.equal(savedTitle,'Warehouse Tycoon DOTv13');
+   },{cacheKey,release});
+   assert.equal(savedTitle,'Warehouse Tycoon '+release);
    online=false;
    try{
     await page.reload();await page.getByText('Dispatch brief').waitFor({timeout:10000});

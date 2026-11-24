@@ -1,4 +1,4 @@
-WAREHOUSE TYCOON | DOTv13 development candidate
+WAREHOUSE TYCOON | DOTv14 development candidate
 
 DOTv13 changes how the game looks, not how it runs its businesses.
 The live version stays where it is until this branch is reviewed and merged.
@@ -29,3 +29,7 @@ Browser tests (separate from the game):
 The browser test serves both v12 and DOTv13 at the same local origin using
 a disposable save. Desktop Chromium and an emulated WebKit iPhone profile
 do not replace a quick real iPhone Safari play-through before release.
+
+DOTv14 adds route activity based on regional forecasts, warehouse-size and
+status markers, and branded rival cards with site and capacity information.
+Map links are illustrative and do not portray tracked shipments.
