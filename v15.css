@@ -1,0 +1,23 @@
+/* DOTv15 warehouse presentation. The scene has a fixed SVG node budget. */
+.d15-yard .d15-scene{width:100%;height:auto}
+.d15-action-tray{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0}
+.d15-tool{box-sizing:border-box;min-width:0;min-height:44px;display:flex;gap:8px;align-items:center;text-decoration:none;color:#f6ebd6;background:#203b48;border:1px solid #52717b;border-radius:8px;padding:7px 8px;line-height:1.3}
+.d15-tool:hover,.d15-tool:focus-visible{color:#fff4d9;background:#325465;border-color:#ffdd91}
+.d15-tool:focus-visible,[id^="d15-"]:focus-visible{outline:2px solid #ffdd91;outline-offset:3px}
+.d15-yard .d15-tool svg{display:block;flex:0 0 20px;height:20px;stroke:#ffdd91;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round;fill:none;background:none;border:0}
+.d15-tool span{min-width:0}.d15-tool b,.d15-tool small{display:block}.d15-tool small{color:#c5d9dd;font-size:.72rem;overflow-wrap:anywhere}
+.d15-last{margin:8px 0;color:#c5d9dd;font-size:.8rem}
+.d15-work h3{font-size:.93rem;margin:0 0 6px}.d15-work p{color:#c5d9dd;margin:6px 0}
+.d15-work ul{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.d15-work li{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:space-between;align-items:center;background:#203b48;border:1px solid #52717b;border-radius:7px;padding:7px 9px}
+.d15-work li small{display:block;color:#c5d9dd}.d15-work li strong{font-size:.78rem;color:#ffdd91}
+.d15-docked,.d15-yard-truck,.d15-lift{transform-box:fill-box}
+.d15-yard-truck{animation:d15-yard-entry 4s ease-out 1 both}
+.d15-lift-a{animation:d15-lift-pass 2s ease-in-out 2 both}
+.d15-lift-b{animation:d15-lift-pass 1.55s .35s ease-in-out 2 reverse both}
+@keyframes d15-yard-entry{0%{transform:translate(53px,24px);opacity:.45}65%,100%{transform:translate(0,0);opacity:1}}
+@keyframes d15-lift-pass{0%,100%{transform:translate(0,0)}50%{transform:translate(22px,10px)}}
+@media (max-width:380px){.d15-tool{gap:5px;padding:7px 6px}.d15-tool svg{flex-basis:16px;height:16px}}
+@media (prefers-reduced-motion:reduce){.d15-scene *{animation:none!important;transition:none!important}}
+
+:is(#d15-operations,#d15-staff,#d15-investment,#d15-projects){scroll-margin-top:clamp(110px,25vh,205px)}
