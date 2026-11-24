@@ -7,6 +7,7 @@ import {test} from 'node:test';
 import {compile,boot,setup} from './runtime.mjs';
 const here=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'), compiler=compile(here);
 const optionalV12=process.env.WT_V12_FOLDER;
+const release=fs.readFileSync(path.join(here,'index.html'),'utf8').match(/<title>Warehouse Tycoon (DOTv[0-9]+)<\/title>/)?.[1];
 const asJSON=x=>JSON.parse(JSON.stringify(x));
 test('new game and all five tabs render',()=>{
  const g=boot(compiler);assert.match(g.el('dialog').innerHTML,/Start your logistics business/);
@@ -20,6 +21,7 @@ test('new game and all five tabs render',()=>{
 test('map and all yard views are read only and each mode changes the view',()=>{
  const g=boot(compiler);setup(g);
  const before=g.run('JSON.stringify(state)');
+ assert.match(g.u(),/NEIGHBOURING MARKETS/i);
  g.click({region:'north'});assert.match(g.u(),/data-region="north" aria-pressed="true"/);
  g.click({region:'mid'});g.click({index:'0'});assert.equal(g.run('tab'),'warehouse');
  g.click({sceneMode:'flow'});assert.match(g.u(),/Put-away/);assert.match(g.u(),/data-scene-mode="flow" aria-pressed="true"/);
@@ -45,15 +47,15 @@ test('existing v11 save key retained and data unaltered',()=>{
  assert.equal(copy.run('state.month'),37);
  assert.ok(copy.u().includes('Old DC'));
 });
-test('service worker: precache v13 visuals, offline navigation and scope isolation',async()=>{
+test('service worker: precache release visuals, offline navigation and scope isolation',async()=>{
  const names=new Set(), listeners=new Map(), requests=[];
  const store={addAll:async requests=>requests.forEach(x=>names.add(new URL(x.url).pathname.split('/').at(-1))),
   put:async x=>names.add(new URL(x).pathname.split('/').at(-1)),match:async x=>names.has(new URL(x).pathname.split('/').at(-1))?'cached ./'+new URL(x).pathname.split('/').at(-1):undefined};
  const cache={open:async()=>store,keys:async()=>['warehouse-tycoon:/game/:12.0.0','warehouse-tycoon:/else/:9','unrelated'],delete:async k=>requests.push(k)};
  let available=true;
- vm.runInNewContext(fs.readFileSync(path.join(here,'sw.js'),'utf8'),{URL,Request,Response,caches:cache,self:{registration:{scope:'https://local.test/game/'},addEventListener:(n,f)=>listeners.set(n,f),skipWaiting:async()=>{},clients:{claim:async()=>{}}},fetch:async()=>{if(!available)throw Error('offline');return new Response('<title>Warehouse Tycoon DOTv13</title>');}});
+ vm.runInNewContext(fs.readFileSync(path.join(here,'sw.js'),'utf8'),{URL,Request,Response,caches:cache,self:{registration:{scope:'https://local.test/game/'},addEventListener:(n,f)=>listeners.set(n,f),skipWaiting:async()=>{},clients:{claim:async()=>{}}},fetch:async()=>{if(!available)throw Error('offline');return new Response('<title>Warehouse Tycoon '+release+'</title>');}});
  let p;listeners.get('install')({waitUntil:x=>p=x});await p;
- for(const f of ['index.html','dotv13.js','dotv13.css','icon.png','manifest.webmanifest']){assert.ok(names.has(f));assert.ok(fs.existsSync(path.join(here,f)));}
+ for(const f of ['index.html','dotv13.js','dotv13.css','dotv14.js','dotv14.css','icon.png','manifest.webmanifest']){assert.ok(names.has(f));assert.ok(fs.existsSync(path.join(here,f)));}
  listeners.get('activate')({waitUntil:x=>p=x});await p;assert.deepEqual(requests,['warehouse-tycoon:/game/:12.0.0']);
  available=false;
  listeners.get('fetch')({request:{url:'https://local.test/game/',method:'GET',mode:'navigate'},respondWith:x=>p=x});assert.equal(await p,'cached ./index.html');

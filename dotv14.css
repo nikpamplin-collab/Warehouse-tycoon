@@ -1,0 +1,67 @@
+/* DOTv14 atlas and operator directory */
+.panel.d14-network,.panel.d14-rival-overview{background:radial-gradient(ellipse at top left,#173c46,#0c202d 70%);border:1px solid #426873;padding:clamp(10px,2vw,18px);color:#edf8f8;min-width:0}
+.d14-title{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px}
+.d14-title h2{margin:3px 0 0;font-size:clamp(17px,3vw,24px);line-height:1.13;color:#fff8ea}
+.d14-eyebrow{display:block;font-size:.69rem;letter-spacing:.14em;font-weight:800;color:#9bdccc}
+.d14-tag{min-width:max-content;border:1px solid #426c6c;background:#103237;color:#d2f9ec;border-radius:99px;padding:5px 8px;font-size:.71rem;font-weight:750}
+.d14-tag i,.d14-point i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#78e6c7;margin-right:6px}
+.d14-layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:12px;align-items:start}
+.d14-atlas{overflow:hidden;border:1px solid #385a63;border-radius:13px;background:#0a202a}
+.d14-map{position:relative;isolation:isolate;background:radial-gradient(ellipse at center,#17414a,#0b2533 72%)}
+.d14-map>svg{display:block;width:100%;height:auto}
+.d14-land{fill:#2b635b;stroke:#73b3a2;stroke-width:1.3}
+.d14-road,.d14-road-outline,.d14-road-mark,.d14-local{fill:none;stroke-linecap:round}
+.d14-road-outline{stroke:#112b34}
+.d14-road{stroke:#7c9c9c}
+.d14-road.chosen{stroke:#efd597}
+.d14-road-mark{stroke:#2a4650;stroke-width:1;stroke-dasharray:3 5}
+.d14-local{stroke:#8aac9c;stroke-width:1.35;stroke-dasharray:3 5}
+.d14-catchment{fill:#7aedb5;fill-opacity:.07;stroke:#a9e8bd;stroke-opacity:.29;stroke-dasharray:2 3}
+.d14-map-build{fill:#ffc38b;stroke:#212226;stroke-width:1}
+.d14-point{position:absolute;top:var(--d14-y);left:var(--d14-x);transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:5px;min-height:44px;padding:5px 8px;border:1px solid #7cb3ab;border-radius:9px;background:#0b2633;color:#e9fbfb;font-size:.74rem;font-weight:800;white-space:nowrap;box-shadow:0 2px 8px #07182090}
+.d14-point[aria-pressed=true]{background:#f0d69e;color:#142a2b;border-color:#ffedc6}
+.d14-point[aria-pressed=true] i{background:#285f59}
+.d14-point i{margin:0}
+.d14-point b{padding:1px 4px;background:#3b5a58;border-radius:4px;color:#fff;font-size:.68rem}
+.d14-network button:focus-visible{outline:2px solid #fff6dd;outline-offset:3px}
+.d14-legend{display:flex;justify-content:center;flex-wrap:wrap;gap:5px 11px;background:#0d222a;border-top:1px solid #375460;padding:8px;color:#c8e2e4;font-size:.68rem}
+.d14-legend i{display:inline-block;width:8px;height:8px;margin-right:4px;border-radius:50%;background:#69f0d0}
+.d14-legend span:nth-child(2) i{background:#f6a082}
+.d14-legend span:nth-child(3) i{border:2px solid #fff0ac;background:none}
+.d14-legend span:nth-child(4) i{background:#ffc38b;clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:0}
+.d14-region{border:1px solid #3b636a;border-radius:12px;background:#142f36;padding:12px;display:grid;gap:8px;min-width:0}
+.d14-region h3,.d14-region p{margin:0}
+.d14-region h3{font-size:1.2rem;color:#fff8ea}
+.d14-region p{font-size:.79rem;color:#c2dbe0;line-height:1.35}
+.d14-stats,.d14-operator-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.d14-stats>div,.d14-operator-kpis>div{padding:5px 4px;background:#0d262e;border:1px solid #33535e;border-radius:6px;text-align:center}
+.d14-stats b,.d14-operator-kpis b{display:block;color:#e7fff7;overflow-wrap:anywhere}
+.d14-stats span,.d14-operator-kpis span{color:#c4dbdd;font-size:.68rem}
+.d14-flags,.d14-operators,.d14-firm-regions{display:flex;flex-wrap:wrap;gap:4px 6px}
+.d14-flags span{padding:3px 5px;border:1px solid #a27a48;border-radius:5px;color:#ffe5b1;font-size:.73rem}
+.d14-sites:not(:empty),.d14-corridors{display:grid;gap:4px}
+.d14-network button.vt-site{min-height:44px;padding:6px 8px;border-color:#597e81;line-height:1.2}
+.d14-network button.vt-site small{margin-top:4px}
+.d14-operators span,.d14-firm-regions span{display:flex;align-items:center;gap:3px;max-width:100%;overflow-wrap:anywhere;padding:3px 5px;border:1px solid #41676a;border-radius:5px;color:#e1f4f0;font-size:.72rem}
+.d14-badge{flex:none}
+.d14-badge rect{fill:var(--d14-brand);opacity:.15;stroke:var(--d14-brand)}
+.d14-badge path{fill:none;stroke:var(--d14-brand);stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round}
+.d14-operators .d14-badge{width:17px;height:17px}
+.d14-route{display:flex;align-items:center;gap:5px;min-height:44px;text-align:left;padding:5px 7px;background:#0b262f;border:1px solid #41676a;border-radius:7px;color:#eae5cd;font-size:.75rem}
+.d14-route>span:last-child{margin-left:auto;color:#c9e1e0;text-align:right}
+.d14-corridors small{color:#bad1d2;font-size:.68rem}
+.d14-rival-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,235px),1fr));gap:8px}
+.d14-firm{display:grid;gap:7px;align-content:start;border:1px solid #436874;border-top:3px solid var(--d14-brand);background:#132c37;border-radius:9px;padding:9px}
+.d14-firm-head{display:flex;align-items:center;gap:7px;min-width:0}
+.d14-firm-head .d14-badge{width:35px;height:35px}
+.d14-firm h3{margin:0;color:#fff4df;overflow-wrap:anywhere}
+.d14-firm-head span{color:#c4d9db;font-size:.75rem}
+.d14-share{font-size:.72rem;color:#cadfe0}
+.d14-share div{margin-top:3px;background:#284753;height:5px;border-radius:3px}
+.d14-share i{display:block;width:var(--d14-share);height:5px;background:var(--d14-brand);border-radius:3px}
+@media(max-width:640px){.d14-layout{grid-template-columns:minmax(0,1fr)}.d14-atlas{max-width:430px;width:100%;justify-self:center}}
+@media(max-width:360px){.d14-title{gap:5px}.d14-tag{min-width:0;text-align:right}.d14-tag i{display:none}.d14-point{font-size:.67rem;padding-inline:5px;gap:3px}}
+@media(prefers-reduced-motion:reduce){.d14-network *, .d14-rival-overview *{animation:none!important;transition:none!important}}
+.d14-road-hit{fill:none;stroke:transparent;stroke-width:20;cursor:pointer;pointer-events:stroke}
+.d14-road-hit:hover{stroke:#fff0ba20}
+.d14-map-caption{font-size:.66rem;color:#b8d3d6;margin:0;padding:0 8px 8px;text-align:center}
