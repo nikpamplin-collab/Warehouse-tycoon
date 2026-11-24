@@ -47,7 +47,7 @@ test('existing v11 save key retained and data unaltered',()=>{
 });
 test('service worker: precache v13 visuals, offline navigation and scope isolation',async()=>{
  const names=new Set(), listeners=new Map(), requests=[];
- const store={addAll:async paths=>paths.forEach(x=>names.add(x)),match:async x=>names.has(x)?'cached '+x:undefined};
+ const store={addAll:async paths=>paths.forEach(x=>names.add(x)),match:async x=>names.has('./'+x.split('/').at(-1))?'cached ./'+x.split('/').at(-1):undefined};
  const cache={open:async()=>store,keys:async()=>['warehouse-tycoon:/game/:12.0.0','warehouse-tycoon:/else/:9','unrelated'],delete:async k=>requests.push(k)};
  vm.runInNewContext(fs.readFileSync(path.join(here,'sw.js'),'utf8'),{URL,caches:cache,self:{registration:{scope:'https://local.test/game/'},addEventListener:(n,f)=>listeners.set(n,f),skipWaiting:async()=>{},clients:{claim:async()=>{}}},fetch:async()=>{throw Error('offline')}});
  let p;listeners.get('install')({waitUntil:x=>p=x});await p;

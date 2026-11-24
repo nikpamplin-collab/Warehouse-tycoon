@@ -12,6 +12,10 @@ self.addEventListener('fetch',event=>{
  const u=new URL(event.request.url);
  if(event.request.method!=='GET'||u.origin!==scope.origin||!u.pathname.startsWith(scope.pathname)||!assets.has(u.pathname))return;
  if(event.request.mode==='navigate'){
-  event.respondWith(fetch(event.request).catch(()=>caches.open(CACHE).then(c=>c.match('./index.html'))));
- }else event.respondWith(caches.open(CACHE).then(cache=>cache.match(event.request).then(c=>c||fetch(event.request))));
+  event.respondWith((async()=>{
+   try{const response=await fetch(event.request);if(response.status<500)return response;}catch{}
+   const cache=await caches.open(CACHE);
+   return (await cache.match(new URL('index.html',scope).href))||Response.error();
+  })());
+ }else event.respondWith(caches.open(CACHE).then(cache=>cache.match(u.href).then(c=>c||fetch(event.request))));
 });
