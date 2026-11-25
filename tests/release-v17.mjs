@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {test} from 'node:test';
+import {compile,boot,setup} from './runtime.mjs';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const run=compile(root);
+test('new expansion completes after six monthly construction steps; existing works keep their countdown',()=>{
+ const g=boot(run);setup(g);
+ assert.equal(g.run('EXPANSION_MONTHS'),6);
+ assert.equal(g.run(`(()=>{let s=selectedSite(),c=state.player;
+ c.cash=2e6;
+ expand();
+ const duration=s.projects.find(x=>x.type==='Expansion').remaining;
+ const start=s.sections;
+ for(let i=0;i<5;i++)progress(c);
+ if(s.sections!==start||s.projects[0].remaining!==1) return "early";
+ progress(c);
+ if(s.sections!==start+1||s.projects.length) return "late";
+ s.projects=[{type:'Expansion',remaining:8,cost:C.expand}];
+ progress(c);
+ if(s.projects[0].remaining!==7) return "rewritten";
+ return duration;
+ })()`),6);
+});
+test('an existing configured save is backed up once before v17 first writes',()=>{
+ const first=boot(run,32);setup(first,'Original Company','Original DC');first.run('state.month=12;save()');
+ const store=new Map(first.store), original=store.get('warehouse_tycoon_v11');
+ assert.ok(original);store.delete('warehouse_tycoon_v11_pre_dotv17');
+ const one=boot(run,99,store);
+ assert.equal(one.run('state.month'),12);
+ assert.equal(store.get('warehouse_tycoon_v11_pre_dotv17'),original);
+ one.run('state.month=13;save()');
+ const two=boot(run,101,store);
+ assert.equal(two.run('state.month'),13);
+ assert.equal(store.get('warehouse_tycoon_v11_pre_dotv17'),original);
+});

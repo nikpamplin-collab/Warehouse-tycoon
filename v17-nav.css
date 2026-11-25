@@ -1,0 +1,27 @@
+/* DOTv17: the site is a live readout of the simulation, not an animated backdrop. */
+:root .scene-load,
+:root .metric,
+:root .d13-forklift,
+:root .d15-yard-truck,
+:root .d15-lift-a,
+:root .d15-lift-b,
+:root .d16-chart polyline,
+:root .d16-chart circle{animation:none}
+#tabs{grid-template-columns:repeat(6,minmax(0,1fr))}
+#tabs button{font-size:clamp(12px,1.5vw,15px)}
+#tabs button:focus-visible,.d17-local-select button:focus-visible,.d17-context button:focus-visible{outline:2px solid #f8d483;outline-offset:2px}
+.d17-section-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px}
+.d17-section-heading h2,.d17-section-heading p{margin:.25rem 0}
+.d17-section-heading .btn,.d17-context .btn{min-height:44px}
+.d17-local-select{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+.d17-local-select button{min-height:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:center}
+.d17-context{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-block:10px}
+.d17-context strong{margin-inline-end:4px}
+:is(#d15-operations,#d15-staff,#d15-investment,#d15-projects,#d17-facilities){scroll-margin-top:105px}
+@media(max-width:600px){
+ main{padding-bottom:calc(118px + env(safe-area-inset-bottom,0px))}
+ #tabs{position:fixed;inset:auto 0 0;z-index:3;grid-template-columns:repeat(3,minmax(0,1fr));margin:0;border-top:1px solid #486077;padding:6px max(8px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:#10263b}
+ .d17-section-heading{grid-template-columns:minmax(0,1fr)}
+ .d17-section-heading .btn{justify-self:start}
+ :is(#d15-operations,#d15-staff,#d15-investment,#d15-projects,#d17-facilities){scroll-margin-top:12px}
+}

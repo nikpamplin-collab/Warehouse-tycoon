@@ -1,0 +1,9 @@
+.d17-kit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));gap:12px}
+.d17-kit-grid article{padding:14px;border-radius:10px;border:1px solid #477093;background:#122c43}
+.d17-kit-grid h3{margin:0;color:#d4f4ff}
+.d17-kit-grid h3 span{color:#83d6c0;margin-right:.25em}
+.d17-kit-grid p{margin:.55rem 0}
+.d17-staff-row{gap:12px}
+.d17-staff-row .stepper{flex-shrink:0}
+.d17-staff-row p{margin:.3rem 0}
+.d17-plan{margin:0 0 .8rem;padding:.55rem .7rem;background:#10243b;border-radius:8px}

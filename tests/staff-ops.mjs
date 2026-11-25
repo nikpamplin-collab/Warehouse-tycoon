@@ -1,0 +1,93 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {fileURLToPath} from 'node:url';
+import {compile,boot,setup} from './runtime.mjs';
+const folder=fileURLToPath(new URL('../',import.meta.url));
+const game=compile(folder);
+const bin=(s=137)=>{const g=boot(game,s);setup(g);return g;};
+const json=x=>JSON.parse(JSON.stringify(x));
+
+test('queued hires, reductions and cancellations take one month and survive reload',()=>{
+  let g=bin();g.run(`let w=state.player.sites[0];w.staff=2;
+    staff(1);staff(1);staff(1);staff(-1);staff(-1);
+    w.hs=true;save();`);
+  assert.equal(g.run('w.staff'),2);
+  assert.deepEqual(json(g.run('w.staffPlan')),{count:3,effective:2});
+  g=boot(game,765,g.store);
+  g.run('let w=state.player.sites[0];');
+  assert.equal(g.run('w.staffPlan.count'),3);
+  assert.equal(g.run('siteCapacity(w)'),3500);
+  g.run('nextMonth()');
+  assert.equal(g.run('state.player.last.labour'),5000);
+  assert.equal(g.run('state.player.last.capacity'),3500);
+  assert.equal(g.run('w.staff'),3);
+  assert.equal(g.run('w.staffPlan'),undefined);
+  g.run('staff(1); staff(-1)');
+  assert.equal(g.run('w.staffPlan'),undefined);
+  g.run('staff(-1); nextMonth()');
+  assert.equal(g.run('state.player.last.labour'),7500);
+  assert.equal(g.run('w.staff'),2);
+  assert.equal(g.run('w.staffPlan'),undefined);
+});
+
+test('MHE adds 30% to reduced manual productivity, billing only manual sections; no extra rival charge',()=>{
+  const g=bin();
+  g.run(`let w=state.player.sites[0];w.staff=7;w.sections=2;
+    w.automationAssets=[{section:0,expires:28}];w.automated=1;`);
+  assert.equal(g.run('siteProductivity(w)'),2500*((.7+1.3)/2));
+  assert.equal(g.run('siteCapacity(w)'),17500);
+  g.run("dot17ToggleSiteOps('mhe')");
+  assert.equal(g.run('dot17SectionFactor(w,1,1)/.7'),1.3);
+  assert.equal(g.run('dot17SectionFactor(w,0,1)'),1.30);
+  assert.equal(g.run('dot17SiteOpsCosts(w).mheCost'),650);
+  assert.equal(g.run('dot17SiteOpsCosts(w,28).mheCost'),1300);
+  assert.equal(g.run('siteCapacity(w)'),19338);
+  g.run("w.projects.push({type:'Replacement',section:0,remaining:2})");
+  assert.equal(g.run('dot17SectionFactor(w,0,1)'),.50);
+  assert.equal(g.run('dot17SiteOpsCosts(w).mheCost'),650);
+  g.run("dot17ToggleSiteOps('mhe')");
+  assert.equal(g.run('dot17SiteOpsCosts(w).mheCost'),0);
+  assert.equal(g.run(`(()=>{const s=state.rivals[0].sites[0];const old=siteProductivity(s);s.mheLeased=true;
+    return siteProductivity(s)===old&&dot17Inventory(state.rivals[0],s,s.contracts,state.month,8000,8000).mheCost===0;})()`),true);
+});
+
+test('stock manager reduces both probability and loss size, empty sites have no customer fine',()=>{
+  const g=bin();
+  g.run(`let w=state.player.sites[0], book=[{id:'one',spaces:2250,name:'Customer One'}];
+    w.racks=8;w.staff=4;w.mheLeased=true;
+    let absent=dot17Inventory(state.player,w,book,1,9000,9000,()=>.12);
+    w.stockController=true;
+    let covered=dot17Inventory(state.player,w,book,1,9000,9000,()=>.12);`);
+  assert.equal(g.run('absent.stockLoss.customer'),'Customer One');
+  assert.ok(g.run('absent.stockShortages')>0);
+  assert.equal(g.run('absent.stockFines'),g.run('absent.stockShortages*350'));
+  assert.equal(g.run('covered.stockFines'),0);
+  assert.equal(g.run('covered.stockControlCost'),3000);
+  assert.equal(g.run('covered.mheCost'),650);
+  assert.equal(g.run('dot17Inventory(state.player,w,[],1,0,0,()=>{throw Error("Unexpected risk roll")}).stockFines'),0);
+  assert.ok(g.run(`(()=>{let a=dot17Inventory(state.player,w,book,1,9000,9000,()=>.02);
+    w.stockController=false;let b=dot17Inventory(state.player,w,book,1,9000,9000,()=>.02);
+    return a.stockFines>0&&a.stockFines<b.stockFines&&a.stockShortages<b.stockShortages;})()`));
+});
+
+test('equipment, managers and fines reconcile to site profit, company profit, cash and finance UI',()=>{
+  const g=bin();
+  g.run(`let p=state.player,w=p.sites[0];let openingCash=p.cash;
+    w.racks=8;w.staff=6;w.hs=true;
+    w.contracts=[{id:'k',name:'A <customer>',start:1,end:18,spaces:2200,moves:8500,storage:16,handling:5.5}];
+    w.mheLeased=true;w.stockController=true;
+    Math.random=()=>.001;let r=companyMonth(p,1);
+    go('history');`);
+  assert.ok(g.run('r.stockFines')>0);
+  assert.equal(g.run('r.stockFines'),g.run('w.last.stockFines'));
+  assert.equal(g.run('r.stockShortages'),g.run('w.last.stockShortages'));
+  assert.equal(g.run('r.mheCost'),650);
+  assert.equal(g.run('r.stockControlCost'),3000);
+  assert.ok(g.run(`Math.abs(r.profit-(r.storage+r.handling-r.rent-r.labour-r.hs-r.incidentCost-r.overflowCost-r.interest-r.management-r.mheCost-r.stockControlCost-r.stockFines-(r.facilityCost||0)))<1e-6`));
+  assert.equal(g.run('r.cash'),g.run('openingCash+r.profit-r.principal'));
+  assert.match(g.run('state.events[0]'), /^STOCK SHORTAGE:/);
+  assert.match(g.u(),/Equipment leases/);
+  assert.match(g.u(),/Stock shortage charges/);
+  g.run("go('office')");
+  assert.match(g.u(),/A &lt;customer&gt;/);
+});

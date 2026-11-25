@@ -1,43 +1,33 @@
-WAREHOUSE TYCOON | DOTv16 development candidate
+WAREHOUSE TYCOON | DOTv17
 
-DOTv13 changes how the game looks, not how it runs its businesses.
-The live version stays where it is until this branch is reviewed and merged.
+Open index.html via a local HTTP server or the GitHub Pages deployment.
+Use the same browser profile and Pages address to continue an existing save.
+Do not clear site data. DOTv17 keeps the previous save key and makes a
+one-time backup of the configured save on first load when storage permits.
 
-- Office opens with a warehouse cutaway and a dispatch brief.
-- Floor, Pallet flow and Build queue layers use the actual site state.
-- Warehouse size, racking, staff, working stock, automation and investments
-  determine what the cutaway shows. Props and routes are illustrative.
-- The UK map shows current tenders, sites and operators by region.
-- Touch controls, keyboard focus and reduced-motion preferences are supported.
-- v12 economics, six rival profiles, Protect rules and save key are unchanged.
-- The desktop/static game needs no dependencies or build step.
+What changed
+- Operations is for the warehouse: forecast, team, equipment and stock
+  control. Investment is for sites, racking, expansion, automation, projects
+  and borrowing. Finances shows trading results and the contract book.
+- New warehouse extensions take six months instead of nine. Work already
+  in progress keeps its remaining countdown.
+- Use the next-month forecast to queue staffing. Current payroll and
+  capacity do not change until the next month.
+- Manual sections have lower hand-only throughput. Leasing MHE adds 30%
+  to manual productivity and costs £650 per non-automated section per month.
+  It is not charged for automated sections.
+- A stock control manager costs £3,000 per site per month and lowers both
+  the likelihood and severity of stock losses and resulting customer claims.
+- Fit an extra dock door when dock capacity is the actual constraint. It
+  costs £28,000, takes one month, and adds up to 5,500 moves per month.
+  Labour and management can still limit the result.
+- Sprinklers take two months to retrofit. They lower fire risk, not other
+  safety risks, and come with inspection costs.
+- Rival operators sustain competition longer. Warehouse diagrams are static
+  and still show assets, bottlenecks, incidents and work in progress.
 
-Checks:
-  node --test tests/regression.mjs
-  WT_V12_FOLDER=/path/to/v12 node --test tests/regression.mjs
-
-With the exact v12 fixture the suite compares complete game states through
-16 seed-matched runs of 72 months and exercises a real v12 save in the JS
-test harness. The targeted suite checks screens, map and layer actions,
-investment, turn advance, reload and service-worker cache behavior.
-
-Browser tests (separate from the game):
-  npm install --ignore-scripts --no-audit --no-fund --no-save playwright@1.62.1
-  npx playwright install chromium webkit
-  WT_V12_FOLDER=/path/to/v12 node tests/browser.mjs
-
-The browser test serves both v12 and DOTv13 at the same local origin using
-a disposable save. Desktop Chromium and an emulated WebKit iPhone profile
-do not replace a quick real iPhone Safari play-through before release.
-
-DOTv14 adds route activity based on regional forecasts, warehouse-size and
-status markers, and branded rival cards with site and capacity information.
-Map links are illustrative and do not portray tracked shipments.
-
-DOTv15 makes warehouse flow and construction visible from existing forecasts,
-projects and incidents. Floor zones link to the existing controls without
-placing orders or changing staffing. Yard animations are bounded and optional.
-
-DOTv16 adds visual network news and finance trends with actual recorded data.
-Operating costs, borrowing costs and recorded open project costs are kept
-separate. Unknown amounts are not reported as zero cash spend.
+Checks
+- node --test tests/regression.mjs
+- Browser suite: provide WT_V12_FOLDER pointing at the v12 release, install
+  Playwright (Chromium and WebKit), and run node tests/browser.mjs.
+- node tests/navigation-browser.mjs adds a desktop and small-screen check.
