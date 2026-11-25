@@ -1,0 +1,36 @@
+/* Scoped Finance Desk and Dispatch Board; shares the existing DOTv13 colour tokens. */
+.d16-dispatch,.d16-finance{--d16-line:#4d6b77;--d16-inset:#19313e;--d16-good:#a0ead6;--d16-watch:#ffda9b;--d16-bad:#ffb6af;--d16-quiet:#d8e8e8;--d16-muted:var(--d13-muted,#bfd0d6);--d16-accent:var(--d13-gold,#f3c580)}
+.d16-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:0 0 9px}
+.d16-finance .d16-stats{grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr))}
+.d16-stat,.d16-breakdown,.d16-investment,.d16-trends{padding:9px 10px;background:var(--d16-inset);border:1px solid var(--d16-line);border-radius:9px}
+.d16-stat dt{color:var(--d16-muted);font-size:.8rem;font-weight:650}
+.d16-stat dd{font-size:clamp(.96rem,2.2vw,1.3rem);font-weight:800;line-height:1.25;overflow-wrap:anywhere}
+.d16-dispatch dd,.d16-finance dd{margin:0;font-variant-numeric:tabular-nums}
+.d16-bad,.d16-stat.d16-bad dd{color:var(--d16-bad)}
+.d16-good{color:var(--d16-good)}.d16-watch{color:var(--d16-watch)}.d16-quiet{color:var(--d16-quiet)}
+.d16-change{display:block;margin-top:2px;font-size:.73rem;font-weight:700;line-height:1.25}
+.d16-change span{font-weight:500;color:var(--d16-muted)}
+.d16-note{margin:3px 0 8px;color:var(--d16-muted);font-size:.8rem;line-height:1.35}
+.d16-trends>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.d16-chart{margin:0;color:var(--d16-good)}.d16-chart+.d16-chart{color:var(--d16-accent)}
+.d16-chart figcaption{font-size:.74rem;font-weight:760}.d16-chart svg{display:block;width:100%;max-height:73px}
+.d16-chart polyline{stroke:currentColor;fill:none;stroke-width:2.3;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.d16-chart circle{fill:currentColor}.d16-chart .d16-zero{stroke:var(--d16-line);stroke-dasharray:3 2;vector-effect:non-scaling-stroke}
+.d16-news{margin-top:13px}.d16-news h3,.d16-investment h3{margin:0 0 4px}
+.d16-feed{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.d16-feed li{border-left:3px solid currentColor;background:var(--d16-inset);border-radius:4px 7px 7px 4px;padding:5px 8px}
+.d16-badge{display:inline-flex;gap:.3em;align-items:center;font-weight:760;font-size:.75rem}
+.d16-feed p{margin:2px 0 1px;color:var(--d13-text,#f6ebd6);font-size:.87rem;line-height:1.35;overflow-wrap:anywhere}
+.d16-dispatch details,.d16-finance details{margin:6px 0}
+.d16-dispatch summary,.d16-finance summary{display:list-item;color:var(--d16-accent);cursor:pointer;padding-block:10px;font-size:.85rem;font-weight:750}
+.d16-dispatch summary:focus-visible,.d16-finance summary:focus-visible{outline:2px solid var(--d16-accent);outline-offset:3px}
+.d16-breakdown{margin-bottom:8px}.d16-breakdown dl,.d16-investment dl{margin:0}
+.d16-breakdown dl>div,.d16-investment dl>div{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:8px;padding-block:5px}
+.d16-breakdown dt,.d16-investment dt{font-weight:650}.d16-breakdown dd,.d16-investment dd{text-align:right}
+.d16-breakdown dl>div+div{border-top:1px solid var(--d16-line)}
+.d16-breakdown .d16-note:last-child,.d16-investment .d16-note:last-child{margin-bottom:0}
+.d16-history table{margin:0 0 8px;width:100%;font-variant-numeric:tabular-nums}
+.d16-history th{text-align:left}.d16-history td{text-align:right}.d16-history th:last-child,.d16-history th:nth-child(2){text-align:right}
+.d16-investment{margin-top:8px}
+@media (prefers-reduced-motion:no-preference){.d16-chart polyline,.d16-chart circle{animation:d16-appear .25s ease-out both}}
+@keyframes d16-appear{from{opacity:.55}to{opacity:1}}

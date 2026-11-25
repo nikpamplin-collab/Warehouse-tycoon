@@ -1,0 +1,37 @@
+name: Warehouse Tycoon regression checks
+on:
+  pull_request:
+    branches: [main, DOTv13, DOTv14, DOTv15]
+    paths:
+      - index.html
+      - '*.css'
+      - '*.js'
+      - 'tests/**'
+      - '.github/workflows/browser-checks.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Prepare exact v12 comparison fixture
+        run: |
+          mkdir -p /tmp/wt-v12
+          git archive c16518da56394e5e78cdfbdaf3321d5f782c4d7f | tar -x -C /tmp/wt-v12
+          echo WT_V12_FOLDER=/tmp/wt-v12 >> "$GITHUB_ENV"
+      - name: Test simulation, visual handlers and caches
+        run: node --test tests/regression.mjs
+      - name: Install test browsers
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium webkit
+      - name: Check desktop and mobile browser paths
+        run: node tests/browser.mjs
