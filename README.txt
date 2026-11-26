@@ -1,4 +1,5 @@
-WAREHOUSE TYCOON | DOTv17
+WAREHOUSE TYCOON | DOTv18
+See RELEASE-18.md for commercial and finance decisions.
 
 Open index.html via a local HTTP server or the GitHub Pages deployment.
 Use the same browser profile and Pages address to continue an existing save.

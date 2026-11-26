@@ -24,14 +24,14 @@ test('Operations has day-to-day actions, Investment has capital, and Finances ha
  assert.match(g.u(),/id="d15-staff"/);
  assert.doesNotMatch(g.u(),/Borrow £25k|Appraise expansion|Automation asset register|onclick="openRegion/);
  move(g,'investment');
- assert.match(g.u(),/Borrow £25k/);
+ assert.match(g.u(),/onclick="borrow\(/);
  assert.match(g.u(),/Appraise expansion/);
  assert.match(g.u(),/Automation asset register/);
  assert.doesNotMatch(g.u(),/onclick="staff\(|id="d15-staff"/);
  move(g,'history');
  assert.match(g.u(),/Banking &amp; investment/);
  assert.match(g.u(),/Trading &amp; cash/);
- assert.doesNotMatch(g.u(),/Borrow £25k/);
+ assert.doesNotMatch(g.u(),/onclick="borrow\(/);
  assert.equal(g.run('JSON.stringify(state)'),before);
 });
 test('Office and warehouse zone shortcuts preserve site and route to the correct screen',()=>{
@@ -61,6 +61,7 @@ test('Unoccupied territories offer opening only in Investment; bank controls rem
  assert.match(g.u(),/Open 25,000 sq ft site/);
  assert.equal(g.run('selected'),'south');
  const cash=g.run('state.player.cash');
- g.run('borrow()');assert.equal(g.run('state.player.cash'),cash+25000);
+ g.run('borrow()');assert.equal(g.run('state.player.cash'),cash);
+ g.run('state.player.sites[0].ownedExtensions=1;state.player.history=Array.from({length:6},()=>({profit:10000}));borrow()');assert.equal(g.run('state.player.cash'),cash+25000);
  g.run('repay()');assert.equal(g.run('state.player.cash'),cash);
 });
