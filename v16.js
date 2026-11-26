@@ -9,7 +9,7 @@
   const operatingKeys = ['rent', 'labour', 'hs', 'incidentCost', 'overflowCost', 'management'];
   const total = (record, keys) => keys.every(k => finite(record?.[k])) ? keys.reduce((sum, k) => sum + record[k], 0) : undefined;
   const revenue = r => total(r, ['storage', 'handling']);
-  const operating = r => total(r, operatingKeys);
+  const operating = r => { const base=total(r,operatingKeys);return finite(base)?base+(r.facilityCost||0)+(r.mheCost||0)+(r.stockControlCost||0)+(r.stockFines||0):undefined; };
   const titleOf = r => r?.label || (finite(r?.month) ? 'Month ' + r.month : 'Completed month');
   function ordered(vm) {
     const records = Array.isArray(vm.history) ? vm.history.filter(r => r && typeof r === 'object') : [];
@@ -49,6 +49,7 @@
   }
   const types = {
     incident: ['!', 'Safety incident', 'bad'],
+    stock: ['!', 'Stock shortage', 'bad'],
     market: ['↕', 'Market outlook', 'watch'],
     shock: ['!', 'Market shock', 'bad'],
     competitor: ['↗', 'Competition', 'watch'],
@@ -62,13 +63,14 @@
     update: ['·', 'Network update', 'quiet']
   };
   function classify(message, playerName = '') {
+    if (/^STOCK SHORTAGE:/i.test(message)) return 'stock';
     if (/^ECONOMY:/i.test(message)) return 'market';
     if (/^MARKET SHOCK:/i.test(message)) return 'shock';
     if (/^(NEW ENTRANT|Competitor update):/i.test(message)) return 'competitor';
     if (/^(Milestone|OBJECTIVE ACHIEVED):/i.test(message)) return 'milestone';
     if (/^(ACQUISITION|TAKEOVER COMPLETE|CONTROL):/i.test(message)) return 'acquisition';
     if (/\b(?:installation(?:s)?|CI) completed\b/i.test(message)) return 'completed';
-    if (/^Cancelled (?:Racking|Expansion|Automation|CI) project\b|:\s+(?:Racking|Expansion|Automation|Replacement|CI) \d+ months? remaining\.$/i.test(message)) return 'project';
+    if (/^Cancelled (?:Racking|Expansion|Automation|CI|Dock door|Sprinklers) project\b|:\s+(?:Racking|Expansion|Automation|Replacement|CI|Dock door|Sprinklers) \d+ months? remaining\.$/i.test(message)) return 'project';
     if (/:\s*(?:no suitable bids|customers rejected bids above market budget)\.$/i.test(message)) return 'tender';
     if (/\bwon \([^)]+\/month forecast\)\.$/i.test(message)) {
       return playerName && message.includes(': ' + playerName + ' won (') ? 'win' : 'award';
@@ -86,7 +88,7 @@
     const incidents = Array.isArray(last?.incidents) ? last.incidents : [];
     for (const incident of incidents) {
       if (!incident || typeof incident !== 'object') continue;
-      let message = `${incident.site || 'Warehouse'}: ${incident.severity || 'Recorded'} incident in ${titleOf(last)}.`;
+      let message = `${incident.site || 'Warehouse'}: ${incident.kind==='Fire'?'FIRE INCIDENT':(incident.severity || 'Recorded')+' incident'} in ${titleOf(last)}.`;
       if (finite(incident.cost)) message += ' Cost: '+money(incident.cost)+'.';
       if (finite(incident.netMissed)) message += ' Moves missed: '+integer.format(incident.netMissed)+'.';
       add(message, 'incident');
@@ -138,8 +140,8 @@
       ${last ? `<p class="d16-note">Completed month: <b>${safe(titleOf(last))}</b></p>
       <dl class="d16-stats">${stat('Trading revenue',revenue(last),movement(revenue(last),revenue(previous)))}${stat('Profit / loss after interest',last.profit,movement(last.profit,previous?.profit),last.profit < 0?'bad':'')}${stat('Cash on hand now',vm.cash,'',vm.cash < 0?'bad':'')}</dl>
       <div class="d16-breakdown"><dl><div><dt>Recorded operating costs (OpEx)</dt><dd>${money(operating(last))}${movement(operating(last),operating(previous),true)}</dd></div>
-      ${financeRow('Interest charged',last.interest)}${financeRow('Loan principal repaid',last.principal)}${financeRow('Cash at monthly close',last.cash)}</dl>
-      <p class="d16-note">OpEx includes warehouse overhead, labour, safety, incidents, overflow and management. Interest affects profit; principal repayments affect cash only. Current cash can change after the monthly close.</p>
+      ${finite(last.mheCost) ? financeRow('Equipment leases',last.mheCost)+financeRow('Stock control management',last.stockControlCost)+financeRow('Stock shortage charges',last.stockFines) : ''}${financeRow('Interest charged',last.interest)}${financeRow('Loan principal repaid',last.principal)}${financeRow('Cash at monthly close',last.cash)}</dl>
+      <p class="d16-note">OpEx includes warehouse overhead, labour, safety, incidents, overflow, inspections, management, equipment leases and stock control costs. Interest affects profit; principal repayments affect cash only. Current cash can change after the monthly close.</p>
       </div>${chartPair(trend)}${historyTable(trend)}` : `<dl class="d16-stats">${stat('Cash on hand now',vm.cash,'',vm.cash < 0?'bad':'')}</dl><p class="d16-note">Complete the first month to compare trading revenue, profit and costs.</p>`}
       <div class="d16-investment"><h3>Capital projects</h3>${hasOpen ? `<dl>${financeRow('Recorded cost of open capital projects',open.cost)}</dl><p class="d16-note">${open.count} open ${open.count === 1 ? 'project' : 'projects'} still in progress. This is not a cash movement for the month. It excludes completed projects and other asset purchases.</p>` : ''}
       <p class="d16-note">The game does not track total capital expenditure (CapEx) by month.</p></div>

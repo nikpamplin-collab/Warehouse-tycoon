@@ -1,0 +1,13 @@
+/* Static facilities illustrations mirror commissioned or queued work. */
+.d17-facility-status,.d17-facility-options {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;margin:.65rem 0}
+.d17-facility-status > div,.d17-facility-options > section {min-width:0;border:1px solid #42637c;border-radius:12px;padding:.8rem;background:#132c43}
+.d17-facility-status svg {display:inline-block;width:1.65rem;height:1.55rem;vertical-align:middle;margin-inline-end:.24rem}
+.d17-facility-status strong,.d17-facility-status span {display:block;margin-top:.28rem}
+.d17-facility-status span {font-size:.87rem;color:#c3d7e4}
+.d17-facility-base,.d17-facility-water {color:#b2cad8}
+.d17-facility-added,.d17-facility-added .d17-facility-water {color:#8be6c8}
+.d17-facility-queued {color:#f3cd81;stroke-dasharray:3 2}
+.d17-facility-options {margin-bottom:0}
+.d17-facility-options h3 {margin:.1rem 0 .38rem}
+.d17-facility-options p {line-height:1.42}
+@media (max-width:540px){.d17-facility-options {grid-template-columns:minmax(0,1fr)}}

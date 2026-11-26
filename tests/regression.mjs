@@ -9,10 +9,10 @@ const here=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'), comp
 const optionalV12=process.env.WT_V12_FOLDER;
 const release=fs.readFileSync(path.join(here,'index.html'),'utf8').match(/<title>Warehouse Tycoon (DOTv[0-9]+)<\/title>/)?.[1];
 const asJSON=x=>JSON.parse(JSON.stringify(x));
-test('new game and all five tabs render',()=>{
+test('new game and all six tabs render',()=>{
  const g=boot(compiler);assert.match(g.el('dialog').innerHTML,/Start your logistics business/);
  setup(g,'A & B <Logistics>','Main "DC"');
- for(const [tab,phrase] of [['office','Dispatch brief'],['market','UK customer tenders'],['warehouse','Warehouse cutaway'],['rivals','Opening profit'],['history','Monthly financial results']]){
+ for(const [tab,phrase] of [['office','Dispatch brief'],['market','UK customer tenders'],['warehouse','Site Management'],['investment','Warehouse investment'],['rivals','Opening profit'],['history','Monthly financial results']]){
   g.run(`go('${tab}')`);assert.ok(g.u().includes(phrase),tab);
   assert.match(g.el('tabs').innerHTML,/aria-current="page"/);
  }
@@ -55,24 +55,15 @@ test('service worker: precache release visuals, offline navigation and scope iso
  let available=true;
  vm.runInNewContext(fs.readFileSync(path.join(here,'sw.js'),'utf8'),{URL,Request,Response,caches:cache,self:{registration:{scope:'https://local.test/game/'},addEventListener:(n,f)=>listeners.set(n,f),skipWaiting:async()=>{},clients:{claim:async()=>{}}},fetch:async()=>{if(!available)throw Error('offline');return new Response('<title>Warehouse Tycoon '+release+'</title>');}});
  let p;listeners.get('install')({waitUntil:x=>p=x});await p;
- for(const f of ['index.html','dotv13.js','dotv13.css','dotv14.js','dotv14.css','icon.png','manifest.webmanifest', 'v15.js','v15.css', 'v16.js','v16.css']){assert.ok(names.has(f));assert.ok(fs.existsSync(path.join(here,f)));}
+ for(const f of ['index.html','dotv13.js','dotv13.css','dotv14.js','dotv14.css','icon.png','manifest.webmanifest', 'v15.js','v15.css', 'v16.js','v16.css','v17-nav.css','dotv17-facilities.js','dotv17-facilities.css','v17-staff.js','v17-staff.css']){assert.ok(names.has(f));assert.ok(fs.existsSync(path.join(here,f)));}
  listeners.get('activate')({waitUntil:x=>p=x});await p;assert.deepEqual(requests,['warehouse-tycoon:/game/:12.0.0']);
  available=false;
  listeners.get('fetch')({request:{url:'https://local.test/game/',method:'GET',mode:'navigate'},respondWith:x=>p=x});assert.equal(await p,'cached ./index.html');
  let claimed=false;listeners.get('fetch')({request:{url:'https://local.test/else/',method:'GET',mode:'navigate'},respondWith:()=>claimed=true});assert.equal(claimed,false);
 });
-test('seed-matched v12 parity: 16 runs, 72 months each, all simulation state', {skip:!optionalV12,timeout:120000},()=>{
- const base=compile(optionalV12);
- for(let seed=142;seed<158;seed++){
-  const a=boot(base,seed),b=boot(compiler,seed);setup(a);setup(b);
-  for(const g of [a,b])g.run('state.player.cash-=C.rack*7;state.player.sites[0].racks=7');
-  for(let m=0;m<72;m++){
-   for(const g of [a,b])g.run(`(()=>{const p=state.player,s=p.sites[0];if(state.finished)return;
-    s.hs=true;s.staff=Math.min(150,Math.ceil(forecast(s)/Math.max(1,siteProductivity(s)))+1);s.managers=Math.floor(s.staff/10);
-    for(const t of state.tenders)if(t.region==='mid'&&availableSite(p,t)&&t.spaces<=siteSpace(s)-occupancy(s)){
-     const market=t.marketPrice||1; state.bids[t.id]={storage:C.storage*market,handling:C.handling*market};
-    }nextMonth();})()`);
-   assert.equal(b.run('JSON.stringify(state)'),a.run('JSON.stringify(state)'),`seed ${seed} month ${m+1}`);
-  }
- }
-});
+
+import './release-v17.mjs';
+import './staff-ops.mjs';
+import './facilities.mjs';
+import './navigation.mjs';
+import './rivals.mjs';

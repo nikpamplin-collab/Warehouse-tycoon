@@ -18,7 +18,9 @@
   Racking:{tag:'Racking',stages:['Rack installation']},
   Automation:{tag:'Automation',stages:['Kit delivered','Equipment installation','Commissioning']},
   Replacement:{tag:'Replacement',stages:['Equipment removal','New kit installation','Commissioning']},
-  CI:{tag:'Process improvement',stages:['Process review','Pilot changes','Rollout']}
+  CI:{tag:'Process improvement',stages:['Process review','Pilot changes','Rollout']},
+  'Dock door':{tag:'Dock door',stages:['Fit-out']},
+  Sprinklers:{tag:'Sprinklers',stages:['Pipework','Commissioning']}
  };
  const zones={
   storage:{icon:'racks',no:1,label:'Storage',id:'d15-investment'},
@@ -108,9 +110,9 @@
    const [x,y]=pt(1.35+i*1.18,6.62,6).split(',').map(Number);
    art+=`<g><ellipse cx="${x}" cy="${y+1}" rx="6" ry="2.2" fill="#3c4843" opacity=".45"/><path d="M${x-2.3} ${y}v-7m4 7v-7" stroke="#263744" stroke-width="2.1"/><path d="M${x-4} ${y-6}v-7q4-4 8 0v7z" fill="#efae5c" stroke="#743f36"/><circle cx="${x}" cy="${y-16}" r="3" fill="#fce0a4" stroke="#78584a"/></g>`;
   }
-  const docks=[2,4.8,7.6];
+  const docks=[2,4.8,7.6].slice(0,clamp(v.dockDoors ?? 3,2,3));
   docks.forEach((x,i)=>{
-   art+=ground(x-.17,8,1.4,2.6,4.3,i===2?'#647379':'#5c6b70','#c6b58e',1.05);
+   art+=ground(x-.17,8,1.4,2.6,4.3,i===2?'#4b826d':'#5c6b70','#c6b58e',1.05);
    art+=box(x,7.77,1.05,.47,13,['#a2b5b0','#293e4d','#4b6168'],4);
    for(let j=0;j<3;j++)art+=line([[x+.16,8.25,7+j*2.2],[x+.94,8.25,7+j*2.2]],'#849399',.9);
   });
@@ -121,7 +123,7 @@
    +box(x,y+1.35,1.08,.69,12,[alt?'#82a8bd':'#ffb45f',alt?'#517e91':'#b3774e','#49656e'],4)
    +line([[x+.13,y+2.05,12],[x+.93,y+2.05,12]],'#193e55',2)
    +[y+.24,y+1.66].map(a=>{const [wx,wy]=pt(x+1.08,a,6).split(',');return `<ellipse cx="${wx}" cy="${wy}" rx="3.5" ry="4.3" fill="#22323b"/>`;}).join('');
-  const dockUse=forecast?clamp(Math.ceil(load*3),1,3):0;
+  const dockUse=forecast?clamp(Math.ceil(load*docks.length),1,docks.length):0;
   docks.slice(0,dockUse).forEach((x,i)=>{art+=`<g class="d15-docked" data-dock="${i+1}">${truck(x,8.31,i%2)}</g>`;});
   if(queued){
    art+=line([[9.18,10.9,5],[12.75,10.9,5]],'#f4bb75',2.4,'4 3');
@@ -169,7 +171,11 @@
    if(automationWork&&work)art+=box(8.83,4.92,.60,.54,automationWork.index?13:7,['#6bc7b3','#397f80','#2e5c68'],6);
   }
   if(mode==='floor')art+=marker(1,4.6,2.2,47)+marker(2,5.35,9.42,31)+marker(3,1.05,7.4,33)+(projects.length?marker(4,work?13.45:9.25,work?2.8:5.2,work?47:36):'');
-  if(mode==='flow'&&incident)art+=chip(1.7,7.95,46,'Last month: H&S',113);
+  if(v.sprinklers&&mode==='floor'){
+   art+=line([[1.15,.78,50],[9.45,.78,50]],'#83ccb7',3);
+   for(const x of [2.1,4.7,7.3,9.4])art+=line([[x,.78,50],[x,.78,45],[x+.22,.78,45]],'#baf2da',2);
+  }
+  if(mode==='flow'&&incident)art+=chip(1.7,7.95,46,v.last.incident.kind==='Fire'?'Last month: Fire':'Last month: H&S',113);
   if(mode==='flow'&&queued)art+=chip(11.55,11.4,30,'Queue risk',78);
   if(mode==='build'&&projects.length)art+=marker(4,work?13.45:9.25,work?2.8:5.2,work?47:36);
   const info=mode==='flow'?gauge('Handling forecast',forecast,capacity,'moves/mo'):mode==='build'?(
