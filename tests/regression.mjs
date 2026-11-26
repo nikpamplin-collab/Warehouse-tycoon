@@ -67,3 +67,6 @@ import './staff-ops.mjs';
 import './facilities.mjs';
 import './navigation.mjs';
 import './rivals.mjs';
+
+import './economy-v18.mjs';
+import './fire-v20.mjs';

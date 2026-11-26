@@ -20,7 +20,10 @@
   Replacement:{tag:'Replacement',stages:['Equipment removal','New kit installation','Commissioning']},
   CI:{tag:'Process improvement',stages:['Process review','Pilot changes','Rollout']},
   'Dock door':{tag:'Dock door',stages:['Fit-out']},
-  Sprinklers:{tag:'Sprinklers',stages:['Pipework','Commissioning']}
+  Sprinklers:{tag:'Legacy sprinklers',stages:['Pipework','Commissioning']},
+  'Tank and pumps':{tag:'Tank and pumps',stages:['Tank and pump house','Water commissioning']},
+  'Roof sprinklers':{tag:'Roof sprinklers',stages:['Roof pipework','Commissioning']},
+  'In-rack sprinklers':{tag:'In-rack sprinklers',stages:['Rack pipework and testing']}
  };
  const zones={
   storage:{icon:'racks',no:1,label:'Storage',id:'d15-investment'},
@@ -171,10 +174,34 @@
    if(automationWork&&work)art+=box(8.83,4.92,.60,.54,automationWork.index?13:7,['#6bc7b3','#397f80','#2e5c68'],6);
   }
   if(mode==='floor')art+=marker(1,4.6,2.2,47)+marker(2,5.35,9.42,31)+marker(3,1.05,7.4,33)+(projects.length?marker(4,work?13.45:9.25,work?2.8:5.2,work?47:36):'');
-  if(v.sprinklers&&mode==='floor'){
-   art+=line([[1.15,.78,50],[9.45,.78,50]],'#83ccb7',3);
-   for(const x of [2.1,4.7,7.3,9.4])art+=line([[x,.78,50],[x,.78,45],[x+.22,.78,45]],'#baf2da',2);
+  const fire=v.fireProtection;
+  if(fire&&mode!=='flow'){
+   const active='#83ccb7', pending='#f5bb72';
+   if(fire.water||fire.waterWorks){
+    const [tx,ty]=pt(-.35,2.4,6).split(',').map(Number),stroke=fire.water?active:pending;
+    const tank=`<g class="d20-water-tank"><title>External water tank</title><path d="M${tx-14} ${ty-34} v26 c0 11 28 11 28 0 v-26z" stroke="${stroke}" stroke-width="2" fill="#345a6c"/><ellipse cx="${tx}" cy="${ty-34}" rx="14" ry="5" fill="#5f8997" stroke="${stroke}" stroke-width="2"/><path d="M${tx+6} ${ty-30}v19" stroke="#a0c4c5" stroke-width="1"/></g>`;
+    art+=`<g class="d20-water-works">${tank}<g class="d20-pump-house"><title>Pump house</title>${box(-.9,3.6,1.05,.85,15,['#81a6a5','#3c646b','#2c4d5b'],5)}${line([[.09,4.45,8],[.09,4.45,17]],stroke,2)}</g>${line([[-.2,2.65,9],[-.2,3.77,9],[.45,3.77,9]],stroke,2,fire.water?'':'3 3')}</g>`;
+   }
+   if(fire.roof||fire.roofWorks){
+    const colour=fire.roof?active:pending;
+    art+=`<g class="d20-roof-pipework"><title>Roof-level sprinkler pipework</title>`;
+    art+=line([[1.15,.78,50],[9.45,.78,50]],colour,3,fire.roof?'':'5 4');
+    for(const x of [2.1,4.7,7.3,9.4])art+=line([[x,.78,50],[x,.78,45],[x+.22,.78,45]],fire.roof?'#baf2da':pending,2);
+    art+='</g>';
+   }
+   if(fire.rack||fire.rackWorks){
+    const colour=fire.rack?active:pending;
+    const fraction=fire.rack&&fire.sections?fire.rack/fire.sections:1;
+    art+=`<g class="d20-rack-pipework"><title>In-rack sprinkler lines</title>`;
+    for(const [x,y] of rackPoints.slice(0,Math.ceil(represented*fraction))){
+     art+=line([[x+.09,y+.63,7],[x+.09,y+.63,27],[x+.82,y+.63,27]],colour,1.8,fire.rack?'':'3 2');
+     art+=line([[x+.44,y+.63,27],[x+.44,y+.63,24]],colour,1.6);
+    }
+    art+='</g>';
+   }
   }
+  const fireLegend=fire&&['water','roof','rack'].some(k=>fire[k]||fire[k+'Works'])
+    ? `<div class="d20-fire-key" aria-label="Fire protection legend">${[['water','Tank and pumps'],['roof','Roof pipework'],['rack','In-rack pipework']].filter(([k])=>fire[k]||fire[k+'Works']).map(([k,label])=>`<span class="${fire[k+'Works']?'pending':'complete'}">${label}: ${fire[k+'Works']?(fire[k]?'existing and fit-out':'fit-out'):'commissioned'}</span>`).join('')}</div>` : '';
   if(mode==='flow'&&incident)art+=chip(1.7,7.95,46,v.last.incident.kind==='Fire'?'Last month: Fire':'Last month: H&S',113);
   if(mode==='flow'&&queued)art+=chip(11.55,11.4,30,'Queue risk',78);
   if(mode==='build'&&projects.length)art+=marker(4,work?13.45:9.25,work?2.8:5.2,work?47:36);
@@ -194,7 +221,7 @@
   <defs><linearGradient id="d15-sky" x2="0" y2="1"><stop stop-color="#263e52"/><stop offset="1" stop-color="#4b666a"/></linearGradient><pattern id="d15-grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" stroke="#b4d9d1" fill="none" opacity=".12"/></pattern></defs>
   <rect width="650" height="375" fill="url(#d15-sky)"/><rect width="650" height="375" fill="url(#d15-grid)"/>
   <path d="M0 225Q97 152 172 207T345 193T650 173V375H0Z" fill="#2b4c4c" opacity=".53"/>${art}</svg>
-  <figcaption class="d13-yard-caption"><div class="d13-layer-buttons" aria-label="Warehouse view">${Object.entries(modes).map(([key,label])=>`<button class="d13-mode" data-scene-mode="${key}" aria-pressed="${key===mode}">${label}</button>`).join('')}</div>${info}${latest}<nav class="d15-action-tray" aria-label="Warehouse controls">${zoneLinks}</nav><div class="d13-metadata"><span><b>${num(v.racks)}</b> racking units</span><span><b>${num(v.staff)}</b> staff</span><span><b>${num(v.sections)}</b> sections</span>${v.automated?`<span><b>${num(v.automated)}</b> automated</span>`:''}</div></figcaption></figure>`;
+  <figcaption class="d13-yard-caption"><div class="d13-layer-buttons" aria-label="Warehouse view">${Object.entries(modes).map(([key,label])=>`<button class="d13-mode" data-scene-mode="${key}" aria-pressed="${key===mode}">${label}</button>`).join('')}</div>${info}${fireLegend}${latest}<nav class="d15-action-tray" aria-label="Warehouse controls">${zoneLinks}</nav><div class="d13-metadata"><span><b>${num(v.racks)}</b> racking units</span><span><b>${num(v.staff)}</b> staff</span><span><b>${num(v.sections)}</b> sections</span>${v.automated?`<span><b>${num(v.automated)}</b> automated</span>`:''}</div></figcaption></figure>`;
  }
  window.WTVisual={...window.WTVisual,warehouse};
 })();

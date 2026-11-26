@@ -70,7 +70,7 @@
     if (/^(Milestone|OBJECTIVE ACHIEVED):/i.test(message)) return 'milestone';
     if (/^(ACQUISITION|TAKEOVER COMPLETE|CONTROL):/i.test(message)) return 'acquisition';
     if (/\b(?:installation(?:s)?|CI) completed\b/i.test(message)) return 'completed';
-    if (/^Cancelled (?:Racking|Expansion|Automation|CI|Dock door|Sprinklers) project\b|:\s+(?:Racking|Expansion|Automation|Replacement|CI|Dock door|Sprinklers) \d+ months? remaining\.$/i.test(message)) return 'project';
+    if (/^Cancelled (?:Racking|Expansion|Automation|CI|Dock door|Sprinklers|Tank and pumps|Roof sprinklers|In-rack sprinklers) project\b|:\s+(?:Racking|Expansion|Automation|Replacement|CI|Dock door|Sprinklers|Tank and pumps|Roof sprinklers|In-rack sprinklers) \d+ months? remaining\.$/i.test(message)) return 'project';
     if (/:\s*(?:no suitable bids|customers rejected bids above market budget)\.$/i.test(message)) return 'tender';
     if (/\bwon \([^)]+\/month forecast\)\.$/i.test(message)) {
       return playerName && message.includes(': ' + playerName + ' won (') ? 'win' : 'award';
