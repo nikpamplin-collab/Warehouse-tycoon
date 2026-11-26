@@ -60,7 +60,7 @@ try{
    if(/^DOTv(?:17|18|19|20)$/.test(release)){
     await page.getByRole('heading',{name:'Equipment & stock control'}).waitFor();
     const roster=(await state(page)).player.sites[0].staff;
-    await press(page.getByRole('button',{name:'Add one staff next month'}));
+    await press(page.getByRole('button',{name:release==='DOTv17'||release==='DOTv18'?'Add one staff next month':'Add one days worker next turn'}));
     assert.equal((await state(page)).player.sites[0].staff,roster);
     await press(page.locator('#tabs').getByRole('button',{name:'Investment',exact:true}));
     await page.getByRole('button',{name:/^Borrow/}).waitFor();

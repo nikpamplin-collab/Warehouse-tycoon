@@ -16,10 +16,10 @@ test('queued hires, reductions and cancellations take one month and survive relo
   g=boot(game,765,g.store);
   g.run('let w=state.player.sites[0];');
   assert.equal(g.run('w.staffPlan.count'),3);
-  assert.equal(g.run('siteCapacity(w)'),3500);
+  assert.equal(g.run('siteCapacity(w)'),3960);
   g.run('nextMonth()');
   assert.equal(g.run('state.player.last.labour'),5000);
-  assert.equal(g.run('state.player.last.capacity'),3500);
+  assert.equal(g.run('state.player.last.capacity'),3960);
   assert.equal(g.run('w.staff'),3);
   assert.equal(g.run('w.staffPlan'),undefined);
   g.run('staff(1); staff(-1)');
@@ -30,25 +30,72 @@ test('queued hires, reductions and cancellations take one month and survive relo
   assert.equal(g.run('w.staffPlan'),undefined);
 });
 
-test('MHE adds 30% to reduced manual productivity, billing only manual sections; no extra rival charge',()=>{
+test('trucks are paid per delivered truck, shared between shifts, and require a human',()=>{
   const g=bin();
-  g.run(`let w=state.player.sites[0];w.staff=7;w.sections=2;
-    w.automationAssets=[{section:0,expires:28}];w.automated=1;`);
-  assert.equal(g.run('siteProductivity(w)'),2500*((.7+1.3)/2));
-  assert.equal(g.run('siteCapacity(w)'),17500);
-  g.run("dot17ToggleSiteOps('mhe')");
-  assert.equal(g.run('dot17SectionFactor(w,1,1)/.7'),1.3);
-  assert.equal(g.run('dot17SectionFactor(w,0,1)'),1.30);
-  assert.equal(g.run('dot17SiteOpsCosts(w).mheCost'),650);
-  assert.equal(g.run('dot17SiteOpsCosts(w,28).mheCost'),1300);
-  assert.equal(g.run('siteCapacity(w)'),19338);
-  g.run("w.projects.push({type:'Replacement',section:0,remaining:2})");
-  assert.equal(g.run('dot17SectionFactor(w,0,1)'),.50);
-  assert.equal(g.run('dot17SiteOpsCosts(w).mheCost'),650);
-  g.run("dot17ToggleSiteOps('mhe')");
+  g.run(`let w=state.player.sites[0]; w.staff=4;w.shiftStaff=[2,2,0];w.hs=true;
+    dot19SetTrucks(1); dot19SetTrucks(1);dot19SetTrucks(-1);`);
+  assert.equal(g.run('siteCapacity(w)'),7920);
   assert.equal(g.run('dot17SiteOpsCosts(w).mheCost'),0);
-  assert.equal(g.run(`(()=>{const s=state.rivals[0].sites[0];const old=siteProductivity(s);s.mheLeased=true;
+  assert.deepEqual(json(g.run('w.mhePlan')),{count:1,effective:2});
+  g.run('nextMonth()');
+  assert.equal(g.run('state.player.last.mheCost'),0);
+  assert.equal(g.run('siteCapacity(w)'),11220);
+  assert.deepEqual(json(g.run('dot19ShiftPlan(w,2).map(x=>x.mhe)')),[1,1,0]);
+  assert.equal(g.run('dot17SiteOpsCosts(w).mheCost'),650);
+  g.run('w.staff=0;w.shiftStaff=[0,0,0]');
+  assert.equal(g.run('siteCapacity(w)'),0);
+  assert.equal(g.run('dot17SiteOpsCosts(w).mheCost'),650);
+  g.run('w.mheTrucks=350; w.staff=1');
+  assert.equal(g.run('siteCapacity(w)'),3630);
+  assert.equal(g.run('dot17SiteOpsCosts(w).mheCost'),227500);
+  assert.equal(g.run(`(()=>{const s=state.rivals[0].sites[0],old=siteProductivity(s);s.mheTrucks=2;
     return siteProductivity(s)===old&&dot17Inventory(state.rivals[0],s,s.contracts,state.month,8000,8000).mheCost===0;})()`),true);
+});
+
+test('165 hours, pay premiums, and 30 per lane; shifts only count when crewed',()=>{
+  const g=bin();
+  g.run(`let w=state.player.sites[0];w.region='south';selected='south';w.staff=1;
+    w.automationAssets=[{section:0,expires:25}];w.automated=1; w.mheTrucks=4;w.hs=true;
+    dot17SetStaff(1,1);dot17SetStaff(1,2);`);
+  assert.equal(g.run('siteCapacity(w)'),4950);
+  assert.equal(g.run('dot19Payroll(w)'),2750);
+  assert.equal(g.run('dot19ShiftCount(w)'),1);
+  g.run('nextMonth()');
+  assert.equal(g.run('state.player.last.labour'),2750);
+  assert.equal(g.run('dot19ShiftCount(w)'),3);
+  assert.equal(g.run('siteCapacity(w)'),14850);
+  assert.equal(g.run('dot19Payroll(w)'),9075);
+  g.run("w.ci=1.20;w.projects.push({type:'Replacement',remaining:2,section:0})");
+  assert.equal(g.run('siteCapacity(w)'),7425);
+  g.run('w.staff=2;w.shiftStaff=[2,0,0];w.projects=[]');
+  assert.equal(g.run('siteCapacity(w)'),9306);
+  assert.equal(g.run('dot19Capacity(w,25)'),8712);
+});
+
+test('legacy queued hires and section leases migrate without multiplying fleet',()=>{
+  const g=bin();
+  g.run(`let w=state.player.sites[0];w.staff=3;w.sections=2;w.mheLeased=true;
+    w.staffPlan={count:4,effective:2};
+    w.automationAssets=[{section:0,expires:25}];w.automated=1;save()`);
+  const h=boot(game,987,g.store);
+  h.run('let w=state.player.sites[0]');
+  assert.equal(h.run('w.mheTrucks'),1);
+  h.run('w.sections=3;w.hs=true;nextMonth()');
+  assert.equal(h.run('w.mheTrucks'),1);
+  assert.deepEqual(json(h.run('dot19Roster(w)')),[4,0,0]);
+});
+
+test('CI is available every 24 turns and only three funded starts per site',()=>{
+  const g=bin();
+  g.run("let w=state.player.sites[0];state.player.cash=1e6;startCI()");
+  assert.equal(g.run('w.ciStarts'),1);
+  assert.equal(g.run('dot19CINext(w)'),25);
+  g.run('progress(state.player);progress(state.player);progress(state.player);state.month=24');
+  assert.throws(()=>g.run('startCI()'), /24 turns/);
+  g.run('state.month=25;startCI();w.projects=[];state.month=49;startCI();w.projects=[];state.month=74');
+  assert.equal(g.run('w.ciStarts'),3);
+  assert.throws(()=>g.run('startCI()'), /three programmes/);
+  assert.equal(g.run('dot19CINext(w)'),Infinity);
 });
 
 test('stock manager reduces both probability and loss size, empty sites have no customer fine',()=>{
