@@ -1,0 +1,10 @@
+.d20-fire-controls{border-top:1px solid #53758b;margin-top:1rem;padding-top:.55rem}
+.d20-fire-controls h3{margin:.25rem 0}
+.d20-fire-stage{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.32rem .65rem;align-items:center;padding:.66rem 0;border-bottom:1px solid #4a6980}
+.d20-fire-stage small,.d20-fire-stage b{display:block}
+.d20-fire-stage small{color:#a9cece;margin-top:.18rem}
+.d20-fire-stage p{grid-column:1/-1;margin:0}
+.d20-fire-key{display:flex;gap:.4rem .8rem;flex-wrap:wrap;margin:.5rem 0;color:#c4eadb;font-size:.82rem}
+.d20-fire-key span:before{content:"";display:inline-block;width:.7em;height:.7em;margin-right:.3em;background:#83ccb7;border-radius:2px}
+.d20-fire-key span.pending:before{background:#f5bb72}
+@media(max-width:430px){.d20-fire-stage{grid-template-columns:minmax(0,1fr)}.d20-fire-stage button{justify-self:start}}

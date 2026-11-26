@@ -47,7 +47,7 @@ try{
    for(const name of ['Tenders','Rivals','Finances','Office','Operations','Investment','Office']){
     await press(page.locator('#tabs').getByRole('button',{name,exact:true}));assert.equal(await page.locator('#tabs [aria-current="page"]').innerText(),name);
     if(name==='Rivals')await page.getByRole('heading',{name:'Rival operators',exact:true}).waitFor();
-    if(name==='Finances'&&(release==='DOTv16'||release==='DOTv17'))await page.getByRole('heading',{name:'Trading & cash',exact:true}).waitFor();
+    if(name==='Finances'&&/^DOTv(?:16|17|18|19|20)$/.test(release))await page.getByRole('heading',{name:'Trading & cash',exact:true}).waitFor();
    }
    await press(page.locator('.vt-region[data-region=north][aria-pressed]'));assert.equal(await page.locator('.vt-region[data-region=north][aria-pressed]').getAttribute('aria-pressed'),'true');
    const beforeLink=await state(page);
@@ -57,19 +57,19 @@ try{
    await page.locator('#tabs').getByRole('button',{name:'Office',exact:true}).click();
    await page.getByRole('button',{name:'Manage site',exact:true}).click();await page.getByRole('button',{name:'Pallet flow',exact:true}).click();await page.getByText('Put-away',{exact:true}).waitFor();
    await page.getByRole('button',{name:'Build queue',exact:true}).click();await page.getByText('No investment work is queued.').waitFor();
-   if(release==='DOTv17'){
+   if(/^DOTv(?:17|18|19|20)$/.test(release)){
     await page.getByRole('heading',{name:'Equipment & stock control'}).waitFor();
     const roster=(await state(page)).player.sites[0].staff;
-    await press(page.getByRole('button',{name:'Add one staff next month'}));
+    await press(page.getByRole('button',{name:release==='DOTv17'||release==='DOTv18'?'Add one staff next month':'Add one days worker next turn'}));
     assert.equal((await state(page)).player.sites[0].staff,roster);
     await press(page.locator('#tabs').getByRole('button',{name:'Investment',exact:true}));
-    await page.getByRole('button',{name:'Borrow £25k'}).waitFor();
+    await page.getByRole('button',{name:/^Borrow/}).waitFor();
     await page.getByRole('heading',{name:'Dock doors & fire protection'}).waitFor();
    }
    const w=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,view:innerWidth}));assert.ok(w.doc<=w.view+1,JSON.stringify(w));
    await page.locator('#tabs').getByRole('button',{name:'Office',exact:true}).click();
    await page.getByRole('button',{name:/Complete February/}).click();assert.equal((await state(page)).month,3);
-   if(release==='DOTv17')assert.equal((await state(page)).player.sites[0].staff,after.player.sites[0].staff+1);
+   if(/^DOTv(?:17|18|19|20)$/.test(release))assert.equal((await state(page)).player.sites[0].staff,after.player.sites[0].staff+1);
    // A real network failure should fall back to the v13 cache, not a v12 shell.
    await page.waitForFunction(key=>caches.keys().then(keys=>keys.includes(key)&&!keys.includes('warehouse-tycoon:/game/:12.0.0')),cacheKey);
    // Stop the origin instead of toggling the testing protocol's network interceptor.

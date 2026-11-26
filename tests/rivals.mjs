@@ -58,7 +58,10 @@ test('96 months across six seeds: capacity, authentic market pressure and six vi
    for(let m=1;m<=96;m++){
     p.cash=Math.max(1000000,p.cash);
     if(m===12){s.sections=2;s.racks=18;}
-    s.staff=Math.ceil(forecast(s)/Math.max(1,siteProductivity(s))*1.22)+2;
+    // Keep the benchmark's operated capacity realistic under the per-shift dock cap.
+    // This synthetic fixture is intentionally funded and works across three shifts.
+    const peoplePerShift=Math.ceil(forecast(s)*1.22/(3*DOT19_OPS.hours*DOT19_OPS.mhe))+2;
+    s.staff=3*peoplePerShift;s.shiftStaff=[peoplePerShift,peoplePerShift,peoplePerShift];s.mheTrucks=peoplePerShift;
     s.managers=Math.floor(s.staff/10);
     const auctions=state.tenders;
     rivalOrders=new Set();

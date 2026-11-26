@@ -34,7 +34,7 @@ try{
     const nav=page.getByRole('navigation',{name:'Game sections'});
     const tab=name=>nav.getByRole('button',{name,exact:true});
     await push(tab('Investment'));
-    await page.getByRole('button',{name:'Borrow £25k'}).waitFor();
+    await page.getByRole('button',{name:/^Borrow/}).waitFor();
     await push(page.getByRole('button',{name:'Go to operations'}));
     await page.locator('#d15-staff').waitFor();
     assert.equal(await nav.locator('[aria-current="page"]').innerText(),'Operations');

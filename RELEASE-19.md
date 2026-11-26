@@ -1,0 +1,14 @@
+# DOTv19 | Shifts, equipment and docks
+
+## Release decisions
+
+- Clock: each staffed shift has 165 productive hours per turn. The three possible non-overlapping rosters are days, lates and nights. A zero-person shift is closed; changing staff takes effect next turn. The site still reports total headcount and retains its existing 150-person limit. Rosters below the manager cover requirement retain the existing management productivity penalty.
+- Capacity: one assigned person per automation lane or truck. The model assigns staffed lanes first, then staffed trucks, then manual work. Manual/MHE outputs are 12/22 moves per hour before site-specific CI; automation is 30 per staffed lane per hour and is not multiplied by CI. The model takes the smaller of staffed capacity and shared inbound/outbound dock capacity on each shift, then sums the shifts. No separate operator certification mechanic; assigning a worker to a truck assumes a suitable operator.
+- Equipment: £650 per delivered truck per turn across all shifts, including idle equipment. Orders and returns apply next turn. Same trucks are reusable on non-overlapping shifts, and unused trucks do not create output. No game cap on purchased fleet size. An old per-manual-section lease is imported as that number of currently delivered trucks once, with no automatic growth as new sections open.
+- Pay: reduced the South East day-pay premium from 75% to 10%; lates add 10%, nights 20% over local day pay. These are game calibration assumptions. Updated both actual payroll and the finance/management warnings.
+- Docks: two dock-level bays on a 25,000 sq ft starter, one baseline additional bay per completed extension, and at most one paid retrofit per standard site (none if the site lacks spare frontage). Existing paid bays are preserved. A bay handles 30 single-direction moves/hour, 4,950 per staffed shift, shared between inbound and outbound. No level-access door is counted as a dock. The listed capacity is an upper bound; the roster can still limit it.
+- CI: three funded starts per site, minimum 24 turns between starts. A cancelled project does not refund its CI slot or clear the wait. Older saves did not count starts; the importer estimates the minimum consistent with the recorded uplift plus an active project, capped at three. Past cancellations cannot be reconstructed.
+
+## Verification
+
+Ran the existing regression suite with revised dock/shift assertions, plus new tests for staffing and truck arrival timing, per-truck cost and no free throughput, three-shift payroll, per-lane automation, replacement loss, legacy roster/fleet loading, and CI boundaries. The six-seed 96-month rival stress check now uses a staffed, funded three-shift benchmark so it measures competition rather than a deliberately under-resourced player. No public commercial or client data is included.
