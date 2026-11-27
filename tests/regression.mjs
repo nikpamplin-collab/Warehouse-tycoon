@@ -12,26 +12,24 @@ const asJSON=x=>JSON.parse(JSON.stringify(x));
 test('new game and all six tabs render',()=>{
  const g=boot(compiler);assert.match(g.el('dialog').innerHTML,/Start your logistics business/);
  setup(g,'A & B <Logistics>','Main "DC"');
- for(const [tab,phrase] of [['office','Business summary'],['market','UK customer tenders'],['warehouse','Plan next month'],['investment','Upgrade this site'],['rivals','Expected first-month profit'],['history','Monthly financial results']]){
+ for(const [tab,phrase] of [['office','d27-home'],['market','UK customer tenders'],['warehouse','Capacity next month'],['investment','Racking &amp; docks'],['rivals','Expected first-month profit'],['history','Monthly financial results']]){
   g.run(`go('${tab}')`);assert.ok(g.u().includes(phrase),tab);
   assert.match(g.el('tabs').innerHTML,/aria-current="page"/);
  }
  g.run("go('office')");assert.ok(g.u().includes('Main &quot;DC&quot;'));
 });
-test('map and all yard views are read only and each mode changes the view',()=>{
+test('Home switches between the saved depot and UK map without touching the game state',()=>{
  const g=boot(compiler);setup(g);
  const before=g.run('JSON.stringify(state)');
- assert.match(g.u(),/NEIGHBOURING MARKETS/i);
- g.click({region:'north'});assert.match(g.u(),/data-region="north" aria-pressed="true"/);
- g.click({region:'mid'});g.click({index:'0'});assert.equal(g.run('tab'),'warehouse');
- g.click({sceneMode:'flow'});assert.doesNotMatch(g.u(),/Put-away/);assert.match(g.u(),/Forecast pallet moves/);assert.match(g.u(),/data-scene-mode="flow" aria-pressed="true"/);
- g.click({sceneMode:'build'});assert.match(g.u(),/No work in progress/);
- g.click({sceneMode:'floor'});assert.match(g.u(),/aria-label="Pallet spaces booked this month"/);
+ assert.match(g.u(),/Mercia DC/);
+ g.run('d27Zoom()');assert.match(g.u(),/UK network/);assert.match(g.u(),/data-d27-region="north"/);
+ g.run("d27Territory('mid',null)");assert.match(g.u(),/d21-yard-svg/);
+ assert.doesNotMatch(g.u(),/Business summary|Next decision/);
  assert.equal(g.run('JSON.stringify(state)'),before);
 });
 test('queue, staffing, completion and reloading a saved month',()=>{
  const g=boot(compiler);setup(g);g.run("go('warehouse');buyRack();staff(1)");
- g.click({sceneMode:'build'});assert.match(g.u(),/Racking<\/b>[\s\S]{0,150}1 month left/);
+ g.run("go('investment')");assert.match(g.u(),/Racking<\/b>[\s\S]{0,150}1 month/);
  g.run('nextMonth()');assert.equal(g.run('state.month'),2);
  assert.equal(g.run('state.player.sites[0].racks'),1);
  assert.match(g.el('dialog').innerHTML,/Pallet move results/);
@@ -55,7 +53,7 @@ test('service worker: precache release visuals, offline navigation and scope iso
  let available=true;
  vm.runInNewContext(fs.readFileSync(path.join(here,'sw.js'),'utf8'),{URL,Request,Response,caches:cache,self:{registration:{scope:'https://local.test/game/'},addEventListener:(n,f)=>listeners.set(n,f),skipWaiting:async()=>{},clients:{claim:async()=>{}}},fetch:async()=>{if(!available)throw Error('offline');return new Response('<title>Warehouse Tycoon '+release+'</title>');}});
  let p;listeners.get('install')({waitUntil:x=>p=x});await p;
- for(const f of ['index.html','dotv13.js','dotv13.css','dotv14.js','dotv14.css','icon.png','manifest.webmanifest', 'dotv21-warehouse.js','dotv21-warehouse.css','v15.css', 'v16.js','v16.css','v17-nav.css','dotv17-facilities.js','dotv17-facilities.css','v17-staff.js','v17-staff.css','dotv21-ui.js','dotv21-ui.css']){assert.ok(names.has(f));assert.ok(fs.existsSync(path.join(here,f)));}
+ for(const f of ['index.html','dotv13.js','dotv13.css','dotv14.js','dotv14.css','icon.png','manifest.webmanifest', 'dotv21-warehouse.js','dotv21-warehouse.css','dotv27-desks.js','dotv27-desks.css','v15.css', 'v16.js','v16.css','v17-nav.css','dotv17-facilities.js','dotv17-facilities.css','v17-staff.js','v17-staff.css','dotv21-ui.js','dotv21-ui.css']){assert.ok(names.has(f));assert.ok(fs.existsSync(path.join(here,f)));}
  listeners.get('activate')({waitUntil:x=>p=x});await p;assert.deepEqual(requests,['warehouse-tycoon:/game/:12.0.0']);
  available=false;
  listeners.get('fetch')({request:{url:'https://local.test/game/',method:'GET',mode:'navigate'},respondWith:x=>p=x});assert.equal(await p,'cached ./index.html');

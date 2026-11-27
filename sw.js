@@ -1,9 +1,9 @@
 // Versioned static app cache. Restrict fetches and cleanup to this deployment.
-const VERSION='DOTv26';
-const FILES=['./dotv26-growth.js?release=DOTv26.1','./dotv25-campaign.js?release=DOTv26.1','./dotv24-diagnostics.js?release=DOTv26.1','./dotv23-pressure.js?release=DOTv26.1','./dotv22-first.js?release=DOTv26.1','./dotv22-first.css?release=DOTv26.1','./dotv21-warehouse.js?release=DOTv26.1','./dotv21-warehouse.css?release=DOTv26.1','./dotv21-ui.js?release=DOTv26.1','./dotv21-ui.css?release=DOTv26.1','./v18-economy.js?release=DOTv26.1','./v18-economy.css','./manifest.webmanifest','./icon.png','./icon-512.png','./dotv13.css','./dotv13.js','./dotv14.css','./dotv14.js','./v15.css','./v16.css','./v16.js?release=DOTv26.1','./v17-nav.css','./dotv17-facilities.css','./dotv17-facilities.js','./v17-staff.css','./v17-staff.js','./dotv20-fire.css','./dotv20-fire.js?release=DOTv26.1'];
+const VERSION='DOTv27';
+const FILES=['./dotv27-desks.css?release=DOTv27','./dotv27-desks.js?release=DOTv27','./dotv26-growth.js?release=DOTv26.1','./dotv25-campaign.js?release=DOTv26.1','./dotv24-diagnostics.js?release=DOTv26.1','./dotv23-pressure.js?release=DOTv26.1','./dotv22-first.js?release=DOTv26.1','./dotv22-first.css?release=DOTv26.1','./dotv21-warehouse.js?release=DOTv26.1','./dotv21-warehouse.css?release=DOTv26.1','./dotv21-ui.js?release=DOTv27','./dotv21-ui.css?release=DOTv26.1','./v18-economy.js?release=DOTv26.1','./v18-economy.css','./manifest.webmanifest','./icon.png','./icon-512.png','./dotv13.css','./dotv13.js','./dotv14.css','./dotv14.js','./v15.css','./v16.css','./v16.js?release=DOTv26.1','./v17-nav.css','./dotv17-facilities.css','./dotv17-facilities.js','./v17-staff.css','./v17-staff.js','./dotv20-fire.css','./dotv20-fire.js?release=DOTv26.1'];
 const scope=new URL(self.registration.scope);
 const family="warehouse-tycoon:"+scope.pathname+":";
-const CACHE=family+"26.1.0";
+const CACHE=family+"27.0.0";
 const shell=new URL('index.html',scope);shell.searchParams.set('release',VERSION);
 const assets=new Set([...FILES,'./','./index.html'].map(f=>new URL(f,scope).pathname));
 self.addEventListener('install',event=>event.waitUntil((async()=>{

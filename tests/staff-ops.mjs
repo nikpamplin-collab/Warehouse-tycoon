@@ -135,6 +135,5 @@ test('equipment, managers and fines reconcile to site profit, company profit, ca
   assert.match(g.run('state.events[0]'), /^STOCK SHORTAGE:/);
   assert.match(g.u(),/Equipment leases/);
   assert.match(g.u(),/Stock shortage charges/);
-  g.run("go('office')");
   assert.match(g.u(),/A &lt;customer&gt;/);
 });

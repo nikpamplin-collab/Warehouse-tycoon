@@ -18,15 +18,15 @@ const zone=(g,id,index)=>{
 test('Operations has day-to-day actions, Investment has capital, and Finances has results',()=>{
  const g=open(),before=g.run('JSON.stringify(state)');
  const rendered=g.el('tabs').innerHTML;
- for(const label of ['Map','Ops','Bids','Invest','Cash'])assert.match(rendered,new RegExp('>'+label+'</span>'));
+ for(const label of ['Home','Ops Office','Bids','Invest','Finances','Rivals'])assert.match(rendered,new RegExp('>'+label+'</span>'));
  move(g,'warehouse');
  assert.match(g.u(),/id="d21-plan"/);
  assert.match(g.u(),/id="d15-staff"/);
  assert.doesNotMatch(g.u(),/Borrow £25k|Appraise expansion|Automation equipment|onclick="openRegion/);
  move(g,'investment');
- assert.match(g.u(),/onclick="borrow\(/);
  assert.match(g.u(),/View estimated cost and impact/);
- assert.match(g.u(),/Automation equipment/);
+ assert.match(g.u(),/Automation/);
+ g.run("d27Upgrade('bank')");assert.match(g.u(),/onclick="borrow\(/);
  assert.doesNotMatch(g.u(),/onclick="staff\(|id="d15-staff"/);
  move(g,'history');
  assert.match(g.u(),/Banking &amp; investment/);
@@ -58,7 +58,7 @@ test('Unoccupied territories offer opening only in Investment; bank controls rem
  assert.match(g.u(),/Explore opening a site/);
  assert.doesNotMatch(g.u(),/onclick="openRegion/);
  g.run("goFromContext('investment')");
- assert.match(g.u(),/Open 25,000 sq ft site/);
+ assert.match(g.u(),/Open warehouse/);
  assert.equal(g.run('selected'),'south');
  const cash=g.run('state.player.cash');
  g.run('borrow()');assert.equal(g.run('state.player.cash'),cash);

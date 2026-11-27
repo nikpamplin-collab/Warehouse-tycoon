@@ -5,12 +5,13 @@ const code=compile(new URL('..',import.meta.url).pathname);
 test('player copy distinguishes forecasts, completed work, booked storage and dock capacity',()=>{
  const g=boot(code);setup(g,'Pallet Flow','Signed Handling Depot');
  g.run(`go('warehouse');visualSceneMode='flow';render()`);
- assert.match(g.u(),/Forecast pallet moves next month/);
- assert.match(g.u(),/<b>Forecast pallet moves<\/b>/);
+ assert.match(g.u(),/Capacity next month/);
+ assert.match(g.u(),/Dock pallet moves/);
+ assert.match(g.u(),/Pallet handling/);
  assert.match(g.u(),/Signed Handling Depot/,'names are not changed by the copy pass');
- g.run(`visualSceneMode='floor';render()`);assert.match(g.u(),/Pallet spaces booked this month/);
- g.run(`go('investment')`);assert.match(g.u(),/Racking &amp; dock capacity/);
- assert.match(g.u(),/Racking packages/);
+ g.run(`go('office');visualSceneMode='floor';render()`);assert.match(g.u(),/Pallet spaces booked this month/);
+ g.run(`go('investment')`);assert.match(g.u(),/Racking &amp; docks/);
+ assert.match(g.u(),/Racking package/);
  g.run(`nextMonth();go('history')`);
  assert.match(g.u(),/Pallet moves requested/);
  assert.match(g.u(),/Pallet moves completed/);

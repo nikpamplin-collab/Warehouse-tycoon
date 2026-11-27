@@ -50,20 +50,21 @@ test('extension stays £1m; loan requires six profitable months and funds only t
 test('racking and dock capacity are together; neither changes until the order completes',()=>{
  const g=play();
  g.run("go('investment')");
- assert.match(g.u(),/Racking &amp; dock capacity/);assert.match(g.u(),/Install racking/);
- assert.match(g.u(),/Dock doors ready to use<\/span><strong>2/);
+ assert.match(g.u(),/Racking &amp; docks/);assert.match(g.u(),/Buy racking/);
+ assert.match(g.u(),/Dock doors ready<\/span><strong>2/);
  g.run("orderWarehouseFacility('dock')");
- assert.match(g.u(),/2<\/strong>[\s\S]{0,500}3 dock doors/);
+ assert.match(g.u(),/Dock doors ready<\/span><strong>2/);
+ assert.equal(g.run('d21OpsModel(selectedSite(),[1,0,0],0).bays'),3);
  g.run("nextMonth(true);go('investment')");
- assert.match(g.u(),/Dock doors ready to use<\/span><strong>3/);
+ assert.match(g.u(),/Dock doors ready<\/span><strong>3/);
  g.run("go('warehouse')");
- assert.doesNotMatch(g.u().match(/data-fold="safety"[\s\S]*?<\/details>/)?.[0],/dock doors/i);
+ assert.doesNotMatch(g.u().match(/id="d21-site-safety"[\s\S]*?<\/section>/)?.[0]??'',/dock doors/i);
 });
 test('v25 save imports without being overwritten and challenge funding stays unchanged',()=>{
  const legacy=play().run('JSON.stringify(state)');
  const store=new Map([['warehouse_tycoon_dotv25',legacy]]);
  const g=play(93,store);assert.equal(g.run('state.player.name'),'Amber Pallet Co');
- g.run('d26BorrowStarter()');assert.ok(store.get('warehouse_tycoon_dotv26'));
+ g.run('d26BorrowStarter()');assert.ok(store.get('warehouse_tycoon_dotv27'));
  assert.equal(store.get('warehouse_tycoon_dotv25'),legacy);
  const mode=boot(code,91);mode.el('d25-mode').value='cash';setup(mode);
  assert.equal(mode.run('d26StarterAvailable(state.player)'),0);

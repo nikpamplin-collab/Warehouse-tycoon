@@ -71,7 +71,7 @@ function d21OpsStep(index,delta) {
  const d=d21Draft(s);const n=(index===3?d.trucks:d.roster[index])+delta;
  if(!Number.isSafeInteger(n)||n<0||(index!==3&&dot19Total(d.roster)+delta>150))return;
  if(index===3)d.trucks=n;else d.roster[index]=n;
- const card=document.querySelector('#d21-plan');if(card)card.innerHTML=d21OpsPanel(s);
+ const card=document.querySelector('#d21-plan');if(card)card.innerHTML=d27OpsPanel(s);
  document.querySelector('#d21-plan [data-step="'+index+':'+delta+'"]')?.focus({preventScroll:true});
 }
 function d21ApplyOps() {
