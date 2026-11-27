@@ -12,7 +12,7 @@ const asJSON=x=>JSON.parse(JSON.stringify(x));
 test('new game and all six tabs render',()=>{
  const g=boot(compiler);assert.match(g.el('dialog').innerHTML,/Start your logistics business/);
  setup(g,'A & B <Logistics>','Main "DC"');
- for(const [tab,phrase] of [['office','Dispatch brief'],['market','UK customer tenders'],['warehouse','Site Management'],['investment','Warehouse investment'],['rivals','Opening profit'],['history','Monthly financial results']]){
+ for(const [tab,phrase] of [['office','Dispatch brief'],['market','UK customer tenders'],['warehouse','Plan next turn'],['investment','Upgrade this site'],['rivals','Opening profit'],['history','Monthly financial results']]){
   g.run(`go('${tab}')`);assert.ok(g.u().includes(phrase),tab);
   assert.match(g.el('tabs').innerHTML,/aria-current="page"/);
  }
@@ -55,7 +55,7 @@ test('service worker: precache release visuals, offline navigation and scope iso
  let available=true;
  vm.runInNewContext(fs.readFileSync(path.join(here,'sw.js'),'utf8'),{URL,Request,Response,caches:cache,self:{registration:{scope:'https://local.test/game/'},addEventListener:(n,f)=>listeners.set(n,f),skipWaiting:async()=>{},clients:{claim:async()=>{}}},fetch:async()=>{if(!available)throw Error('offline');return new Response('<title>Warehouse Tycoon '+release+'</title>');}});
  let p;listeners.get('install')({waitUntil:x=>p=x});await p;
- for(const f of ['index.html','dotv13.js','dotv13.css','dotv14.js','dotv14.css','icon.png','manifest.webmanifest', 'v15.js','v15.css', 'v16.js','v16.css','v17-nav.css','dotv17-facilities.js','dotv17-facilities.css','v17-staff.js','v17-staff.css']){assert.ok(names.has(f));assert.ok(fs.existsSync(path.join(here,f)));}
+ for(const f of ['index.html','dotv13.js','dotv13.css','dotv14.js','dotv14.css','icon.png','manifest.webmanifest', 'v15.js','v15.css', 'v16.js','v16.css','v17-nav.css','dotv17-facilities.js','dotv17-facilities.css','v17-staff.js','v17-staff.css','dotv21-ui.js','dotv21-ui.css']){assert.ok(names.has(f));assert.ok(fs.existsSync(path.join(here,f)));}
  listeners.get('activate')({waitUntil:x=>p=x});await p;assert.deepEqual(requests,['warehouse-tycoon:/game/:12.0.0']);
  available=false;
  listeners.get('fetch')({request:{url:'https://local.test/game/',method:'GET',mode:'navigate'},respondWith:x=>p=x});assert.equal(await p,'cached ./index.html');
@@ -70,3 +70,4 @@ import './rivals.mjs';
 
 import './economy-v18.mjs';
 import './fire-v20.mjs';
+import './streamlined.mjs';

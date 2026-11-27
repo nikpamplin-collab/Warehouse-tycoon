@@ -33,21 +33,25 @@ try{
     await push(page.getByRole('button',{name:'Start playing',exact:true}));
     const nav=page.getByRole('navigation',{name:'Game sections'});
     const tab=name=>nav.getByRole('button',{name,exact:true});
-    await push(tab('Investment'));
+    const streamlined=(await page.title()).includes('DOTv21');
+    await push(tab(streamlined?'Invest':'Investment'));
+    if(streamlined)await push(page.locator('[data-fold=bank] summary'));
     await page.getByRole('button',{name:/^Borrow/}).waitFor();
-    await push(page.getByRole('button',{name:'Go to operations'}));
+    if(streamlined){await push(tab('Ops'));await push(page.locator('[data-fold=people] summary'));await push(page.locator('[data-fold=stock] summary'));}
+    else await push(page.getByRole('button',{name:'Go to operations'}));
     await page.locator('#d15-staff').waitFor();
-    assert.equal(await nav.locator('[aria-current="page"]').innerText(),'Operations');
+    assert.equal(await nav.locator('[aria-current="page"]').innerText(),streamlined?'Ops':'Operations');
     const operationsScene=page.locator('a[href="#d15-investment"][data-d15-open-site]').first();
     const animations=await page.locator('.d15-yard-truck,.d15-lift-a,.d15-lift-b,.metric').evaluateAll(items=>items.map(x=>getComputedStyle(x).animationName));
-    assert.ok(animations.length>=4&&animations.every(a=>a==='none'),JSON.stringify(animations));
+    assert.ok(animations.length>=(streamlined?1:4)&&animations.every(a=>a==='none'),JSON.stringify(animations));
     await push(operationsScene);
-    assert.equal(await nav.locator('[aria-current="page"]').innerText(),'Investment');
+    assert.equal(await nav.locator('[aria-current="page"]').innerText(),streamlined?'Invest':'Investment');
     assert.equal(await page.evaluate(()=>document.activeElement.id),'d15-investment');
-    await push(tab('Operations'));
-    await push(page.getByRole('button',{name:'South East',exact:true}));
-    await push(page.getByRole('button',{name:'Explore opening a site',exact:true}));
-    await page.getByRole('button',{name:/Open 25,000 sq ft site/}).waitFor();
+    await push(tab(streamlined?'Ops':'Operations'));
+    if(streamlined)await page.getByRole('combobox',{name:'Choose a warehouse or region'}).selectOption('region:south');
+    else await push(page.getByRole('button',{name:'South East',exact:true}));
+    await push(page.getByRole('button',{name:streamlined?'Explore opening a site →':'Explore opening a site',exact:true}));
+    await page.getByRole('button',{name:streamlined?/Open warehouse/:/Open 25,000 sq ft site/}).waitFor();
     const measures=await page.evaluate(()=>{
      const n=document.getElementById('tabs');
      return {view:innerWidth,doc:document.documentElement.scrollWidth,

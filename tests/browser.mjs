@@ -5,11 +5,12 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {chromium,webkit,devices} from 'playwright';
 const current=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const legacy=process.env.WT_V12_FOLDER;
+const legacy=process.env.WT_LEGACY_FOLDER||process.env.WT_V12_FOLDER;
 const release=(await fs.readFile(path.join(current,'index.html'),'utf8')).match(/<title>Warehouse Tycoon (DOTv[0-9]+)<\/title>/)?.[1];
 assert.ok(release,'Expected a versioned app title');
 const cacheKey='warehouse-tycoon:/game/:'+release.replace('DOTv','')+'.0.0';
-assert.ok(legacy,'Provide WT_V12_FOLDER, a clean copy of v12.');
+assert.ok(legacy,'Provide WT_LEGACY_FOLDER or WT_V12_FOLDER with the prior build.');
+const streamlined=release==='DOTv21', home=streamlined?'Map':'Office';
 let folder=legacy, online=true;
 const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.webmanifest':'application/manifest+json'};
 const server=http.createServer(async(req,res)=>{
@@ -44,18 +45,18 @@ try{
    await page.waitForFunction(key=>caches.keys().then(keys=>keys.includes(key)),cacheKey);
    await page.waitForFunction(version=>navigator.serviceWorker.controller?.scriptURL.includes('v='+version),release);
    const after=await state(page);assert.equal(after.month,2);assert.deepEqual(after.player,before.player);
-   for(const name of ['Tenders','Rivals','Finances','Office','Operations','Investment','Office']){
+   for(const name of streamlined?['Bids','Cash','Map','Ops','Invest','Map']:['Tenders','Rivals','Finances','Office','Operations','Investment','Office']){
     await press(page.locator('#tabs').getByRole('button',{name,exact:true}));assert.equal(await page.locator('#tabs [aria-current="page"]').innerText(),name);
     if(name==='Rivals')await page.getByRole('heading',{name:'Rival operators',exact:true}).waitFor();
-    if(name==='Finances'&&/^DOTv(?:16|17|18|19|20)$/.test(release))await page.getByRole('heading',{name:'Trading & cash',exact:true}).waitFor();
+    if(name==='Cash'||name==='Finances'&&/^DOTv(?:16|17|18|19|20)$/.test(release))await page.getByRole('heading',{name:'Trading & cash',exact:true}).waitFor();
    }
    await press(page.locator('.vt-region[data-region=north][aria-pressed]'));assert.equal(await page.locator('.vt-region[data-region=north][aria-pressed]').getAttribute('aria-pressed'),'true');
    const beforeLink=await state(page);
    await press(page.locator('a[href="#d15-staff"][data-d15-open-site]'));
    await page.locator('#d15-staff').waitFor();
    assert.deepEqual(await state(page),beforeLink);
-   await page.locator('#tabs').getByRole('button',{name:'Office',exact:true}).click();
-   await page.getByRole('button',{name:'Manage site',exact:true}).click();await page.getByRole('button',{name:'Pallet flow',exact:true}).click();await page.getByText('Put-away',{exact:true}).waitFor();
+   await page.locator('#tabs').getByRole('button',{name:home,exact:true}).click();
+   await page.getByRole('button',{name:'Manage site',exact:true}).click();if(streamlined)await press(page.locator('[data-fold=stock] summary'));await page.getByRole('button',{name:'Pallet flow',exact:true}).click();await page.getByText('Put-away',{exact:true}).waitFor();
    await page.getByRole('button',{name:'Build queue',exact:true}).click();await page.getByText('No investment work is queued.').waitFor();
    if(/^DOTv(?:17|18|19|20)$/.test(release)){
     await page.getByRole('heading',{name:'Equipment & stock control'}).waitFor();
@@ -66,10 +67,18 @@ try{
     await page.getByRole('button',{name:/^Borrow/}).waitFor();
     await page.getByRole('heading',{name:'Dock doors & fire protection'}).waitFor();
    }
+   if(streamlined){
+    await press(page.getByRole('button',{name:'Increase Day staff',exact:true}));
+    await press(page.getByRole('button',{name:'Apply next-turn plan',exact:true}));
+    await press(page.locator('#tabs').getByRole('button',{name:'Invest',exact:true}));
+    await press(page.locator('[data-fold=bank] summary'));await page.getByRole('button',{name:/^Borrow/}).waitFor();
+    await press(page.getByRole('button',{name:'Risk',exact:true}));
+    await page.getByRole('heading',{name:'Tank and pumps',exact:true}).waitFor();
+   }
    const w=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,view:innerWidth}));assert.ok(w.doc<=w.view+1,JSON.stringify(w));
-   await page.locator('#tabs').getByRole('button',{name:'Office',exact:true}).click();
+   await page.locator('#tabs').getByRole('button',{name:home,exact:true}).click();
    await page.getByRole('button',{name:/Complete February/}).click();assert.equal((await state(page)).month,3);
-   if(/^DOTv(?:17|18|19|20)$/.test(release))assert.equal((await state(page)).player.sites[0].staff,after.player.sites[0].staff+1);
+   if(streamlined||/^DOTv(?:17|18|19|20)$/.test(release))assert.equal((await state(page)).player.sites[0].staff,after.player.sites[0].staff+1);
    // A real network failure should fall back to the v13 cache, not a v12 shell.
    await page.waitForFunction(key=>caches.keys().then(keys=>keys.includes(key)&&!keys.includes('warehouse-tycoon:/game/:12.0.0')),cacheKey);
    // Stop the origin instead of toggling the testing protocol's network interceptor.
@@ -88,7 +97,7 @@ try{
     throw e;
    }
    assert.equal((await state(page)).month,3);assert.deepEqual(errors,[]);
-   console.log('PASS: '+label+' | v12 save upgrade, six tabs, map, layers, month, reload, offline, no JS errors');
+   console.log('PASS: '+label+' | prior-build save upgrade, navigation, map, layers, month, reload, offline, no JS errors');
   }finally{await browser.close();}
  }
 }finally{server.close();}

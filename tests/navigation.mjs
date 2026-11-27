@@ -18,14 +18,14 @@ const zone=(g,id,index)=>{
 test('Operations has day-to-day actions, Investment has capital, and Finances has results',()=>{
  const g=open(),before=g.run('JSON.stringify(state)');
  const rendered=g.el('tabs').innerHTML;
- for(const label of ['Office','Operations','Investment','Tenders','Rivals','Finances'])assert.match(rendered,new RegExp('>'+label+'</button>'));
+ for(const label of ['Map','Ops','Bids','Invest','Cash'])assert.match(rendered,new RegExp('>'+label+'</span>'));
  move(g,'warehouse');
- assert.match(g.u(),/id="d15-operations"/);
+ assert.match(g.u(),/id="d21-plan"/);
  assert.match(g.u(),/id="d15-staff"/);
  assert.doesNotMatch(g.u(),/Borrow £25k|Appraise expansion|Automation asset register|onclick="openRegion/);
  move(g,'investment');
  assert.match(g.u(),/onclick="borrow\(/);
- assert.match(g.u(),/Appraise expansion/);
+ assert.match(g.u(),/Full appraisal/);
  assert.match(g.u(),/Automation asset register/);
  assert.doesNotMatch(g.u(),/onclick="staff\(|id="d15-staff"/);
  move(g,'history');

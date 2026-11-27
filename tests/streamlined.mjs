@@ -1,0 +1,45 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {fileURLToPath} from 'node:url';
+import {boot,compile,setup} from './runtime.mjs';
+const compiler=compile(fileURLToPath(new URL('..',import.meta.url)));
+const open=()=>{const g=boot(compiler);setup(g);return g;};
+test('staff and truck steps are read-only until applied; real engine settles next turn',()=>{
+ const g=open();
+ g.run("selectedSite().staff=5;selectedSite().shiftStaff=[5,0,0];go('warehouse');");
+ const before=g.run('JSON.stringify(state)');
+ g.run('d21OpsStep(0,-1);d21OpsStep(1,1);d21OpsStep(3,1)');
+ assert.equal(g.run('JSON.stringify(state)'),before);
+ assert.equal(g.run('d21OpsModel(selectedSite(),[4,1,0],1).future'),13200);
+ assert.equal(g.run('d21OpsModel(selectedSite(),[4,1,0],1).delta'),900);
+ g.run('d21ApplyOps()');
+ assert.equal(g.run('selectedSite().staff'),5);
+ assert.deepEqual(Array.from(g.run('selectedSite().staffPlan.shifts')),[4,1,0]);
+ const reloaded=boot(compiler,172,g.store);
+ assert.deepEqual(Array.from(reloaded.run('selectedSite().staffPlan.shifts')),[4,1,0]);
+ reloaded.run('nextMonth()');
+ assert.equal(reloaded.run('dot19TruckCount(selectedSite(),state.month)'),1);
+ assert.deepEqual(Array.from(reloaded.run('dot19Roster(selectedSite())')),[4,1,0]);
+});
+test('preview uses next turn dock capacity and staffing management; racking orders reconcile',()=>{
+ const g=open();
+ g.run("go('investment');selectedSite().staff=12;selectedSite().projects.push({type:DOT17Facilities.DOCK,remaining:1,cost:28000})");
+ assert.equal(g.run('d21OpsModel(selectedSite(),[12,0,0],0).bays'),3);
+ assert.equal(g.run('d21OpsModel(selectedSite(),[12,0,0],0).efficiency'),.96);
+ const before=g.run('JSON.stringify(state)');
+ g.run('d21RackStep(1)');
+ assert.equal(g.run('JSON.stringify(state)'),before);
+ assert.match(g.el('d21-upgrade').innerHTML,/NEXT-TURN SPACES/);
+ g.run('d21ApplyRacks()');
+ assert.equal(g.run('state.player.cash'),220000);
+ assert.equal(g.run('selectedSite().projects.filter(x=>x.type==="Racking").length'),2);
+ g.run('nextMonth()');
+ assert.equal(g.run('siteSpace(selectedSite())'),750);
+});
+test('racking forecast includes next-turn automation and does not mutate data',()=>{
+ const g=open();g.run("selectedSite().projects.push({type:'Automation',section:0,remaining:1,cost:250000})");
+ const before=g.run('JSON.stringify(state)');
+ assert.equal(g.run('d21Storage(selectedSite())'),325);
+ assert.equal(g.run('d21Storage(selectedSite(),[{type:"Racking",remaining:1}])'),650);
+ assert.equal(g.run('JSON.stringify(state)'),before);
+});
