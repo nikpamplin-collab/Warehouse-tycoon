@@ -53,10 +53,11 @@ try{
    }
    await press(page.locator('.vt-region[data-region=north][aria-pressed]'));assert.equal(await page.locator('.vt-region[data-region=north][aria-pressed]').getAttribute('aria-pressed'),'true');
    const beforeLink=await state(page);
-   await press(page.locator('a[href="#d15-staff"][data-d15-open-site]'));
+   await press(streamlined?page.getByRole('button',{name:'Site team',exact:true}):page.locator('a[href="#d15-staff"][data-d15-open-site]'));
    await page.locator('#d15-staff').waitFor();
    assert.deepEqual(await state(page),beforeLink);
-   await page.locator('#tabs').getByRole('button',{name:home,exact:true}).click();
+   if(streamlined)await press(page.getByRole('button',{name:'Back to warehouse visual'}));
+   else await page.locator('#tabs').getByRole('button',{name:home,exact:true}).click();
    await page.getByRole('button',{name:'Manage site',exact:true}).click();if(streamlined)await press(page.locator('[data-fold=stock] summary'));await page.getByRole('button',{name:'Pallet flow',exact:true}).click();await page.getByText(streamlined?'Signed handling':'Put-away',{exact:true}).waitFor();
    await page.getByRole('button',{name:'Build queue',exact:true}).click();await page.getByText('No investment work is queued.').waitFor();
    if(/^DOTv(?:17|18|19|20)$/.test(release)){

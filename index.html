@@ -289,10 +289,63 @@ function warehouseGraphic(s){
  const assignments=dot19ShiftPlan(s,state.month,undefined,fleet);
  return DOT21Yard.render({mode:visualSceneMode,motion:visualSceneMotion,sections:s.sections,racks:s.racks,occupied:active.reduce((n,k)=>n+k.spaces,0),spaces:siteSpace(s),staff:s.staff,safetyManager:s.hs,stockManager:s.stockController,opsManagers:s.managers,moves,capacity:siteCapacity(s,managementPenalty(state.player,s)),automated:dot19Lanes(s,state.month).length,projects:s.projects,last:s.last,siteIndex:state.player.sites.indexOf(s),dockDoors:DOT17Facilities.doorCount(s),fireProtection:DOT20Fire.view(s),trucks:fleet,assignedTrucks:Math.max(0,...assignments.map(x=>x.mhe))});
 }
-function d21ZoomYard(index){
+let d21SceneOrigin=null;
+const d21SceneRoutes=Object.freeze({
+ storage:['investment','d15-investment','storage'],
+ docks:['investment','d17-facilities','flow'],
+ automation:['investment','d21-upgrade-automation','flow'],
+ tank:['investment','d21-upgrade-water','risk'],
+ roof:['investment','d21-upgrade-roof','risk'],
+ 'rack-fire':['investment','d21-upgrade-rack','risk'],
+ expansion:['investment','d21-site-expansion'],
+ projects:['investment','d15-projects'],
+ handling:['warehouse','d21-plan'],
+ mhe:['warehouse','d21-mhe'],
+ management:['warehouse','d15-staff'],
+ operations:['warehouse','d15-staff'],
+ safety:['warehouse','d21-site-safety'],
+ stock:['warehouse','d21-site-stock'],
+ 'stock-levels':['warehouse','d21-stock-levels']
+});
+function d21ZoomYard(index,focus=true){
  const source=state.player.sites[index];if(!source)return;
  const markup=warehouseGraphic(source);const drawing=markup.match(/<svg class="d21-yard-svg"[\s\S]*?<\/svg>/)?.[0];if(!drawing)return;
- dialog('<h2>Warehouse cutaway</h2><div class="d21-zoom-svg'+(!visualSceneMotion?' d21-paused':'')+'">'+drawing+'</div><div class="modal-actions"><button class="btn secondary" onclick="closeDialog()">Close</button></div>');
+ dialog('<h2 id="d21-zoom-title" tabindex="-1">Warehouse cutaway</h2><p class="d21-yard-tip">Tap an object to manage it.</p><div class="d21-zoom-svg'+(!visualSceneMotion?' d21-paused':'')+'">'+drawing+'</div><div class="modal-actions"><button class="btn secondary" onclick="closeDialog()">Close</button></div>');
+ if(focus)document.getElementById('d21-zoom-title')?.focus({preventScroll:true});
+}
+function d21OpenSceneSection(index,key,source){
+ const route=Object.hasOwn(d21SceneRoutes,key)?d21SceneRoutes[key]:null, site=state.player.sites[index];
+ if(!route||!site)return;
+ const [destination,id,upgrade]=route, zoom=source.closest('.d21-zoom-svg');
+ const yard=source.closest('.d21-yard-view')||[...document.querySelectorAll('.d21-yard-view')].find(fig=>fig.dataset.yardSite===String(index));
+ if(!d21SceneOrigin)d21SceneOrigin={
+  tab,selected,siteId:selectedSiteId,sceneSiteId:site.id,mode:visualSceneMode,upgrade:D21.upgrade,
+  scroll:window.scrollY,offset:yard?.getBoundingClientRect().top??null,zoom:!!zoom,
+  zoomLeft:zoom?.scrollLeft??0,zoomTop:zoom?.scrollTop??0,key,
+  focusIndex:[...(zoom||yard||document).querySelectorAll('[data-scene-hit="'+key+'"]')].indexOf(source)
+ };
+ if(zoom)closeDialog();
+ if(upgrade)D21.upgrade=upgrade;
+ openMapSite(index,destination);
+ const target=document.getElementById(id);
+ if(!target)return;
+ const fold=target.closest('details');
+ if(fold){fold.open=true;D21.panels.set(destination+':'+fold.dataset.fold,true);}
+ target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'start',behavior:'instant'});
+}
+function d21BackToScene(){
+ const from=d21SceneOrigin;if(!from)return;
+ d21SceneOrigin=null;selected=from.selected;selectedSiteId=from.siteId;visualSceneMode=from.mode;D21.upgrade=from.upgrade;
+ go(from.tab);
+ const index=state.player.sites.findIndex(s=>s.id===from.sceneSiteId);
+ const yard=[...document.querySelectorAll('.d21-yard-view')].find(x=>x.dataset.yardSite===String(index));
+ const top=yard&&from.offset!==null?window.scrollY+yard.getBoundingClientRect().top-from.offset:from.scroll;
+ window.scrollTo({top,behavior:'instant'});
+ if(from.zoom&&index>=0)d21ZoomYard(index,false);
+ const zoom=document.querySelector('.d21-zoom-svg');
+ if(zoom){zoom.scrollLeft=from.zoomLeft;zoom.scrollTop=from.zoomTop;}
+ const area=zoom||yard, matches=area?.querySelectorAll('[data-scene-hit="'+from.key+'"]');
+ (matches?.[from.focusIndex]||matches?.[0]||area?.querySelector('[data-scene-zoom]')||document.getElementById('d21-zoom-title'))?.focus({preventScroll:true});
 }
 function trendChart(){let h=state.player.history.slice(-9),values=h.map(r=>r.storage+r.handling),profits=h.map(r=>r.profit);if(!h.length)return '<p class="muted">Complete a month to see your revenue and profit trends.</p>';let max=Math.max(1,...values,...profits),min=Math.min(0,...profits),span=max-min||1;let line=arr=>arr.map((v,i)=>(24+i*(352/Math.max(1,arr.length-1))).toFixed(1)+','+(138-(v-min)/span*110).toFixed(1)).join(' ');return '<svg viewBox="0 0 400 165" role="img" aria-label="Revenue and profit trend"><line x1="20" y1="140" x2="384" y2="140" stroke="#57718b"/><polyline fill="none" stroke="#64c7ff" stroke-width="4" stroke-linejoin="round" points="'+line(values)+'"/><polyline fill="none" stroke="#4fe0aa" stroke-width="4" stroke-linejoin="round" points="'+line(profits)+'"/></svg><div class="chart-legend"><span>● Revenue</span><span>● Profit</span></div>';}
 function dot16ViewModel() {
@@ -347,9 +400,16 @@ function networkMap(){
  return WTVisual.map({region:visualRegion,player,rivals,outline:'M95.2 201.3 L79.0 195.4 L65.7 195.8 L70.1 180.2 L65.7 164.7 L83.7 163.5 L106.8 181.4 L95.2 201.3 Z M162.0 214.8 L165.2 197.9 L150.5 179.7 L124.4 174.6 L119.2 166.7 L127.0 153.8 L120.0 145.8 L108.4 159.5 L107.1 131.5 L96.3 116.7 L104.1 86.8 L120.8 63.2 L138.0 65.5 L163.9 63.1 L140.9 94.5 L162.8 90.5 L186.4 90.6 L180.8 114.3 L161.4 140.3 L183.7 142.1 L204.5 179.4 L219.2 184.0 L232.5 217.1 L238.6 228.5 L264.7 234.1 L262.0 252.6 L251.1 261.1 L259.7 276.1 L240.3 291.3 L211.6 291.0 L175.0 299.0 L164.9 293.3 L150.7 306.9 L130.8 303.6 L115.7 314.7 L104.3 308.9 L135.8 278.4 L155.1 272.1 L121.3 267.3 L115.3 255.7 L137.7 246.8 L125.9 231.1 L130.0 212.1 L162.0 214.8 Z',regions:regions.map(r=>({...r,demand:state.tenders.filter(t=>t.region===r.id).length}))});
 }
 document.addEventListener('keydown',event=>{
- if(event.target.matches?.('.vt-map-pin')&&(event.key==='Enter'||event.key===' ')){event.preventDefault();event.target.dispatchEvent(new MouseEvent('click',{bubbles:true}));}
+ if(event.target.matches?.('.vt-map-pin,.d21-scene-hit')&&(event.key==='Enter'||event.key===' ')){event.preventDefault();event.target.dispatchEvent(new MouseEvent('click',{bubbles:true}));}
 });
 document.addEventListener('click',event=>{
+ if(event.target.closest('[data-scene-return]')?.dataset.sceneReturn!==undefined){d21BackToScene();return;}
+ const hotspot=event.target.closest('[data-scene-hit]'), diagram=event.target.closest('[data-scene-default]');
+ if(hotspot?.dataset.sceneHit||diagram?.dataset.sceneDefault!==undefined){
+  const key=hotspot?.dataset.sceneHit||'handling';
+  d21OpenSceneSection(Number(hotspot?.dataset.sceneSite??diagram?.dataset.sceneDefault),key,hotspot||diagram);
+  return;
+ }
  const yardControl=event.target.closest('[data-scene-motion],[data-scene-zoom]');
  if(yardControl&&(yardControl.dataset.sceneZoom!==undefined||yardControl.dataset.sceneMotion!==undefined)){
   if(yardControl.dataset.sceneZoom!==undefined)d21ZoomYard(Number(yardControl.dataset.sceneZoom));

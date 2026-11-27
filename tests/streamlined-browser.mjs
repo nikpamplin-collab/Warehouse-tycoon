@@ -95,7 +95,55 @@ try{
   assert.equal(await yard.locator('.d21-parked-lorry').evaluate(x=>getComputedStyle(x).display),'inline');
   assert.equal(await yard.locator('.d21-shuttle').first().evaluate(x=>getComputedStyle(x).animationName),'none');
   await tap(yard.getByRole('button',{name:'Enlarge'}));assert.equal(await p.locator('#dialog .d21-yard-svg').count(),1);
+  const modal=p.locator('#dialog .d21-zoom-svg');
+  await modal.locator('[data-scene-hit="safety"]').press('Enter');
+  assert.equal(await p.evaluate(()=>document.activeElement.id),'d21-site-safety');
+  const sceneBack=()=>p.getByRole('button',{name:'Back to warehouse visual'});
+  await tap(sceneBack()); await modal.waitFor();
+  assert.equal(await p.evaluate(()=>document.activeElement?.dataset.sceneHit),'safety');
   await tap(p.getByRole('button',{name:'Close',exact:true}));
+  // Use a real pointer/touch on the drawn dock rather than only dispatching a synthetic group click.
+  await yard.evaluate(el=>window.scrollBy(0,el.getBoundingClientRect().top-145));
+  const reference=await yard.evaluate(el=>el.getBoundingClientRect().top);
+  await yard.locator('.d21-dock-door[data-dock="2"] polygon').first().evaluate(el=>el.getBoundingClientRect().y);
+  const dockPoint=await yard.evaluate(el=>{
+   const g=el.querySelector('.d21-dock-door[data-dock="2"]'),b=g.getBoundingClientRect();
+   const points=[];
+   for(let x=Math.ceil(b.x+2);x<b.right-2;x++)for(let y=Math.ceil(b.y+2);y<b.bottom-2;y++){
+    if([[0,0],[-2,0],[2,0],[0,2],[0,-2]].every(([a,c])=>document.elementFromPoint(x+a,y+c)?.closest('.d21-dock-door')===g))
+     points.push({x,y});
+   }
+   points.sort((a,z)=>Math.hypot(a.x-(b.x+b.width/2),a.y-(b.y+b.height/2))-Math.hypot(z.x-(b.x+b.width/2),z.y-(b.y+b.height/2)));
+   if(points.length)return points[0];
+   return null;
+  });
+  assert.ok(dockPoint,'visible dock has a tappable region');
+  if(width<500)await p.touchscreen.tap(dockPoint.x,dockPoint.y);else await p.mouse.click(dockPoint.x,dockPoint.y);
+  assert.equal(await p.evaluate(()=>document.activeElement.id),'d17-facilities');
+  assert.equal(await p.getByRole('button',{name:'Flow',exact:true}).getAttribute('aria-pressed'),'true');
+  await p.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
+  assert.equal(await sceneBack().evaluate(el=>getComputedStyle(el).position),'fixed');
+  await tap(sceneBack());
+  assert.ok(Math.abs(await yard.evaluate(el=>el.getBoundingClientRect().top)-reference)<2,'returns to original scene scroll offset');
+  const paths={storage:'d15-investment',handling:'d21-plan',mhe:'d21-mhe',management:'d15-staff',
+   operations:'d15-staff',stock:'d21-site-stock',roof:'d21-upgrade-roof',tank:'d21-upgrade-water',
+   'rack-fire':'d21-upgrade-rack',expansion:'d21-site-expansion',projects:'d15-projects'};
+  for(const [key,id] of Object.entries(paths)){
+   await yard.locator('[data-scene-hit="'+key+'"]').first().dispatchEvent('click');
+   assert.equal(await p.evaluate(()=>document.activeElement.id),id,key);
+   await tap(sceneBack());
+  }
+  assert.equal(await sceneBack().count(),0);
+  // A return from an Operations view restores the same open fold and the exact visual position.
+  await jump('Ops');
+  await p.locator('details[data-fold="stock"] summary').click();
+  const opsYard=p.locator('.d21-yard-view').first();
+  await opsYard.evaluate(el=>window.scrollBy(0,el.getBoundingClientRect().top-145));
+  const inOps=await opsYard.evaluate(el=>el.getBoundingClientRect().top);
+  await opsYard.locator('[data-scene-hit="tank"]').first().dispatchEvent('click');
+  await tap(sceneBack());
+  assert.ok(await p.locator('details[data-fold="stock"]').evaluate(el=>el.open));
+  assert.ok(Math.abs(await opsYard.evaluate(el=>el.getBoundingClientRect().top)-inOps)<2);
   await p.reload();await jump('Ops');
   await ctx.setOffline(true);await p.reload();assert.match(await p.title(),/DOTv21/);await jump('Ops');
   assert.match(await p.locator('#d21-plan').innerText(),/Next-turn plan saved/);

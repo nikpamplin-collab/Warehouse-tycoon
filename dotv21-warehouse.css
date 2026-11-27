@@ -64,3 +64,15 @@
  .d21-yard-lorry,.d21-unload-pallet{display:none}
  .d21-parked-lorry{display:inline}
 }
+
+/* Warehouse hotspots and a return action that stays visible on long screens. */
+.d21-yard-svg{cursor:pointer}
+.d21-scene-hit{cursor:pointer}
+.d21-scene-hit:focus-visible,.d21-scene-hit:hover{filter:drop-shadow(0 0 3px #fff8d4) drop-shadow(0 0 1.5px #244e43)}
+.d21-scene-hit:focus-visible{outline:2px solid #244e43}
+.d21-scene-pipe-hit{pointer-events:stroke;fill:none}
+.d21-yard-tip{display:block;color:#475947;font-size:11px;font-weight:650;margin:0 2px 6px}
+.d21-yard-links button{background:transparent;border:0;border-radius:4px;color:#405b45;text-decoration:underline;padding:0 2px;min-height:44px;font:inherit;font-size:12px;font-weight:700}
+.d21-scene-back{position:fixed;z-index:7;inset:auto max(12px,calc((100vw - 1170px)/2)) 16px auto;display:block;min-height:44px;padding:9px 16px;border-radius:24px;border:1px solid #d4e2c7;background:#29493b;color:#fff9e8;font-weight:750;box-shadow:0 3px 12px #18281944}
+.d21-scene-back:focus-visible,.d21-yard-links button:focus-visible{outline:3px solid #d59a52;outline-offset:2px}
+@media(max-width:650px){.d21-scene-back{bottom:calc(72px + env(safe-area-inset-bottom,0px));right:12px}}
