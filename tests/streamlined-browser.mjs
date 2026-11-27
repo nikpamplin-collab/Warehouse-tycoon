@@ -53,6 +53,8 @@ try{
   assert.equal(await yard.locator('.d21-rack-bay').count(),6);
   assert.equal(await yard.locator('.d21-pallet').count(),27);
   assert.equal(await yard.locator('svg text').count(),0);
+  assert.equal(await yard.locator('.d21-public-road,.d21-loading-yard').count(),2);
+  assert.ok(await yard.locator('.d21-perimeter-tree').count()>=10);
   assert.equal(await yard.locator('.d21-forklift.d21-shuttle').count(),2);
   assert.equal(await yard.locator('.d20-water-tank').count(),1);
   assert.equal(await yard.locator('.d20-roof-pipework').count(),1);

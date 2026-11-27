@@ -31,3 +31,10 @@ test('cutaway uses active contracts, landed fleet and commissioned hardware with
  assert.doesNotMatch(pic,/class="d21-forklift d21-shuttle"|class="d21-worker/);
  assert.match(pic,/d20-water-tank/);assert.match(pic,/d20-roof-pipework/);assert.match(pic,/d20-rack-pipework/);
 });
+test('perimeter landscaping and road are decorative, outside the rack and occupancy model',()=>{
+ const g=open();const pic=g.run('warehouseGraphic(selectedSite())');
+ assert.match(pic,/d21-landscape/);assert.match(pic,/d21-public-road/);assert.match(pic,/d21-loading-yard/);
+ assert.ok(howMany(pic,'class="d21-perimeter-tree"')>=10);
+ assert.equal(howMany(pic,'class="d21-rack-bay"'),0);
+ assert.match(pic,/data-fit="0%" data-occupancy="0%"/);
+});

@@ -78,9 +78,55 @@ const DOT21Yard=(()=>{
   return '<g transform="translate('+a+' '+b+')"><g class="d21-forklift'+(active?' d21-shuttle':'')+'" style="--dx:'+delta[0]+'px;--dy:'+delta[1]+'px;--period:'+(7+i*.8)+'s;--delay:-'+(i*1.2)+'s"><ellipse cx="1" cy="2" rx="16" ry="5" fill="#34392f" opacity=".2"/><path d="M-13 -5l18 5 12-7-18-5z" fill="#e6ad4f"/><path d="M-13 -5l18 5v5l-18-5zm18 5 12-7v5l-12 7z" fill="#c78930"/><circle cx="-8" cy="2" r="3.6" fill="#333d3b"/><circle cx="4" cy="5" r="4.2" fill="#333d3b"/><circle cx="13" cy="-1" r="3.4" fill="#333d3b"/><path d="M-11 -5v-16l15 4v16m0-16 9-5v16m-24-15 9-5 15 4" fill="none" stroke="#36464a" stroke-width="2"/>'+(active?'<path d="M-3 -8v-6l5 1v6z" fill="#e4a13b"/><circle cx="-1" cy="-16" r="2" fill="#eec761"/>':'')+'<path d="M14 -2v-17m4 15v-17m-4 17 11 3m-7-5 11 3" fill="none" stroke="#4d5756" stroke-width="2" stroke-linecap="round"/></g></g>';
  }
  const dockLocations=n=>Array.from({length:Math.min(6,Math.max(0,count(n)))},(_,i)=>3+i*5.1);
+ function tree(x,y,n) {
+  const [a,b]=P(x,y), h=27+(n%4)*5, r=8+(n%3)*2;
+  const palette=[['#526d4d','#789467','#8aa574'],['#617a50','#819c64','#a6ae78'],['#58765d','#77957a','#9aac77']][n%3];
+  return '<g class="d21-perimeter-tree" transform="translate('+a+' '+b+')">'+
+   '<ellipse cx="6" cy="1" rx="'+(r+6)+'" ry="4" fill="#52644b" opacity=".27"/>'+
+   '<path d="M0 0v-'+(h*.68)+'m0 8-5-7m5 3 5-10" fill="none" stroke="#665e42" stroke-width="2.7" stroke-linecap="round"/>'+
+   '<path d="M-'+(r+3)+' -'+(h*.52)+'Q-'+(r+5)+' -'+(h*.82)+' -6 -'+(h*.88)+'Q0 -'+(h+4)+' 6 -'+(h*.92)+'Q'+(r+6)+' -'+(h*.90)+' '+(r+3)+' -'+(h*.58)+'Q'+(r+5)+' -'+(h*.39)+' 3 -'+(h*.40)+'Q-4 -'+(h*.31)+' -'+(r+3)+' -'+(h*.52)+'Z" fill="'+palette[0]+'"/>'+
+   '<ellipse cx="-3" cy="-'+(h*.74)+'" rx="'+r+'" ry="'+(h*.23)+'" fill="'+palette[1]+'"/>'+
+   '<path d="M-'+r+' -'+(h*.77)+'Q-4 -'+(h*.99)+' 4 -'+(h*.89)+'Q0 -'+(h*.72)+' -'+r+' -'+(h*.77)+'Z" fill="'+palette[2]+'"/></g>';
+ }
+ function hedgerow(start,end,y){
+  let art='';
+  for(let x=start;x<end;x+=1.05){
+   const [a,b]=P(x,y,.25), i=Math.round(x*6);
+   art+='<ellipse cx="'+a+'" cy="'+b+'" rx="'+(9+(i%4))+'" ry="'+(4+(i%3))+'" fill="'+(['#627d55','#738c5d','#566f49'][Math.abs(i)%3])+'"/>';
+  }
+  return art;
+ }
+ function grounds(){
+  // Road meets the estate entrance; the estate entry meets the dock apron along its entire edge.
+  let art='<g class="d21-landscape" aria-hidden="true"><rect x="-60" y="-100" width="1250" height="790" fill="#dae0c6"/>'+
+   plane(-8,-7,55,51,'#b9c895')+plane(-7,-6,14,26,'#adbf88')+plane(-6,12,25,15,'#a9bd85')+
+   plane(11,-5,31,4,'#b3c28d')+plane(35,1,11,21,'#afbf8a')+plane(-7,39,55,5,'#b9c995')+
+   face([[-7,25,0],[3,29,0],[4,38,0],[-6,41,0]],'#98ae78')+
+   face([[32,-5,0],[42,-3,0],[44,11,0],[38,14,0]],'#9fb67b');
+  art+='<g class="d21-public-road">'+plane(-10,41.8,55,7.25,'#68716a',.001)+
+   line([[-10,42.1,.014],[45.1,42.1,.014]],'#e0dfcb',1.35)+line([[-10,48.77,.014],[45.1,48.77,.014]],'#e0dfcb',1.35)+
+   line([[-10,45.42,.02],[45,45.42,.02]],'#eae6cc',1.6,'11 8')+'</g>';
+  art+='<g class="d21-loading-yard">'+plane(-.6,26,37.8,13.25,'#92958a',.03,'#7d8779')+
+   plane(33,14,8,13,'#9ca095',.02,'#7d8779')+
+   face([[26.7,38.65,.045],[37.16,38.65,.045],[40,42.2,.045],[35.05,42.2,.045],[32.15,39.2,.045],[26.7,39.2,.045]],'#888e83')+
+   line([[.06,38.7,.05],[28.2,38.7,.05],[32.2,39.0,.05],[35.0,42.1,.05]],'#d5d8bd',1.5)+
+   line([[36.98,36.7,.05],[37.2,38.7,.05],[39.92,42.14,.05]],'#d5d8bd',1.55)+
+   line([[34.3,38.8,.05],[37.6,42.0,.05]],'#e9e4cf',1.55,'6 5')+
+   line([[35.55,42.24,.057],[39.4,42.24,.057]],'#ece8d7',1.0,'3 3');
+  for(let x=3.1;x<29;x+=5.1)art+=line([[x,29.0,.045],[x,35.6,.045]],'#d7d8c1',.8,'4 4');
+  art+=line([[2.2,36.85,.045],[28.8,36.85,.045]],'#d6dcbe',1.0,'10 8')+'</g>';
+  art+=hedgerow(-3,24,40.5)+hedgerow(39.7,44.5,39.65);
+  const trees=[[-4.4,14.8],[-4.2,18.6],[-3.5,24],[-3.0,32.3],[-2.7,38.6],[1.2,40.1],[8.6,39.9],[16.4,40.1],[23.7,40.1],[41.2,35.3],[43.1,31.2],[42.5,25.1],[41.65,10.8],[37,4.1],[35.9,-1.6]];
+  art+=trees.map(([x,y],i)=>tree(x,y,i)).join('');
+  for(const [x,y] of [[2.2,-3.3],[3.55,-3.3],[5.45,-3.1],[6.8,-3.2],[8,-3.3],[12.0,-3.1],[13.2,-3.4],[16.6,-3.05],[20,-3.22],[21.5,-3.3],[24.5,-3.2],[28.4,-3.1],[29.7,-3.5]]){
+   const [a,b]=P(x,y,.22);
+   art+='<ellipse cx="'+a+'" cy="'+b+'" rx="10" ry="4" fill="#92aa77"/><ellipse cx="'+(a-1.5)+'" cy="'+(b-1.6)+'" rx="6" ry="3" fill="#809d69"/>';
+  }
+  return art+'</g>';
+ }
  function yard(v,m) {
   const docks=dockLocations(v.dockDoors),clad='#d3d3c8',edge='#778381', steel='#586c71';
-  let art='<rect width="910" height="545" fill="#ebe4d4"/>'+plane(-1,26,39,5.0,'#929388')+plane(33,14,8,13,'#a3a396');
+  let art=grounds();
   if(v.sections>1)for(let i=0;i<Math.min(2,count(v.sections)-1);i++){
    const x=19+i*7.0;
    art+='<g class="d21-built-extension">'+box(x,26.1,6.65,4.9,3.64,'clad')+
@@ -196,7 +242,7 @@ const DOT21Yard=(()=>{
   const stock='<div class="d21-yard-metrics"><div><b>Racking fit-out</b><strong>'+percent(m.fit)+'</strong><small>'+num(v.racks)+' of '+num(Math.max(1,count(v.sections))*9)+' rack blocks</small></div><div role="meter" aria-label="Storage occupied" aria-valuenow="'+Math.round(m.fill*100)+'" aria-valuemin="0" aria-valuemax="100"><b>Storage occupied</b><strong>'+percent(m.fill)+'</strong><small>'+num(v.occupied)+' of '+num(v.spaces)+' pallet spaces</small></div></div>';
   const flow='<div class="d21-yard-metrics"><div><b>Signed handling</b><strong>'+num(v.moves)+'</strong><small>Moves this turn</small></div><div><b>Handling capacity</b><strong>'+num(v.capacity)+'</strong><small>'+(v.moves>v.capacity?num(v.moves-v.capacity)+' moves above capacity':num(v.capacity-v.moves)+' spare moves')+'</small></div></div>';
   const build='<div class="d21-yard-projects">'+(p.length?'<ul>'+p.map(j=>'<li><b>'+esc(names[j.type]||'Site work')+'</b><span>'+num(j.remaining)+' '+(j.remaining===1?'turn':'turns')+' left</span></li>').join('')+'</ul>':'<p>No investment work is queued.</p>')+'</div>';
-  return '<figure class="d21-yard-view'+(v.motion===false?' d21-paused':'')+'" data-fit="'+percent(m.fit)+'" data-occupancy="'+percent(m.fill)+'"><div class="d21-yard-head"><b>Warehouse cutaway</b><button type="button" data-scene-zoom="'+(idx??0)+'">Enlarge</button></div><svg class="d21-yard-svg" viewBox="70 105 832 415" role="img" aria-label="Warehouse cutaway: '+percent(m.fit)+' rack fit-out, '+percent(m.fill)+' active storage, '+num(v.staff)+' staff, '+num(v.sections)+' sections">'+yard({...v,mode},m)+'</svg><figcaption><div class="d21-yard-controls" aria-label="Warehouse view">'+Object.entries(panels).map(([k,label])=>'<button class="d13-mode" data-scene-mode="'+k+'" aria-pressed="'+(k===mode)+'">'+label+'</button>').join('')+'<button type="button" data-scene-motion aria-label="'+(v.motion===false?'Resume motion':'Pause motion')+'">'+'<svg viewBox="0 0 18 18" width="15" height="15" aria-hidden="true" fill="currentColor">'+(v.motion===false?'<path d="M5 3l10 6-10 6z"/>':'<path d="M5 3h3v12H5zm5 0h3v12h-3z"/>')+'</svg>'+'</button></div>'+(mode==='floor'?stock:mode==='flow'?flow:build)+(status.length?'<p class="d21-yard-fire">'+status.map(esc).join(' · ')+'</p>':'')+'<div class="d21-yard-links">'+links.map(([id,label])=>'<a href="#'+id+'"'+(idx===null?'':' data-d15-open-site="'+idx+'"')+'>'+label+' <span aria-hidden="true">›</span></a>').join('')+'</div></figcaption></figure>';
+  return '<figure class="d21-yard-view'+(v.motion===false?' d21-paused':'')+'" data-fit="'+percent(m.fit)+'" data-occupancy="'+percent(m.fill)+'"><div class="d21-yard-head"><b>Warehouse cutaway</b><button type="button" data-scene-zoom="'+(idx??0)+'">Enlarge</button></div><svg class="d21-yard-svg" viewBox="12 8 1049 553" role="img" aria-label="Warehouse cutaway: '+percent(m.fit)+' rack fit-out, '+percent(m.fill)+' active storage, '+num(v.staff)+' staff, '+num(v.sections)+' sections, loading yard and road beside landscaped grounds">'+yard({...v,mode},m)+'</svg><figcaption><div class="d21-yard-controls" aria-label="Warehouse view">'+Object.entries(panels).map(([k,label])=>'<button class="d13-mode" data-scene-mode="'+k+'" aria-pressed="'+(k===mode)+'">'+label+'</button>').join('')+'<button type="button" data-scene-motion aria-label="'+(v.motion===false?'Resume motion':'Pause motion')+'">'+'<svg viewBox="0 0 18 18" width="15" height="15" aria-hidden="true" fill="currentColor">'+(v.motion===false?'<path d="M5 3l10 6-10 6z"/>':'<path d="M5 3h3v12H5zm5 0h3v12h-3z"/>')+'</svg>'+'</button></div>'+(mode==='floor'?stock:mode==='flow'?flow:build)+(status.length?'<p class="d21-yard-fire">'+status.map(esc).join(' · ')+'</p>':'')+'<div class="d21-yard-links">'+links.map(([id,label])=>'<a href="#'+id+'"'+(idx===null?'':' data-d15-open-site="'+idx+'"')+'>'+label+' <span aria-hidden="true">›</span></a>').join('')+'</div></figcaption></figure>';
  }
  return {render,model};
 })();
