@@ -11,7 +11,7 @@ assert.ok(release,'Expected a versioned app title');
 const revision=(await fs.readFile(path.join(current,'sw.js'),'utf8')).match(/const CACHE=family\+"([\d.]+)"/)?.[1];
 const cacheKey='warehouse-tycoon:/game/:'+(revision||release.replace('DOTv','')+'.0.0');
 assert.ok(legacy,'Provide WT_LEGACY_FOLDER or WT_V12_FOLDER with the prior build.');
-const streamlined=release==='DOTv21', home=streamlined?'Map':'Office';
+const streamlined=Number(release.slice(4))>=21, home=streamlined?'Map':'Office';
 let folder=legacy, online=true;
 const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.webmanifest':'application/manifest+json'};
 const server=http.createServer(async(req,res)=>{

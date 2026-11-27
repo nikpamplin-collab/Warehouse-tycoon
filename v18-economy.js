@@ -24,6 +24,7 @@ function addSpotTenders(g,out){
   }
 }
 function tenderDefault(t,key){
+  if(t.trial)return key==='storage'?13:4.5; // Indicative trial quote, never a guaranteed win.
   return Math.round(standardRate(key)*(t.spot?V18.spotPrice:1)*100)/100;
 }
 function loanRound(x){return Math.max(0,Math.round(x*100)/100);}

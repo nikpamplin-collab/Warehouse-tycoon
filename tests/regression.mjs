@@ -72,3 +72,5 @@ import './economy-v18.mjs';
 import './fire-v20.mjs';
 import './streamlined.mjs';
 import './warehouse-v21.mjs';
+
+import './first-contract.mjs';

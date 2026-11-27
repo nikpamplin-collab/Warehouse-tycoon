@@ -20,7 +20,7 @@ try{
   p.on('pageerror',e=>errors.push(e.message));
   await p.goto(url);await p.locator('#newBusiness').fill('Amber Pallet Co');await p.locator('#newSite').fill('Mercia DC');await p.getByRole('button',{name:'Start playing'}).click();
   const nav=p.locator('#tabs');assert.deepEqual(await nav.locator('button').allInnerTexts(),['Map','Ops','Bids','Invest','Cash']);
-  assert.match(await p.locator('footer').innerText(),/DOTv21/);assert.match(await p.title(),/DOTv21/);
+  assert.match(await p.locator('footer').innerText(),/DOTv22/);assert.match(await p.title(),/DOTv22/);
   const tap=async l=>width<500?l.tap():l.click();const btn=n=>p.getByRole('button',{name:n,exact:true});const jump=n=>tap(nav.getByRole('button',{name:n,exact:true}));
   const save=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('warehouse_tycoon_v11')));
   await jump('Ops');
@@ -145,8 +145,38 @@ try{
   assert.ok(await p.locator('details[data-fold="stock"]').evaluate(el=>el.open));
   assert.ok(Math.abs(await opsYard.evaluate(el=>el.getBoundingClientRect().top)-inOps)<2);
   await p.reload();await jump('Ops');
-  await ctx.setOffline(true);await p.reload();assert.match(await p.title(),/DOTv21/);await jump('Ops');
+  await ctx.setOffline(true);await p.reload();assert.match(await p.title(),/DOTv22/);await jump('Ops');
   assert.match(await p.locator('#d21-plan').innerText(),/Next-turn plan saved/);
   assert.deepEqual(errors,[]);await ctx.close();console.log('passed browser '+width+'px: navigation, fit, draft, orders, bids and offline');
  }
+ const intro=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+ const p=await intro.newPage(),errors=[];
+ await p.addInitScript(()=>{let seed=731;Math.random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);});
+ p.on('pageerror',e=>errors.push(e.message));
+ await p.goto(url);
+ await p.getByLabel('Play the optional First Contract guide').check();
+ await p.getByRole('button',{name:'Start playing'}).click();
+ await p.getByRole('button',{name:'See contracts'}).tap();
+ const market=p.locator('#view');
+ await market.locator('.contract').filter({hasText:'Mercia Trade Supplies'}).getByText(/400 needed · 250 free now · 150 short/).waitFor();
+ const job=market.locator('.contract').filter({hasText:'Avon Toolworks'});
+ await job.locator('input[id^="s-"]').fill('12');
+ await job.locator('input[id^="h-"]').fill('4.25');
+ assert.match(await job.locator('output').innerText(),/£6,013/);
+ await job.getByRole('button',{name:'Submit bid',exact:true}).tap();
+ await p.getByRole('button',{name:'Plan handling'}).tap();
+ await p.getByRole('button',{name:'Increase Day staff'}).tap();
+ await p.getByRole('button',{name:'Apply next-turn plan'}).tap();
+ await p.locator('#tabs').getByRole('button',{name:'Map',exact:true}).tap();
+ await p.getByRole('button',{name:/Complete January/}).tap();
+ await p.getByRole('heading',{name:'What moved the result?'}).waitFor();
+ assert.match(await p.locator('#dialog .d22-card').innerText(),/Avon Toolworks: Won/);
+ await p.getByRole('button',{name:'Continue',exact:true}).tap();
+ await p.reload();
+ await p.getByText(/Your first job starts this month/).waitFor();
+ await p.getByRole('button',{name:/Complete February/}).tap();
+ assert.ok(await p.evaluate(()=>state.player.last.storage>0&&state.player.last.handling>0));
+ await p.getByRole('heading',{name:'What moved the result?'}).waitFor();
+ assert.deepEqual(errors,[]);await intro.close();
+ console.log('passed browser 390px: guided first bid, staffing, award, resume and first trade');
 }finally{await b.close();srv.close();}

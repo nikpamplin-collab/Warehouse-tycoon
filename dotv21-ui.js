@@ -86,14 +86,14 @@ function d21ApplyOps() {
  document.getElementById('d21-plan')?.focus({preventScroll:true});
 }
 function d21OpsPanel(s) {
- const d=d21Draft(s),m=d21OpsModel(s,d.roster,d.trucks),a=[...d.roster,d.trucks],n=[...dot19Roster(s),dot19TruckCount(s,state.month)];
+ const d=d21Draft(s),m=d21OpsModel(s,d.roster,d.trucks),limit=d22Bottleneck(s,d.roster,d.trucks,m.efficiency),a=[...d.roster,d.trucks],n=[...dot19Roster(s),dot19TruckCount(s,state.month)];
  const queued=[...dot19TargetRoster(s),dot19TruckTarget(s)];
  const unsaved=a.some((x,i)=>x!==queued[i]),planned=queued.some((x,i)=>x!==n[i]);
  const names=['Day staff','Late staff','Night staff','MHE trucks'];
  return '<div class="d21-kpi"><span class="d21-kicker">CAPACITY · NOW → NEXT TURN</span><div class="d21-big" aria-live="polite">'+num(m.capNow)+' <i>→</i> <b>'+num(m.future)+'</b></div><div class="d21-line"><span>Next-turn demand</span><strong>'+num(m.demand)+' moves</strong></div><div class="d21-meter" aria-hidden="true"><span style="width:'+Math.min(100,m.future?m.demand/m.future*100:m.demand?100:0)+'%"></span></div><small>'+ (m.demand>m.future?num(m.demand-m.future)+' moves short':num(m.future-m.demand)+' moves of headroom')+'</small></div>'+
  '<div class="d21-steps">'+a.map((val,i)=>'<div '+(i===3?'id="d21-mhe"':'')+'><div class="d21-line d21-step-label"><b>'+names[i]+'</b><small>'+n[i]+' now</small></div><div class="d21-step"><button aria-label="Reduce '+names[i]+'" data-step="'+i+':-1" onclick="d21OpsStep('+i+',-1)" '+(!val||state.finished?'disabled':'')+'>−</button><b>'+val+'</b><button aria-label="Increase '+names[i]+'" data-step="'+i+':1" onclick="d21OpsStep('+i+',1)" '+(state.finished||i!==3&&dot19Total(d.roster)>=150?'disabled':'')+'>+</button></div></div>').join('')+'</div>'+
  '<div class="d21-line d21-cost"><span>Labour + trucks / turn</span><strong>'+fmt(m.plannedCost)+'</strong><b>'+d21Delta(m.delta,fmt)+'</b></div><button class="d21-primary" onclick="d21ApplyOps()" '+(!unsaved||state.finished?'disabled':'')+'>'+(unsaved?'Apply next-turn plan':planned?'Next-turn plan saved':'No changes to apply')+' <span aria-hidden="true">→</span></button>'+
- d21Why('Days '+num(m.shifts[0])+' · lates '+num(m.shifts[1])+' · nights '+num(m.shifts[2])+' moves; '+m.bays+' next-turn bays. Each staffed truck can serve successive shifts. '+(m.efficiency<1?'Short management cover reduces output. ':'')+'Only signed work; excludes random impacts and any unconfirmed CI gain.');
+ d21Why('Days '+num(m.shifts[0])+' · lates '+num(m.shifts[1])+' · nights '+num(m.shifts[2])+' moves; '+m.bays+' next-turn bays. Each staffed truck can serve successive shifts. '+(m.efficiency<1?'Short management cover reduces output. ':'')+'Only signed work; excludes random impacts and any unconfirmed CI gain.')+'<div class="d22-show"><b>Capacity limit: '+esc(limit.label)+'</b><br><small>'+num(limit.workforce)+' workforce moves · '+num(limit.docks)+' dock moves · changes from '+esc(monthName(state.month+1))+'</small></div>';
 }
 function d21Unapplied(){
  return state.player.sites.some(s=>{const d=D21.drafts.get(state.month+':'+s.id);return d&&(d.trucks!==dot19TruckTarget(s)||d.roster.some((x,i)=>x!==dot19TargetRoster(s)[i]));});
@@ -144,7 +144,7 @@ function d21Render() {
  const view=document.getElementById('view');
  if(D21.renderedTab!==null)for(const d of (view.querySelectorAll?.('.d21-fold')||[]))D21.panels.set(D21.renderedTab+':'+d.dataset.fold,d.open);
  d21Header(); const fn={office,market,warehouse:d21Warehouse,investment:d21Investment,rivals:rivalsView,history}[tab];
- view.innerHTML=(d21SceneOrigin?'<button class="d21-scene-back" type="button" data-scene-return>← Back to warehouse visual</button>':'')+(tab==='office'?'<div class="d21-hub"><b>UK network</b><button class="btn secondary" onclick="goFromContext(\'rivals\')">Rival operators →</button></div>'+(d21Unapplied()?'<p class="notice">You have unapplied Operations changes. Apply the draft before ending the turn if you want it to take effect.</p>':''):'')+fn();
+ view.innerHTML=(d21SceneOrigin?'<button class="d21-scene-back" type="button" data-scene-return>← Back to warehouse visual</button>':'')+((tab==='office'||tab==='market')?d22Guide():'')+(tab==='office'?'<div class="d21-hub"><b>UK network</b><button class="btn secondary" onclick="goFromContext(\'rivals\')">Rival operators →</button></div>'+(d21Unapplied()?'<p class="notice">You have unapplied Operations changes. Apply the draft before ending the turn if you want it to take effect.</p>':''):'')+fn();
  D21.renderedTab=tab;
 }
 function d21BidQuote(input){
