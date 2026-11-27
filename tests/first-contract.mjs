@@ -9,7 +9,7 @@ function opening(seed=1){
 test('guided market is optional; fits a 200-pallet trial and accurately appraises a 400-pallet tender',()=>{
  const g=opening();
  assert.equal(g.run("availableSite(state.player,state.tenders[0]).id"),g.run("selectedSite().id"));
- assert.match(g.run("d22Fit(state.tenders[1]).label"),/400 needed · 250 free now · 150 short.*£15,000.*February/);
+ assert.match(g.run("d22Fit(state.tenders[1]).label"),/400 needed · 250 spaces available for the whole contract · 150 short.*£15,000.*February/);
  assert.equal(g.run("!!availableSite(state.player,state.tenders[1])"),false);
  const sg=boot(code,1);setup(sg);assert.equal(sg.run("state.tenders.some(t=>t.trial)"),false);
 });
@@ -24,14 +24,14 @@ test('trial pricing is competitive without scripted wins; win, loss, retry and s
  assert.equal(g.run("state.tenders[0].name"),'Wye Tool & Fastener');
  g.run("state.bids['guide-first-2']={storage:12,handling:4.25};nextMonth()");
  assert.equal(g.run('state.firstContract.result.won'),true);
- assert.match(g.run('d22Guide()'),/starts this turn/);
+ assert.match(g.run('d22Guide()'),/starts this month/);
  g.run("nextMonth()");assert.ok(g.run('state.player.last.storage>0'));assert.match(g.run('d22Guide()'),/first trading result/);
  g.run("d22Skip()");assert.equal(g.run("d22Guide()"),'');assert.equal(g.run('state.firstContract.mode'),'sandbox');
  const h=opening();h.run('d22Skip();nextMonth()');assert.equal(h.run("state.tenders.some(t=>t.trial)"),false);
 });
 test('month-end explanation reconciles and capacity drivers follow the staffed-shift model',()=>{
  const g=opening(4);
- assert.equal(g.run('d22Bottleneck(selectedSite(),[0,0,0],10,1).label'),'no shifts staffed');
+ assert.equal(g.run('d22Bottleneck(selectedSite(),[0,0,0],10,1).label'),'no staff on shift');
  assert.equal(g.run('d22Bottleneck(selectedSite(),[1,0,0],0,1).label'),'people and equipment');
  assert.equal(g.run('d22Bottleneck(selectedSite(),[30,0,0],6,1).label'),'dock doors');
  g.run('bidAll();nextMonth();nextMonth();nextMonth()');

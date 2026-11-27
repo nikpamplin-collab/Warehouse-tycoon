@@ -20,7 +20,7 @@ function addSpotTenders(g,out){
   for (const r of regions){
     if(![g.player,...g.rivals].some(c=>!c.bankrupt&&owned(c,r.id).length)||Math.random()>=.34)continue;
     const spaces=pick([50,75,100,125,150,175,200,225,250]);
-    out.push({id:'spot-'+g.month+'-'+r.id,region:r.id,name:'Overflow storage · '+monthName(g.month+1),spaces,moves:spaces*2,term:1,start:g.month+1,segment:'Spot',spot:true,marketPrice:marketPrice(g,r.id)*V18.spotPrice,variableVolume:false});
+    out.push({id:'spot-'+g.month+'-'+r.id,region:r.id,name:'Short-term storage · '+monthName(g.month+1),spaces,moves:spaces*2,term:1,start:g.month+1,segment:'Spot',spot:true,marketPrice:marketPrice(g,r.id)*V18.spotPrice,variableVolume:false});
   }
 }
 function tenderDefault(t,key){
@@ -76,4 +76,9 @@ function v18Prepay(c,requested){
   for(const l of loans){const n=Math.min(l.balance,left);l.balance=loanRound(l.balance-n);left=loanRound(left-n);}
   c.loans=loans.filter(l=>l.balance>0);c.debt=loanRound(c.debt-amount);c.cash-=amount;
   return amount;
+}
+
+// Old saves keep stored names; use the new wording when showing a one-month job.
+function d26TenderName(t){
+ return t.spot?t.name.replace(/^Overflow storage · /,'Short-term storage · '):t.name;
 }

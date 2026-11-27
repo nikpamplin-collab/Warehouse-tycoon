@@ -50,7 +50,7 @@ function d26TakeMortgage(){
 function d26MortgageCard(s){
  if(!d26FreePlay())return '';
  const q=d26MortgageOffer(s);
- return '<h3>Extension mortgage</h3><p><b>'+q.streak+' of 6 profitable months in a row</b> · '+Math.floor(q.used*100)+'% of this site’s space booked this month.</p><p>'+fmt(q.deposit)+' deposit · '+fmt(q.loan)+' loan · about '+fmt(q.payment)+'/month for 25 years.</p><p>First payment this month. Keep at least '+fmt(q.reserve)+' cash after the deposit. The mortgage pays only for construction. Budget for extra racking and higher running costs before ordering.</p>'+
+ return '<h3>Extension mortgage</h3><p><b>'+q.streak+' of 6 profitable months in a row</b> · '+Math.floor(q.used*100)+'% of this site’s space booked this month.</p><p>'+fmt(q.deposit)+' cash deposit · '+fmt(q.loan)+' loan · about '+fmt(q.payment)+'/month for 25 years.</p><p>Cash now: '+cash(state.player)+' · cash after deposit: '+money(state.player.cash-q.deposit)+'. Undrawn credit does not count as cash.</p><p>First payment this month. Keep at least '+fmt(q.reserve)+' cash after the deposit. The mortgage pays only for construction. Budget for extra racking and higher running costs before ordering.</p>'+
  (q.reasons.length?'<ul class="list">'+q.reasons.map(r=>'<li>'+esc(r)+'</li>').join('')+'</ul>':'')+
  '<button class="btn secondary" onclick="d26ConfirmMortgage()" '+(!q.available?'disabled':'')+'>Use extension mortgage</button>';
 }
@@ -71,7 +71,7 @@ function d26Infrastructure(s){
  '<div class="d21-line"><span>Dock doors ready to use</span><strong>'+num(doors)+'</strong></div>'+
  '<p>'+num(DOT17Facilities.dockCapacity(s,shifts))+' pallet moves per month through the docks on currently staffed shifts. Receipt and despatch share this limit. A new door takes one month.</p>'+
  '<p>Next month with existing orders: '+num(nextSpace)+' pallet spaces and '+num(DOT17Facilities.doorCount(next))+' dock doors.'+(q.queued?' A dock door is already on order.':'')+'</p>'+
- (q.available?'<p>With one more door: '+num(DOT17Facilities.dockCapacity(next,futureShifts))+' → '+num(DOT17Facilities.dockCapacity(extra,futureShifts))+' dock moves next month on the saved shift plan. Staff can still limit output.</p>':!q.queued?'<p>No more room to add a dock door without an extension.</p>':'')+
+ (q.available?'<p>With one more door: '+num(DOT17Facilities.dockCapacity(next,futureShifts))+' → '+num(DOT17Facilities.dockCapacity(extra,futureShifts))+' moves the docks can handle next month on the saved shift plan. Staff can still limit output.</p>':!q.queued?'<p>The available dock positions are already built or on order.</p>':'')+
  '<button class="btn secondary" onclick="orderWarehouseFacility(\'dock\')" '+(!q.available||state.finished||state.player.cash<q.cost?'disabled':'')+'>Order dock door · '+fmt(q.cost)+'</button></section>';
 }
 

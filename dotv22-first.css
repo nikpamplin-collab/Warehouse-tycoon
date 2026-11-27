@@ -8,7 +8,7 @@
 .d22-choice{display:flex;align-items:center;gap:10px;padding:8px 0;min-height:44px}
 .d22-choice input{width:20px;height:20px;margin:0}
 
-.d25-filter{display:flex;gap:8px;margin:8px 0}
+.d25-filter{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.d25-filter small{flex-basis:100%}
 .d25-filter button{min-height:44px}
 .d25-filter button[aria-pressed=true]{outline:2px solid #65d5c6;outline-offset:-3px}
 .d25-mode+#d25-mode{display:block;width:100%;min-height:44px;margin:3px 0 10px}

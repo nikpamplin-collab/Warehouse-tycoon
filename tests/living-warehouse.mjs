@@ -10,9 +10,9 @@ test('cutaway diagnoses current constraints, idle fleet, and queued projects wit
  ws24.projects=[{type:'Racking',remaining:1,cost:15000}];save()`);
  const before=g.run('JSON.stringify(state)');
  const scene=g.run('warehouseGraphic(ws24)');
- assert.match(scene,/Dock limit/);assert.match(scene,/Storage nearly full/);assert.match(scene,/leased forklifts idle/);
- assert.match(scene,/1 queued project/);assert.match(scene,/data-diagnostic="dock"/);
+ assert.match(scene,/Dock doors limit output/);assert.match(scene,/Storage nearly full/);assert.match(scene,/leased forklifts idle/);
+ assert.match(scene,/1 project in progress/);assert.match(scene,/data-diagnostic="dock"/);
  assert.equal(g.run('JSON.stringify(state)'),before);
  g.run('ws24.staff=0; ws24.shiftStaff=[0,0,0]');
- assert.match(g.run('warehouseGraphic(ws24)'),/No staffed shift/);
+ assert.match(g.run('warehouseGraphic(ws24)'),/No staff on shift/);
 });

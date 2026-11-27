@@ -10,3 +10,7 @@ This branch does not change the live v25 game.
 - No change to challenge funding, standard asset-backed business loans, or dock and racking simulation rules. The v26 save is separate; an existing v25 save imports without being overwritten. A rollback reads the original v25 progress, not subsequent v26 moves.
 - Tests: cash and debt accounting, 300 payments, six-month gate, project completion, stock/dock controls, six-seed early-game exploration and a repeatable 36-month expansion test. In three trading runs with an extra £75k set aside for racking, loans were taken in months 21–26, extensions completed and all three remained cash-positive at month 36. A tight-cash build can still fail; it is not meant to be an automatic upgrade.
 
+
+## Approved terminology pass
+
+Applied the full player-facing wording review across Warehouse view, Ops, Bids, Investment, Map, Rivals, Cash, results and setup. Uses month consistently, explains pallet moves and storage-only bid fit, and separates booked storage from activity and profit from cash. Dock doors stay with racking, not in the Safety panel. The mortgage shows cash now and cash left after the £250k deposit; undrawn credit does not count. No changes to simulation or loan rules in this pass.

@@ -91,10 +91,10 @@ test('CI is available every 24 turns and only three funded starts per site',()=>
   assert.equal(g.run('w.ciStarts'),1);
   assert.equal(g.run('dot19CINext(w)'),25);
   g.run('progress(state.player);progress(state.player);progress(state.player);state.month=24');
-  assert.throws(()=>g.run('startCI()'), /24 turns/);
+  assert.throws(()=>g.run('startCI()'), /24 months/);
   g.run('state.month=25;startCI();w.projects=[];state.month=49;startCI();w.projects=[];state.month=74');
   assert.equal(g.run('w.ciStarts'),3);
-  assert.throws(()=>g.run('startCI()'), /three programmes/);
+  assert.throws(()=>g.run('startCI()'), /three/);
   assert.equal(g.run('dot19CINext(w)'),Infinity);
 });
 

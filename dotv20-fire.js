@@ -34,10 +34,10 @@
    reason ||= added===0?'Water supply sized for the entire site':'';
   } else if(type===ROOF){
    goal=x.water;added=goal-x.roof;cost=38000*added;
-   reason ||= !x.water?'Commission tank and pumps first':added===0?'Roof coverage matches the commissioned water supply':'';
+   reason ||= !x.water?'Get the tank and pumps ready first':added===0?'Roof sprinklers already cover all areas served by the water supply':'';
   } else {
    goal=Math.min(x.roof,rackable(s));added=goal-x.rack;cost=20000*added;
-   reason ||= !x.water?'Commission tank and pumps first':!x.roof?'Commission roof sprinklers first':!rackable(s)?'Install racking first':added===0?'Existing racking inside the roof-covered sections is protected':'';
+   reason ||= !x.water?'Get the tank and pumps ready first':!x.roof?'Commission roof sprinklers first':!rackable(s)?'Install racking first':added===0?'Existing racking inside the roof-covered sections is protected':'';
   }
   if(queued(s,type)) reason='Already in the project queue';
   return {type,available:!reason&&added>0,cost:added>0?cost:0,months:months[type],goal,added,reason};
@@ -87,10 +87,10 @@
  }
  function shortStatus(s){
   const x=view(s), previous=s?.last?.incident;
-  const assets=x.water?('Water supply ready · roof '+x.roof+'/'+x.sections+' · in-rack '+x.rack+'/'+rackable(s)):(x.waterWorks?'Tank and pumps in fit-out':'No commissioned fire protection');
+  const assets=x.water?('Water supply ready · roof '+x.roof+'/'+x.sections+' · in-rack '+x.rack+'/'+rackable(s)):(x.waterWorks?'Tank and pumps being installed':'No fire protection ready to use');
   const risk=(fireRisk(s)*100).toLocaleString('en-GB',{maximumFractionDigits:2});
-  const note=previous?.kind==='Fire'?' · Fire last turn':'';
-  return '<div class="'+(x.roof?'d17-facility-added':'')+'"><strong>Fire protection</strong><span>'+assets+'</span><span>'+risk+'% monthly ignition risk · sprinklers reduce damage, not ignitions'+note+'</span></div>';
+  const note=previous?.kind==='Fire'?' · Fire last month':'';
+  return '<div class="'+(x.roof?'d17-facility-added':'')+'"><strong>Fire protection</strong><span>'+assets+'</span><span>'+risk+'% chance of a fire each month · sprinklers reduce damage, not the chance of a fire'+note+'</span></div>';
  }
  function controls(s,balance){
   const x=view(s), cost=runningCost(s);
@@ -98,13 +98,13 @@
    const q=quote(s,t), ids=['tank','roof','rack'];
    const held=i===0?x.water:i===1?x.roof:x.rack;
    const possible=i===2?rackable(s):x.sections;
-   return '<article class="d20-fire-stage"><div><b>'+(i+1)+'. '+t+'</b><small>'+held+'/'+possible+' sections commissioned'+(q.cost?' · '+cash(q.cost)+' · '+q.months+' turn'+(q.months===1?'':'s'):'')+'</small></div>'
+   return '<article class="d20-fire-stage"><div><b>'+(i+1)+'. '+t+'</b><small>'+held+'/'+possible+' sections ready to use'+(q.cost?' · '+cash(q.cost)+' · '+q.months+' month'+(q.months===1?'':'s'):'')+'</small></div>'
      +'<button class="btn secondary" '+(!q.available||balance<q.cost?'disabled ':'')+'onclick="orderFireProtection(\''+ids[i]+'\')">Order '+t.toLowerCase()+'</button>'
      +(!q.available?'<p class="muted">'+q.reason+'</p>':'')+'</article>';
   }).join('');
   return '<section class="d20-fire-controls" aria-label="Staged fire protection"><h3>Fire protection</h3>'
    +'<p>Commission the outside tank and pumps first, then protect the roof and add in-rack cover where needed. Existing coverage remains in service while new work is fitted.</p>'
-   +action+'<p class="muted">Current inspections and servicing: '+cash(cost)+'/turn. Roof and in-rack coverage reduce losses and disruption; they do not prevent ignition.</p></section>';
+   +action+'<p class="muted">Current inspections and servicing: '+cash(cost)+'/month. Roof and in-rack sprinklers reduce damage and disruption, not the chance of a fire.</p></section>';
  }
  window.DOT20Fire=Object.freeze({WATER,ROOF,RACK,LEGACY,types,months,footprint,migrate,quote,order,complete,fireRisk,incidentKind,outcome,runningCost,view,shortStatus,controls});
 })();

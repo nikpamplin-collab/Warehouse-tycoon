@@ -37,7 +37,7 @@ test('fit shortlist keeps placed bids and is read-only',()=>{
  a.run("d25SetFilter('fit')");
  assert.ok(a.run('d25Tenders().every(t=>availableSite(state.player,t)||state.bids[t.id])'));
  assert.equal(a.run('JSON.stringify(state)'),before);
- assert.match(a.run('d25FilterToolbar()'),/Fits my sites/);
+ assert.match(a.run('d25FilterToolbar()'),/Storage fits my sites/);
 });
 test('three-year lean depot and multi-site specialists can both trade profitably',()=>{
  for(const [kind,sites] of [['peak',1],['region',2]])for(const seed of [11,21,31]){

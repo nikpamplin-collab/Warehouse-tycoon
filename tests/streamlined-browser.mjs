@@ -29,17 +29,17 @@ try{
   const bounds=await p.evaluate(()=>({k:document.querySelector('.d21-kpi').getBoundingClientRect().top,controls:document.querySelector('.d21-steps').getBoundingClientRect().bottom,nav:document.querySelector('#tabs').getBoundingClientRect().top,widths:[...document.querySelectorAll('.d21-step button')].map(x=>x.getBoundingClientRect().width)}));
   assert.ok(bounds.widths.every(x=>x>=44));
   if(width<=390)assert.ok(bounds.controls<bounds.nav&&bounds.k>0,JSON.stringify(bounds));
-  const old=await save();await tap(btn('Increase Day staff'));await tap(btn('Increase MHE trucks'));assert.deepEqual(await save(),old);
-  await tap(btn('Apply next-turn plan'));assert.equal((await save()).player.sites[0].mhePlan.count,1);
-  await p.reload();await jump('Ops');assert.match(await p.locator('#d21-plan').innerText(),/Next-turn plan saved/);
+  const old=await save();await tap(btn('Increase Day shift'));await tap(btn('Increase Leased forklifts'));assert.deepEqual(await save(),old);
+  await tap(btn('Save for next month'));assert.equal((await save()).player.sites[0].mhePlan.count,1);
+  await p.reload();await jump('Ops');assert.match(await p.locator('#d21-plan').innerText(),/Plan saved for next month/);
   if(width===390)await p.screenshot({path:'/tmp/wt21-operations.png',fullPage:true});
-  await jump('Invest');assert.match(await p.locator('#d21-upgrade').innerText(),/CASH AFTER/);
-  await tap(btn('Increase rack blocks'));assert.match(await p.locator('#d21-upgrade').innerText(),/£30,000/);
+  await jump('Invest');assert.match(await p.locator('#d21-upgrade').innerText(),/Cash left after purchase/);
+  await tap(btn('Increase racking packages'));assert.match(await p.locator('#d21-upgrade').innerText(),/£30,000/);
   if(width===390)await p.screenshot({path:'/tmp/wt21-investment.png',fullPage:true});
-  await tap(btn('Queue racking →'));assert.equal((await save()).player.sites[0].projects.length,2);
+  await tap(btn('Order racking →'));assert.equal((await save()).player.sites[0].projects.length,2);
   assert.match(await p.locator('#d21-upgrade').innerText(),/Dock door/i);await tap(btn('Productivity'));assert.match(await p.locator('#d21-upgrade').innerText(),/Automation/);
   if(width===390){
-   await tap(p.locator('[data-fold=bank] summary'));
+   await tap(p.locator('[data-fold=bank] > summary'));
    const beforeLoan=await save();
    await tap(btn('Borrow £25,000 starter cash'));
    assert.equal((await save()).player.cash,beforeLoan.player.cash+25000);
@@ -54,9 +54,9 @@ try{
    await p.reload();await jump('Invest');
    assert.equal((await save()).player.sites[0].projects.filter(x=>x.mortgaged).length,1);
   }
-  await tap(btn('Fire protection'));assert.match(await p.locator('#d21-upgrade').innerText(),/Commission tank and pumps first/);
-  await jump('Bids');const price=p.locator('[id^="s-t"]').first();await price.fill('22');assert.match(await p.locator('output.d21-bid-quote').first().innerText(),/At these rates/);
-  await jump('Cash');await p.getByRole('heading',{name:'Trading & cash',exact:true}).waitFor();
+  await tap(btn('Fire protection'));assert.match(await p.locator('#d21-upgrade').innerText(),/Get the tank and pumps ready first/);
+  await jump('Bids');const price=p.locator('[id^="s-t"]').first();await price.fill('22');assert.match(await p.locator('output.d21-bid-quote').first().innerText(),/Estimated monthly revenue at forecast volumes/);
+  await jump('Cash');await p.getByRole('heading',{name:'Profit & cash',exact:true}).waitFor();
   await jump('Map');await tap(btn('Rival operators →'));await p.getByRole('heading',{name:'Rival operators',exact:true}).waitFor();
   await p.evaluate(()=>navigator.serviceWorker.ready);await p.waitForFunction(()=>navigator.serviceWorker.controller);
   await jump('Map');await p.evaluate(()=>{
@@ -114,7 +114,7 @@ try{
   const modal=p.locator('#dialog .d21-zoom-svg');
   await modal.locator('[data-scene-hit="safety"]').press('Enter');
   assert.equal(await p.evaluate(()=>document.activeElement.id),'d21-site-safety');
-  const sceneBack=()=>p.getByRole('button',{name:'Back to warehouse visual'});
+  const sceneBack=()=>p.getByRole('button',{name:'Back to warehouse view'});
   await tap(sceneBack()); await modal.waitFor();
   assert.equal(await p.evaluate(()=>document.activeElement?.dataset.sceneHit),'safety');
   await tap(p.getByRole('button',{name:'Close',exact:true}));
@@ -162,7 +162,7 @@ try{
   assert.ok(Math.abs(await opsYard.evaluate(el=>el.getBoundingClientRect().top)-inOps)<2);
   await p.reload();await jump('Ops');
   await ctx.setOffline(true);await p.reload();assert.match(await p.title(),/DOTv26/);await jump('Ops');
-  assert.match(await p.locator('#d21-plan').innerText(),/Next-turn plan saved/);
+  assert.match(await p.locator('#d21-plan').innerText(),/Plan saved for next month/);
   assert.deepEqual(errors,[]);await ctx.close();console.log('passed browser '+width+'px: navigation, fit, draft, orders, bids and offline');
  }
  const intro=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
@@ -174,25 +174,25 @@ try{
  await p.getByRole('button',{name:'Start playing'}).click();
  await p.getByRole('button',{name:'See contracts'}).tap();
  const market=p.locator('#view');
- await market.locator('.contract').filter({hasText:'Mercia Trade Supplies'}).getByText(/400 needed · 250 free now · 150 short/).waitFor();
+ await market.locator('.contract').filter({hasText:'Mercia Trade Supplies'}).getByText(/400 needed · 250 spaces available for the whole contract · 150 short/).waitFor();
  const job=market.locator('.contract').filter({hasText:'Avon Toolworks'});
  await job.locator('input[id^="s-"]').fill('12');
  await job.locator('input[id^="h-"]').fill('4.25');
  assert.match(await job.locator('output').innerText(),/£6,013/);
  await job.getByRole('button',{name:'Submit bid',exact:true}).tap();
- await p.getByRole('button',{name:'Plan handling'}).tap();
- await p.getByRole('button',{name:'Increase Day staff'}).tap();
- await p.getByRole('button',{name:'Apply next-turn plan'}).tap();
+ await p.getByRole('button',{name:'Plan pallet moves'}).tap();
+ await p.getByRole('button',{name:'Increase Day shift'}).tap();
+ await p.getByRole('button',{name:'Save for next month'}).tap();
  await p.locator('#tabs').getByRole('button',{name:'Map',exact:true}).tap();
  await p.getByRole('button',{name:/Complete January/}).tap();
- await p.getByRole('heading',{name:'What moved the result?'}).waitFor();
+ await p.getByRole('heading',{name:'What drove this month’s result?'}).waitFor();
  assert.match(await p.locator('#dialog .d22-card').innerText(),/Avon Toolworks: Won/);
  await p.getByRole('button',{name:'Continue',exact:true}).tap();
  await p.reload();
  await p.getByText(/Your first job starts this month/).waitFor();
  await p.getByRole('button',{name:/Complete February/}).tap();
  assert.ok(await p.evaluate(()=>state.player.last.storage>0&&state.player.last.handling>0));
- await p.getByRole('heading',{name:'What moved the result?'}).waitFor();
+ await p.getByRole('heading',{name:'Why profit changed'}).waitFor();
  assert.deepEqual(errors,[]);await intro.close();
  console.log('passed browser 390px: guided first bid, staffing, award, resume and first trade');
 
@@ -206,8 +206,8 @@ try{
  await sp.getByText('How each site is performing',{exact:true}).tap();
  await sp.getByText('Pennine DC',{exact:true}).first().waitFor();
  await sp.locator('#tabs').getByRole('button',{name:'Bids',exact:true}).tap();
- await sp.getByRole('button',{name:'Fits my sites',exact:true}).tap();
- assert.equal(await sp.getByRole('button',{name:'Fits my sites',exact:true}).getAttribute('aria-pressed'),'true');
+ await sp.getByRole('button',{name:'Storage fits my sites',exact:true}).tap();
+ assert.equal(await sp.getByRole('button',{name:'Storage fits my sites',exact:true}).getAttribute('aria-pressed'),'true');
  assert.equal(await sp.evaluate(()=>document.documentElement.scrollWidth),320);
  await sp.reload();
  await sp.getByRole('heading',{name:'Win Back the Region',exact:true}).waitFor();

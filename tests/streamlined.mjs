@@ -29,7 +29,7 @@ test('preview uses next turn dock capacity and staffing management; racking orde
  const before=g.run('JSON.stringify(state)');
  g.run('d21RackStep(1)');
  assert.equal(g.run('JSON.stringify(state)'),before);
- assert.match(g.el('d21-upgrade').innerHTML,/NEXT-TURN SPACES/);
+ assert.match(g.el('d21-upgrade').innerHTML,/Pallet spaces next month/);
  g.run('d21ApplyRacks()');
  assert.equal(g.run('state.player.cash'),220000);
  assert.equal(g.run('selectedSite().projects.filter(x=>x.type==="Racking").length'),2);

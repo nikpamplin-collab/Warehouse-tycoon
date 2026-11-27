@@ -22,7 +22,7 @@ test('staged and paid orders cannot bypass commissioning, racking, cash or dedup
  assert.equal(run('selectedSite().projects.length'),1);
  assert.equal(run('dot16ViewModel().openCapitalOrders.cost'),40000);
  assert.doesNotMatch(run('warehouseGraphic(selectedSite())'),/d20-water-tank|d20-pump-house/);
- assert.match(run('warehouseGraphic(selectedSite())'),/Tank and pumps: fit-out/);
+ assert.match(run('warehouseGraphic(selectedSite())'),/Tank and pumps: being installed/);
  assert.deepEqual(object(run(status)),{water:0,roof:0,rack:0});
  assert.equal(run('DOT20Fire.runningCost(selectedSite())'),0);
  run(tick);assert.equal(run(status+'.water'),0);
@@ -47,8 +47,8 @@ test('staged and paid orders cannot bypass commissioning, racking, cash or dedup
  assert.deepEqual(object(run(status)),{water:1,roof:1,rack:1});
  assert.match(run('warehouseGraphic(selectedSite())'),/d20-rack-pipework/);
  assert.equal(run('DOT20Fire.runningCost(selectedSite())'),230);
- assert.match(run('warehouseGraphic(selectedSite())'),/In-rack sprinklers: commissioned/);
- assert.match(run('DOT20Fire.controls(selectedSite(),state.player.cash)'),/£230\/turn/);
+ assert.match(run('warehouseGraphic(selectedSite())'),/In-rack sprinklers: ready to use/);
+ assert.match(run('DOT20Fire.controls(selectedSite(),state.player.cash)'),/£230\/month/);
  assert.equal(run('dot16ViewModel().openCapitalOrders'),undefined);
 });
 test('ignitions and safety event counts are unchanged, with graduated real loss and disruption',()=>{

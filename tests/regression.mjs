@@ -12,7 +12,7 @@ const asJSON=x=>JSON.parse(JSON.stringify(x));
 test('new game and all six tabs render',()=>{
  const g=boot(compiler);assert.match(g.el('dialog').innerHTML,/Start your logistics business/);
  setup(g,'A & B <Logistics>','Main "DC"');
- for(const [tab,phrase] of [['office','Dispatch brief'],['market','UK customer tenders'],['warehouse','Plan next turn'],['investment','Upgrade this site'],['rivals','Opening profit'],['history','Monthly financial results']]){
+ for(const [tab,phrase] of [['office','Business summary'],['market','UK customer tenders'],['warehouse','Plan next month'],['investment','Upgrade this site'],['rivals','Expected first-month profit'],['history','Monthly financial results']]){
   g.run(`go('${tab}')`);assert.ok(g.u().includes(phrase),tab);
   assert.match(g.el('tabs').innerHTML,/aria-current="page"/);
  }
@@ -25,16 +25,16 @@ test('map and all yard views are read only and each mode changes the view',()=>{
  g.click({region:'north'});assert.match(g.u(),/data-region="north" aria-pressed="true"/);
  g.click({region:'mid'});g.click({index:'0'});assert.equal(g.run('tab'),'warehouse');
  g.click({sceneMode:'flow'});assert.doesNotMatch(g.u(),/Put-away/);assert.match(g.u(),/Forecast pallet moves/);assert.match(g.u(),/data-scene-mode="flow" aria-pressed="true"/);
- g.click({sceneMode:'build'});assert.match(g.u(),/No investment work is queued/);
- g.click({sceneMode:'floor'});assert.match(g.u(),/aria-label="Storage occupied"/);
+ g.click({sceneMode:'build'});assert.match(g.u(),/No work in progress/);
+ g.click({sceneMode:'floor'});assert.match(g.u(),/aria-label="Pallet spaces booked this month"/);
  assert.equal(g.run('JSON.stringify(state)'),before);
 });
 test('queue, staffing, completion and reloading a saved month',()=>{
  const g=boot(compiler);setup(g);g.run("go('warehouse');buyRack();staff(1)");
- g.click({sceneMode:'build'});assert.match(g.u(),/Racking<\/b>[\s\S]{0,150}1 turn left/);
+ g.click({sceneMode:'build'});assert.match(g.u(),/Racking<\/b>[\s\S]{0,150}1 month left/);
  g.run('nextMonth()');assert.equal(g.run('state.month'),2);
  assert.equal(g.run('state.player.sites[0].racks'),1);
- assert.match(g.el('dialog').innerHTML,/Handling performance/);
+ assert.match(g.el('dialog').innerHTML,/Pallet move results/);
  const resumed=boot(compiler,999,g.store);assert.equal(resumed.run('state.month'),2);
  assert.deepEqual(asJSON(g.run('state.player')),asJSON(resumed.run('state.player')));
 });

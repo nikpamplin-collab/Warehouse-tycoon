@@ -69,10 +69,10 @@
     if (/^(NEW ENTRANT|Competitor update):/i.test(message)) return 'competitor';
     if (/^(Milestone|OBJECTIVE ACHIEVED):/i.test(message)) return 'milestone';
     if (/^(ACQUISITION|TAKEOVER COMPLETE|CONTROL):/i.test(message)) return 'acquisition';
-    if (/\b(?:installation(?:s)?|CI) completed\b/i.test(message)) return 'completed';
-    if (/^Cancelled (?:Racking|Expansion|Automation|CI|Dock door|Sprinklers|Tank and pumps|Roof sprinklers|In-rack sprinklers) project\b|:\s+(?:Racking|Expansion|Automation|Replacement|CI|Dock door|Sprinklers|Tank and pumps|Roof sprinklers|In-rack sprinklers) \d+ months? remaining\.$/i.test(message)) return 'project';
-    if (/:\s*(?:no suitable bids|customers rejected bids above market budget)\.$/i.test(message)) return 'tender';
-    if (/\bwon \([^)]+\/month forecast\)\.$/i.test(message)) {
+    if (/\b(?:(?:installation(?:s)?|CI) completed|productivity improvement project complete)\b/i.test(message)) return 'completed';
+    if (/^Cancelled (?:Racking|Expansion|Automation|CI|productivity improvement|Dock door|Sprinklers|Tank and pumps|Roof sprinklers|In-rack sprinklers) project\b|:\s+(?:Racking|Expansion|Automation|Replacement|CI|Productivity improvement project|Dock door|Sprinklers|Tank and pumps|Roof sprinklers|In-rack sprinklers) \d+ months? remaining\.$/i.test(message)) return 'project';
+    if (/:\s*(?:no suitable bids|no bid qualified|customers rejected bids above market budget|bids exceeded the customer’s budget)\.$/i.test(message)) return 'tender';
+    if (/\bwon \([^)]+\/month (?:forecast|at forecast volumes)\)\.$/i.test(message)) {
       return playerName && message.includes(': ' + playerName + ' won (') ? 'win' : 'award';
     }
     return 'update';
@@ -107,9 +107,9 @@
       const [icon, label, tone] = types[category];
       return `<li class="d16-${tone}"><span class="d16-badge"><span aria-hidden="true">${icon}</span> ${label}</span><p>${safe(message)}</p></li>`;
     }).join('')}</ul>`;
-    return `<div class="d16-news"><h3>Dispatch board</h3>${events.length
+    return `<div class="d16-news"><h3>Latest updates</h3>${events.length
       ? `<p class="d16-note">Latest available operations and market updates.</p>${list(events.slice(0,4))}${events.length > 4 ? `<details><summary>More recorded updates</summary>${list(events.slice(4))}</details>` : ''}`
-      : '<p class="d16-note">No updates recorded yet. Advance a month to open the dispatch board.</p>'}</div>`;
+      : '<p class="d16-note">No updates recorded yet. Advance a month to open the updates.</p>'}</div>`;
   }
   function chartPair(trend) {
     const figures = sparkline(trend, revenue, 'Revenue') + sparkline(trend, r => r.profit, 'Profit / loss');
@@ -136,15 +136,15 @@
     const {last, previous, trend} = ordered(vm);
     const open = vm.openCapitalOrders;
     const hasOpen = open && Number.isInteger(open.count) && open.count > 0 && finite(open.cost) && open.cost >= 0;
-    return `<section class="panel d16-finance"><span class="d13-kicker">FINANCE DESK</span><h2>Trading &amp; cash</h2>
+    return `<section class="panel d16-finance"><span class="d13-kicker">FINANCE DESK</span><h2>Profit &amp; cash</h2>
       ${last ? `<p class="d16-note">Completed month: <b>${safe(titleOf(last))}</b></p>
-      <dl class="d16-stats">${stat('Trading revenue',revenue(last),movement(revenue(last),revenue(previous)))}${stat('Profit / loss after interest',last.profit,movement(last.profit,previous?.profit),last.profit < 0?'bad':'')}${stat('Cash on hand now',vm.cash,'',vm.cash < 0?'bad':'')}</dl>
-      <div class="d16-breakdown"><dl><div><dt>Recorded operating costs (OpEx)</dt><dd>${money(operating(last))}${movement(operating(last),operating(previous),true)}</dd></div>
-      ${finite(last.mheCost) ? financeRow('Equipment leases',last.mheCost)+financeRow('Stock control management',last.stockControlCost)+financeRow('Stock shortage charges',last.stockFines) : ''}${financeRow('Interest charged',last.interest)}${financeRow('Loan principal repaid',last.principal)}${financeRow('Cash at monthly close',last.cash)}</dl>
-      <p class="d16-note">OpEx includes warehouse overhead, labour, safety, incidents, overflow, inspections, management, equipment leases and stock control costs. Interest affects profit; principal repayments affect cash only. Current cash can change after the monthly close.</p>
-      </div>${chartPair(trend)}${historyTable(trend)}` : `<dl class="d16-stats">${stat('Cash on hand now',vm.cash,'',vm.cash < 0?'bad':'')}</dl><p class="d16-note">Complete the first month to compare trading revenue, profit and costs.</p>`}
-      <div class="d16-investment"><h3>Capital projects</h3>${hasOpen ? `<dl>${financeRow('Recorded cost of open capital projects',open.cost)}</dl><p class="d16-note">${open.count} open ${open.count === 1 ? 'project' : 'projects'} still in progress. This is not a cash movement for the month. It excludes completed projects and other asset purchases.</p>` : ''}
-      <p class="d16-note">The game does not track total capital expenditure (CapEx) by month.</p></div>
+      <dl class="d16-stats">${stat('Revenue from customer work',revenue(last),movement(revenue(last),revenue(previous)))}${stat('Profit / loss after interest',last.profit,movement(last.profit,previous?.profit),last.profit < 0?'bad':'')}${stat('Cash now',vm.cash,'',vm.cash < 0?'bad':'')}</dl>
+      <div class="d16-breakdown"><dl><div><dt>Running costs</dt><dd>${money(operating(last))}${movement(operating(last),operating(previous),true)}</dd></div>
+      ${finite(last.mheCost) ? financeRow('Equipment leases',last.mheCost)+financeRow('Stock control management',last.stockControlCost)+financeRow('Stock shortage charges',last.stockFines) : ''}${financeRow('Interest charged',last.interest)}${financeRow('Loan amount repaid, excluding interest',last.principal)}${financeRow('Cash at month-end',last.cash)}</dl>
+      <p class="d16-note">Running costs include warehouse overhead, labour, safety, incidents, overflow, inspections, management, equipment leases and stock control costs. Interest affects profit; loan repayments excluding interest affect cash only. Current cash can change after the monthly close.</p>
+      </div>${chartPair(trend)}${historyTable(trend)}` : `<dl class="d16-stats">${stat('Cash now',vm.cash,'',vm.cash < 0?'bad':'')}</dl><p class="d16-note">Complete the first month to compare trading revenue, profit and costs.</p>`}
+      <div class="d16-investment"><h3>Investment projects</h3>${hasOpen ? `<dl>${financeRow('Total cost of work still in progress',open.cost)}</dl><p class="d16-note">${open.count} open ${open.count === 1 ? 'project' : 'projects'} still in progress. This is not a cash movement for the month. It excludes completed projects and other asset purchases.</p>` : ''}
+      <p class="d16-note">The game does not track total spending on buildings and equipment by month.</p></div>
     </section>`;
   }
   window.WTVisualV16 = Object.freeze({renderDispatch, renderFinance});
