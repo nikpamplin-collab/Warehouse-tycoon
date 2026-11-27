@@ -44,7 +44,7 @@ try{
   await jump('Map');await tap(btn('Rival operators →'));await p.getByRole('heading',{name:'Rival operators',exact:true}).waitFor();
   await p.evaluate(()=>navigator.serviceWorker.ready);await p.waitForFunction(()=>navigator.serviceWorker.controller);
   await jump('Map');await p.evaluate(()=>{
-   const s=state.player.sites[0];Object.assign(s,{sections:2,racks:9,staff:4,shiftStaff:[4,0,0],mheTrucks:2,fireProtection:{water:1,roof:1,rack:1}});
+   const s=state.player.sites[0];Object.assign(s,{sections:2,racks:9,staff:4,hs:true,stockController:true,managers:1,shiftStaff:[4,0,0],mheTrucks:2,fireProtection:{water:1,roof:1,rack:1}});
    const capacity=siteSpace(s);s.contracts=[{start:state.month,end:state.month+3,spaces:Math.round(capacity*1250/2250),moves:4200}];
    render(); // visual QA only; the fixture must not alter the saved readback below.
   });
@@ -55,6 +55,8 @@ try{
   assert.equal(await yard.locator('svg text').count(),0);
   assert.equal(await yard.locator('.d21-public-road,.d21-loading-yard').count(),2);
   assert.ok(await yard.locator('.d21-perimeter-tree').count()>=10);
+  assert.equal(await yard.locator(".d21-cutaway-office .d21-office-person").count(),3);
+  assert.equal(await yard.locator('svg [stroke-dasharray="9 8"]').count(),0);
   assert.equal(await yard.locator('.d21-forklift.d21-shuttle').count(),2);
   assert.equal(await yard.locator('.d20-water-tank').count(),1);
   assert.equal(await yard.locator('.d20-roof-pipework').count(),1);

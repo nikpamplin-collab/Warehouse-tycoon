@@ -287,7 +287,7 @@ function warehouseGraphic(s){
  const active=contracts(s),moves=active.reduce((n,k)=>n+Math.min(k.moves,k.spaces*5),0);
  const fleet=dot19TruckCount(s,state.month);
  const assignments=dot19ShiftPlan(s,state.month,undefined,fleet);
- return DOT21Yard.render({mode:visualSceneMode,motion:visualSceneMotion,sections:s.sections,racks:s.racks,occupied:active.reduce((n,k)=>n+k.spaces,0),spaces:siteSpace(s),staff:s.staff,moves,capacity:siteCapacity(s,managementPenalty(state.player,s)),automated:dot19Lanes(s,state.month).length,projects:s.projects,last:s.last,siteIndex:state.player.sites.indexOf(s),dockDoors:DOT17Facilities.doorCount(s),fireProtection:DOT20Fire.view(s),trucks:fleet,assignedTrucks:Math.max(0,...assignments.map(x=>x.mhe))});
+ return DOT21Yard.render({mode:visualSceneMode,motion:visualSceneMotion,sections:s.sections,racks:s.racks,occupied:active.reduce((n,k)=>n+k.spaces,0),spaces:siteSpace(s),staff:s.staff,safetyManager:s.hs,stockManager:s.stockController,opsManagers:s.managers,moves,capacity:siteCapacity(s,managementPenalty(state.player,s)),automated:dot19Lanes(s,state.month).length,projects:s.projects,last:s.last,siteIndex:state.player.sites.indexOf(s),dockDoors:DOT17Facilities.doorCount(s),fireProtection:DOT20Fire.view(s),trucks:fleet,assignedTrucks:Math.max(0,...assignments.map(x=>x.mhe))});
 }
 function d21ZoomYard(index){
  const source=state.player.sites[index];if(!source)return;

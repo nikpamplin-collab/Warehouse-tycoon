@@ -124,6 +124,39 @@ const DOT21Yard=(()=>{
   }
   return art+'</g>';
  }
+ const officeRoles=v=>[
+  {key:'safety',label:'H&S',filled:!!v.safetyManager,colour:'#d99545',icon:'M-4-2L0-5l4 3v3L0 5l-4-4z M-2 0l1.5 2L2-1'},
+  {key:'stock',label:'Stock control',filled:!!v.stockManager,colour:'#6b9e94',icon:'M-4-3h8v7h-8z M-4-1h8 M-1-3v2'},
+  {key:'operations',label:'Ops management',filled:count(v.opsManagers)>0,colour:'#88a7ce',icon:'M-4 4v-3m4 3v-5m4 5v-8'}
+ ];
+ function office(v){
+  const x=16.5,y=.65,w=13.25,d=4.15,frame='#596f71';
+  let art='<g class="d21-cutaway-office">'+
+   box(x,y,w,d,.11,'clad',.02)+plane(x+.10,y+.10,w-.20,d-.20,'#d5c5ab',.14,'#825f46')+
+   line([[x,y+d,.17],[x+w,y+d,.17]],frame,2.1);
+  // Rear glass and low cut front walls suggest an office without hiding the desks or team.
+  for(let n=0;n<3;n++){
+   const a=x+n*w/3,b=x+(n+1)*w/3;
+   art+=face([[a,y+d,.18],[b,y+d,.18],[b,y+d,2.65],[a,y+d,2.65]],'#a0bdb62a',frame,.9);
+   art+=line([[a,y+d,1.0],[b,y+d,1.0]],'#688782',.8);
+  }
+  art+=face([[x,y,.14],[x,y+d,.14],[x,y+d,2.65],[x,y,1.23]],'#a0bdb629',frame,1.1);
+  const roles=officeRoles(v);
+  roles.forEach((r,k)=>{
+   const xx=17.1+k*4.23;
+   const [a,b]=P(xx+.31,3.56,.12),[mx,my]=P(xx+1.62,2.40,1.86);
+   art+='<g class="d21-office-station" data-office-role="'+r.key+'" data-staffed="'+r.filled+'"><title>'+esc(r.label)+(r.filled?' in post':' vacant')+'</title>'+
+    box(xx+.16,3.20,.72,.67,.45,'steel',.18)+
+    (r.filled?'<g class="d21-office-person" transform="translate('+a+' '+b+')"><ellipse cx="0" cy="1" rx="5" ry="2" fill="#655744" opacity=".24"/><path d="M-3-9v8m5-8v8" stroke="#3a4953" stroke-width="2.6" stroke-linecap="round"/><path d="M-4-18q4-3 8 0l1 9h-10z" fill="'+r.colour+'" stroke="#435353" stroke-width=".65"/><path d="M4-16l3 4 3-1" fill="none" stroke="#655844" stroke-width="1.6" stroke-linecap="round"/><circle cy="-21" r="3.35" fill="'+['#b7805a','#8e6048','#d29b73'][k]+'"/><path d="M-3-21a3 3 0 0 1 6-1" stroke="#4a4139" stroke-width="1.4" fill="none"/></g>':'')+
+    box(xx+.76,1.65,2.72,1.04,.91,['#dfbb91','#ad815a','#96694a'],.14)+
+    box(xx+1.29,2.22,1.02,.26,.12,'steel',1.05)+
+    '<g transform="translate('+mx+' '+my+')"><rect x="-8" y="-6" width="16" height="12" rx="1.5" fill="#374b53" stroke="#26363d" stroke-width=".7"/><path d="'+r.icon+'" stroke="'+(r.filled?r.colour:'#88938e')+'" stroke-width="1.1" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>'+
+    plane(xx+2.45,2.0,.55,.43,'#ece1c6',1.06,'#b1a183')+'</g>';
+  });
+  art+=face([[x,y,.13],[x+w,y,.13],[x+w,y,.62],[x,y,.62]],'#7a9190',frame,.9);
+  art+=face([[x+w,y,.13],[x+w,y+d,.13],[x+w,y+d,1.06],[x+w,y,.62]],'#9eb5af88',frame,.85);
+  return art+'</g>';
+ }
  function yard(v,m) {
   const docks=dockLocations(v.dockDoors),clad='#d3d3c8',edge='#778381', steel='#586c71';
   let art=grounds();
@@ -157,11 +190,9 @@ const DOT21Yard=(()=>{
    art+=face([[.025,y,z],[.025,y+2.7,z],[.025,y+2.7,z+.64],[.025,y,z+.64]],'#91aaa7','#647b7e',1);
    art+=line([[0,y-.31,0],[0,y-.31,2.21+y*.115]],steel,1.15);
   }
-  // Painted safety separation and loading zone. Contrast increases only in flow view.
-  const flow=v.mode==='flow';
+  // Keep solid markings for the dock and pedestrian route, not striped lines across the slab.
   art+=plane(30.94,1.1,1.30,24,'#749078',.04)+line([[30.93,1.1,.06],[30.93,25.1,.06]],'#f3e6b9',1.3);
   for(const y of [3.4,18.6])for(let k=0;k<5;k++)art+=line([[29.1,y+k*.23,.06],[32.3,y+k*.23,.06]],'#f1e8c7',1.1);
-  for(const y of [4.5,10.25,16.85,21.7])art+=line([[2,y,.03],[29.9,y,.03]],flow?'#a36f2f':'#eee5c1',flow?2.35:1.1,'9 8');
   for(const [a,b] of [[5,9],[11.9,17.7],[20.2,23.9]]){
    art+=line([[30.81,a,.70],[30.81,b,.70]],'#c48a33',2.1);
    for(const y of [a,b])art+=line([[30.81,y,0],[30.81,y,.77]],'#c48a33',2.5);
@@ -199,6 +230,7 @@ const DOT21Yard=(()=>{
    add(x,y,forklift(x,y,i<m.assigned&&v.moves>0,i));
   }
   art+=items.sort((a,b)=>b.depth-a.depth).map(x=>x.paint).join('');
+  art+=office(v);
   // Draw external plant and in-building sprinklers only on commissioning.
   if(fire.water>0){
    const [x,y]=P(37.4,21.2,.02);
@@ -242,7 +274,7 @@ const DOT21Yard=(()=>{
   const stock='<div class="d21-yard-metrics"><div><b>Racking fit-out</b><strong>'+percent(m.fit)+'</strong><small>'+num(v.racks)+' of '+num(Math.max(1,count(v.sections))*9)+' rack blocks</small></div><div role="meter" aria-label="Storage occupied" aria-valuenow="'+Math.round(m.fill*100)+'" aria-valuemin="0" aria-valuemax="100"><b>Storage occupied</b><strong>'+percent(m.fill)+'</strong><small>'+num(v.occupied)+' of '+num(v.spaces)+' pallet spaces</small></div></div>';
   const flow='<div class="d21-yard-metrics"><div><b>Signed handling</b><strong>'+num(v.moves)+'</strong><small>Moves this turn</small></div><div><b>Handling capacity</b><strong>'+num(v.capacity)+'</strong><small>'+(v.moves>v.capacity?num(v.moves-v.capacity)+' moves above capacity':num(v.capacity-v.moves)+' spare moves')+'</small></div></div>';
   const build='<div class="d21-yard-projects">'+(p.length?'<ul>'+p.map(j=>'<li><b>'+esc(names[j.type]||'Site work')+'</b><span>'+num(j.remaining)+' '+(j.remaining===1?'turn':'turns')+' left</span></li>').join('')+'</ul>':'<p>No investment work is queued.</p>')+'</div>';
-  return '<figure class="d21-yard-view'+(v.motion===false?' d21-paused':'')+'" data-fit="'+percent(m.fit)+'" data-occupancy="'+percent(m.fill)+'"><div class="d21-yard-head"><b>Warehouse cutaway</b><button type="button" data-scene-zoom="'+(idx??0)+'">Enlarge</button></div><svg class="d21-yard-svg" viewBox="12 8 1049 553" role="img" aria-label="Warehouse cutaway: '+percent(m.fit)+' rack fit-out, '+percent(m.fill)+' active storage, '+num(v.staff)+' staff, '+num(v.sections)+' sections, loading yard and road beside landscaped grounds">'+yard({...v,mode},m)+'</svg><figcaption><div class="d21-yard-controls" aria-label="Warehouse view">'+Object.entries(panels).map(([k,label])=>'<button class="d13-mode" data-scene-mode="'+k+'" aria-pressed="'+(k===mode)+'">'+label+'</button>').join('')+'<button type="button" data-scene-motion aria-label="'+(v.motion===false?'Resume motion':'Pause motion')+'">'+'<svg viewBox="0 0 18 18" width="15" height="15" aria-hidden="true" fill="currentColor">'+(v.motion===false?'<path d="M5 3l10 6-10 6z"/>':'<path d="M5 3h3v12H5zm5 0h3v12h-3z"/>')+'</svg>'+'</button></div>'+(mode==='floor'?stock:mode==='flow'?flow:build)+(status.length?'<p class="d21-yard-fire">'+status.map(esc).join(' · ')+'</p>':'')+'<div class="d21-yard-links">'+links.map(([id,label])=>'<a href="#'+id+'"'+(idx===null?'':' data-d15-open-site="'+idx+'"')+'>'+label+' <span aria-hidden="true">›</span></a>').join('')+'</div></figcaption></figure>';
+  return '<figure class="d21-yard-view'+(v.motion===false?' d21-paused':'')+'" data-fit="'+percent(m.fit)+'" data-occupancy="'+percent(m.fill)+'"><div class="d21-yard-head"><b>Warehouse cutaway</b><button type="button" data-scene-zoom="'+(idx??0)+'">Enlarge</button></div><svg class="d21-yard-svg" viewBox="12 8 1049 553" role="img" aria-label="Warehouse cutaway: '+percent(m.fit)+' rack fit-out, '+percent(m.fill)+' active storage, '+num(v.staff)+' staff, '+num(v.sections)+' sections, loading yard and road beside landscaped grounds. Office: '+officeRoles(v).map(r=>esc(r.label)+(r.filled?' in post':' vacant')).join(', ')+'">'+yard({...v,mode},m)+'</svg><figcaption><div class="d21-yard-controls" aria-label="Warehouse view">'+Object.entries(panels).map(([k,label])=>'<button class="d13-mode" data-scene-mode="'+k+'" aria-pressed="'+(k===mode)+'">'+label+'</button>').join('')+'<button type="button" data-scene-motion aria-label="'+(v.motion===false?'Resume motion':'Pause motion')+'">'+'<svg viewBox="0 0 18 18" width="15" height="15" aria-hidden="true" fill="currentColor">'+(v.motion===false?'<path d="M5 3l10 6-10 6z"/>':'<path d="M5 3h3v12H5zm5 0h3v12h-3z"/>')+'</svg>'+'</button></div>'+(mode==='floor'?stock:mode==='flow'?flow:build)+(status.length?'<p class="d21-yard-fire">'+status.map(esc).join(' · ')+'</p>':'')+'<div class="d21-yard-links">'+links.map(([id,label])=>'<a href="#'+id+'"'+(idx===null?'':' data-d15-open-site="'+idx+'"')+'>'+label+' <span aria-hidden="true">›</span></a>').join('')+'</div></figcaption></figure>';
  }
  return {render,model};
 })();

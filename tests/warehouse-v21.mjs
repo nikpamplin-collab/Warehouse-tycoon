@@ -38,3 +38,22 @@ test('perimeter landscaping and road are decorative, outside the rack and occupa
  assert.equal(howMany(pic,'class="d21-rack-bay"'),0);
  assert.match(pic,/data-fit="0%" data-occupancy="0%"/);
 });
+test('office seats reflect appointed roles and only outdoor lane markings are dashed',()=>{
+ const g=open();
+ const draw=()=>g.run('warehouseGraphic(selectedSite())');
+ g.run('Object.assign(selectedSite(),{hs:false,stockController:true,managers:0})');
+ let pic=draw();
+ assert.match(pic,/data-office-role="safety" data-staffed="false"/);
+ assert.match(pic,/data-office-role="stock" data-staffed="true"/);
+ assert.match(pic,/data-office-role="operations" data-staffed="false"/);
+ assert.equal(howMany(pic,'class="d21-office-person"'),1);
+ g.run('Object.assign(selectedSite(),{hs:true,stockController:true,managers:3})');
+ const before=g.run('JSON.stringify(state)');
+ for(const mode of ['floor','flow','build']){
+  g.run('visualSceneMode='+JSON.stringify(mode));pic=draw();
+  assert.equal(howMany(pic,'class="d21-office-person"'),3);
+  assert.doesNotMatch(pic,/stroke-dasharray="9 8"/);
+  assert.match(pic,/class="d21-public-road"[\s\S]*?stroke-dasharray="11 8"/);
+ }
+ assert.equal(g.run('JSON.stringify(state)'),before);
+});

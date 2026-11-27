@@ -19,3 +19,5 @@ The scene separates installed rack blocks as a share of potential fit-out from a
 A staffed site shows representative walking figures; material handling equipment is visible only when trucks have arrived, with truck motion only when staff are assigned and there is signed handling work. The exterior tank and pump house and installed sprinkler stages appear only when commissioned, with pending work reported separately. The cutaway includes a zoom control, a pause button, and respects reduced motion. Drawn figures and layouts do not feed back into the engine.
 
 The cutaway now sits in a landscape, with a marked loading apron, a continuous entrance to a two-lane road, grass verges, a boundary hedge and trees. These are illustrative grounds only; the yard art does not add capacity, routes or simulation rules.
+
+A cutaway office shows separate workstations for H&S, stock control and operations management. Each appointed role has a representative figure; unfilled roles have empty seats. The warehouse slab no longer has cross-floor dashed stripes; public-road markings and local dock and pedestrian markings remain.
