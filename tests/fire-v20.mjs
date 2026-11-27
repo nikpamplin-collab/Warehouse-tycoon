@@ -109,7 +109,7 @@ test('extensions do not inherit cover, and active and paid legacy installs migra
 test('v20 backs up the configured save before migrating legacy protection',()=>{
  const g=boot(script,43);setup(g);
  g.run('delete state.player.sites[0].fireProtection;state.player.sites[0].facilitySprinklers=true;save()');
- const prior=g.store.get('warehouse_tycoon_v11');
+ const prior=g.store.get(g.run('key'));
  const old=new Map(g.store);old.delete('warehouse_tycoon_v11_pre_dotv20');
  const next=boot(script,45,old);
  assert.equal(old.get('warehouse_tycoon_v11_pre_dotv20'),prior);

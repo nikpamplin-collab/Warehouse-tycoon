@@ -25,7 +25,7 @@ test('new expansion completes after six monthly construction steps; existing wor
 });
 test('an existing configured save is backed up once before v17 first writes',()=>{
  const first=boot(run,32);setup(first,'Original Company','Original DC');first.run('state.month=12;save()');
- const store=new Map(first.store), original=store.get('warehouse_tycoon_v11');
+ const store=new Map(first.store), original=store.get(first.run('key'));
  assert.ok(original);store.delete('warehouse_tycoon_v11_pre_dotv17');
  const one=boot(run,99,store);
  assert.equal(one.run('state.month'),12);

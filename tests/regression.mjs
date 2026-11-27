@@ -41,7 +41,7 @@ test('queue, staffing, completion and reloading a saved month',()=>{
 test('existing v11 save key retained and data unaltered',()=>{
  const source=boot(optionalV12?compile(optionalV12):compiler);setup(source,'Existing Save','Old DC');
  source.run('state.month=37;state.player.cash=180100;state.player.sites[0].racks=4;save()');
- assert.ok(source.store.has('warehouse_tycoon_v11'));
+ assert.ok(source.store.has(source.run('key')));
  const copy=boot(compiler,631,source.store);
  assert.deepEqual(asJSON(copy.run('state.player')),asJSON(source.run('state.player')));
  assert.equal(copy.run('state.month'),37);
@@ -76,3 +76,4 @@ import './warehouse-v21.mjs';
 import './first-contract.mjs';
 import './commercial-pressure.mjs';
 import './living-warehouse.mjs';
+import './campaign-v25.mjs';

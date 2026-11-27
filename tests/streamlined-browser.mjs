@@ -20,9 +20,9 @@ try{
   p.on('pageerror',e=>errors.push(e.message));
   await p.goto(url);await p.locator('#newBusiness').fill('Amber Pallet Co');await p.locator('#newSite').fill('Mercia DC');await p.getByRole('button',{name:'Start playing'}).click();
   const nav=p.locator('#tabs');assert.deepEqual(await nav.locator('button').allInnerTexts(),['Map','Ops','Bids','Invest','Cash']);
-  assert.match(await p.locator('footer').innerText(),/DOTv24/);assert.match(await p.title(),/DOTv24/);
+  assert.match(await p.locator('footer').innerText(),/DOTv25/);assert.match(await p.title(),/DOTv25/);
   const tap=async l=>width<500?l.tap():l.click();const btn=n=>p.getByRole('button',{name:n,exact:true});const jump=n=>tap(nav.getByRole('button',{name:n,exact:true}));
-  const save=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('warehouse_tycoon_v11')));
+  const save=()=>p.evaluate(()=>JSON.parse(localStorage.getItem(key)));
   await jump('Ops');
   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth),width);
   if(width===320)await p.screenshot({path:"/tmp/wt21-320.png"});
@@ -145,7 +145,7 @@ try{
   assert.ok(await p.locator('details[data-fold="stock"]').evaluate(el=>el.open));
   assert.ok(Math.abs(await opsYard.evaluate(el=>el.getBoundingClientRect().top)-inOps)<2);
   await p.reload();await jump('Ops');
-  await ctx.setOffline(true);await p.reload();assert.match(await p.title(),/DOTv24/);await jump('Ops');
+  await ctx.setOffline(true);await p.reload();assert.match(await p.title(),/DOTv25/);await jump('Ops');
   assert.match(await p.locator('#d21-plan').innerText(),/Next-turn plan saved/);
   assert.deepEqual(errors,[]);await ctx.close();console.log('passed browser '+width+'px: navigation, fit, draft, orders, bids and offline');
  }
@@ -179,4 +179,23 @@ try{
  await p.getByRole('heading',{name:'What moved the result?'}).waitFor();
  assert.deepEqual(errors,[]);await intro.close();
  console.log('passed browser 390px: guided first bid, staffing, award, resume and first trade');
+
+ const scenario=await b.newContext({viewport:{width:320,height:568},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
+ const sp=await scenario.newPage(),scenarioErrors=[];
+ sp.on('pageerror',e=>scenarioErrors.push(e.message));
+ await sp.goto(url);
+ await sp.getByLabel('How do you want to play?').selectOption('region');
+ await sp.getByRole('button',{name:'Start playing'}).click();
+ await sp.getByRole('heading',{name:'Win Back the Region',exact:true}).waitFor();
+ await sp.getByText('How each site is performing',{exact:true}).tap();
+ await sp.getByText('Pennine DC',{exact:true}).first().waitFor();
+ await sp.locator('#tabs').getByRole('button',{name:'Bids',exact:true}).tap();
+ await sp.getByRole('button',{name:'Fits my sites',exact:true}).tap();
+ assert.equal(await sp.getByRole('button',{name:'Fits my sites',exact:true}).getAttribute('aria-pressed'),'true');
+ assert.equal(await sp.evaluate(()=>document.documentElement.scrollWidth),320);
+ await sp.reload();
+ await sp.getByRole('heading',{name:'Win Back the Region',exact:true}).waitFor();
+ assert.deepEqual(scenarioErrors,[]);await scenario.close();
+ console.log('passed browser 320px: scenario setup, portfolio, bid shortlist and resume');
+
 }finally{await b.close();srv.close();}

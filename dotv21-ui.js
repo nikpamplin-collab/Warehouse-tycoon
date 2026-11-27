@@ -144,7 +144,7 @@ function d21Render() {
  const view=document.getElementById('view');
  if(D21.renderedTab!==null)for(const d of (view.querySelectorAll?.('.d21-fold')||[]))D21.panels.set(D21.renderedTab+':'+d.dataset.fold,d.open);
  d21Header(); const fn={office,market,warehouse:d21Warehouse,investment:d21Investment,rivals:rivalsView,history}[tab];
- view.innerHTML=(d21SceneOrigin?'<button class="d21-scene-back" type="button" data-scene-return>← Back to warehouse visual</button>':'')+((tab==='office'||tab==='market')?d22Guide():'')+(tab==='office'?d23Pressure():'')+(tab==='rivals'?d23PublicRivals():'')+(tab==='office'?'<div class="d21-hub"><b>UK network</b><button class="btn secondary" onclick="goFromContext(\'rivals\')">Rival operators →</button></div>'+(d21Unapplied()?'<p class="notice">You have unapplied Operations changes. Apply the draft before ending the turn if you want it to take effect.</p>':''):'')+fn();
+ view.innerHTML=(d21SceneOrigin?'<button class="d21-scene-back" type="button" data-scene-return>← Back to warehouse visual</button>':'')+((tab==='office'||tab==='market')?d22Guide():'')+(tab==='office'?d25Challenge()+d23Pressure()+d25Portfolio():'')+(tab==='rivals'?d23PublicRivals():'')+(tab==='office'?'<div class="d21-hub"><b>UK network</b><button class="btn secondary" onclick="goFromContext(\'rivals\')">Rival operators →</button></div>'+(d21Unapplied()?'<p class="notice">You have unapplied Operations changes. Apply the draft before ending the turn if you want it to take effect.</p>':''):'')+fn();
  D21.renderedTab=tab;
 }
 function d21BidQuote(input){

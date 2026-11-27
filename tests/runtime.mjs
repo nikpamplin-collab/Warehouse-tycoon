@@ -4,7 +4,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 export function compile(folder){
  const html=fs.readFileSync(path.join(folder,'index.html'),'utf8');
- const blocks=[...html.matchAll(/<script(?: src="([^"]+)")?>([\s\S]*?)<\/script>/g)].map(([,file,inline])=>file?fs.readFileSync(path.join(folder,file),'utf8'):inline);
+ const blocks=[...html.matchAll(/<script(?: src="([^"]+)")?>([\s\S]*?)<\/script>/g)].map(([,file,inline])=>file?fs.readFileSync(path.join(folder,file.split('?')[0]),'utf8'):inline);
  return new vm.Script('var window=this;\n'+blocks.join('\n'),{filename:path.join(folder,'index.html')});
 }
 export function boot(script,seed=731,storage=new Map()){

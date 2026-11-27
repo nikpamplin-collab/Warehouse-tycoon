@@ -26,7 +26,7 @@ const server=http.createServer(async(req,res)=>{
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const url='http://127.0.0.1:'+server.address().port+'/game/';
 const ready=page=>page.waitForFunction(()=>!!navigator.serviceWorker.controller);
-const state=page=>page.evaluate(()=>JSON.parse(localStorage.getItem('warehouse_tycoon_v11')));
+const state=page=>page.evaluate(()=>JSON.parse(localStorage.getItem(key)));
 try{
  for(const [label,browserType,options] of [['Chromium desktop',chromium,{viewport:{width:1280,height:860}}],['WebKit iPhone profile',webkit,{...devices['iPhone 13'],reducedMotion:'reduce'}]].filter(([n])=>!process.env.WT_BROWSER_ONLY||n.startsWith(process.env.WT_BROWSER_ONLY))){
   folder=legacy;online=true;
@@ -45,6 +45,8 @@ try{
    await page.reload();await page.getByText('Dispatch brief').waitFor();
    await page.waitForFunction(key=>caches.keys().then(keys=>keys.includes(key)),cacheKey);
    await page.waitForFunction(version=>navigator.serviceWorker.controller?.scriptURL.includes('v='+version),release);
+   const rollback=process.env.WT_ROLLBACK_CHECK==='1';
+   if(rollback)assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('warehouse_tycoon_v11'))),before);
    const after=await state(page);assert.equal(after.month,2);assert.deepEqual(after.player,before.player);
    for(const name of streamlined?['Bids','Cash','Map','Ops','Invest','Map']:['Tenders','Rivals','Finances','Office','Operations','Investment','Office']){
     await press(page.locator('#tabs').getByRole('button',{name,exact:true}));assert.equal(await page.locator('#tabs [aria-current="page"]').innerText(),name);
@@ -100,6 +102,17 @@ try{
    }
    assert.equal((await state(page)).month,3);assert.deepEqual(errors,[]);
    console.log('PASS: '+label+' | prior-build save upgrade, navigation, map, layers, month, reload, offline, no JS errors');
+   if(rollback){
+    const candidate=await state(page);
+    online=true;folder=legacy;
+    await page.reload();
+    await page.title().then(t=>assert.match(t,/DOTv21/));
+    await page.waitForFunction(()=>navigator.serviceWorker.controller?.scriptURL.includes('v=DOTv21'));
+    assert.deepEqual(await state(page),before,'Rollback restores the untouched v21 save');
+    assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('warehouse_tycoon_dotv25'))),candidate,'Rollback preserves progress on the v25 branch');
+    assert.deepEqual(errors,[]);
+    console.log('PASS: same-origin v21 → v25 → v21 code, service worker and save rollback');
+   }
   }finally{await browser.close();}
  }
 }finally{server.close();}
