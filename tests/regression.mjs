@@ -24,7 +24,7 @@ test('map and all yard views are read only and each mode changes the view',()=>{
  assert.match(g.u(),/NEIGHBOURING MARKETS/i);
  g.click({region:'north'});assert.match(g.u(),/data-region="north" aria-pressed="true"/);
  g.click({region:'mid'});g.click({index:'0'});assert.equal(g.run('tab'),'warehouse');
- g.click({sceneMode:'flow'});assert.doesNotMatch(g.u(),/Put-away/);assert.match(g.u(),/Signed handling/);assert.match(g.u(),/data-scene-mode="flow" aria-pressed="true"/);
+ g.click({sceneMode:'flow'});assert.doesNotMatch(g.u(),/Put-away/);assert.match(g.u(),/Forecast pallet moves/);assert.match(g.u(),/data-scene-mode="flow" aria-pressed="true"/);
  g.click({sceneMode:'build'});assert.match(g.u(),/No investment work is queued/);
  g.click({sceneMode:'floor'});assert.match(g.u(),/aria-label="Storage occupied"/);
  assert.equal(g.run('JSON.stringify(state)'),before);

@@ -46,7 +46,9 @@ try{
    await page.waitForFunction(key=>caches.keys().then(keys=>keys.includes(key)),cacheKey);
    await page.waitForFunction(version=>navigator.serviceWorker.controller?.scriptURL.includes('v='+version),release);
    const rollback=process.env.WT_ROLLBACK_CHECK==='1';
-   if(rollback)assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('warehouse_tycoon_v11'))),before);
+   const legacyVersion=release==='DOTv26'?'DOTv25':'DOTv21';
+   const legacyKey=release==='DOTv26'?'warehouse_tycoon_dotv25':'warehouse_tycoon_v11';
+   if(rollback)assert.deepEqual(await page.evaluate(k=>JSON.parse(localStorage.getItem(k)),legacyKey),before);
    const after=await state(page);assert.equal(after.month,2);assert.deepEqual(after.player,before.player);
    for(const name of streamlined?['Bids','Cash','Map','Ops','Invest','Map']:['Tenders','Rivals','Finances','Office','Operations','Investment','Office']){
     await press(page.locator('#tabs').getByRole('button',{name,exact:true}));assert.equal(await page.locator('#tabs [aria-current="page"]').innerText(),name);
@@ -60,7 +62,7 @@ try{
    assert.deepEqual(await state(page),beforeLink);
    if(streamlined)await press(page.getByRole('button',{name:'Back to warehouse visual'}));
    else await page.locator('#tabs').getByRole('button',{name:home,exact:true}).click();
-   await page.getByRole('button',{name:'Manage site',exact:true}).click();if(streamlined)await press(page.locator('[data-fold=stock] summary'));await page.getByRole('button',{name:'Pallet flow',exact:true}).click();await page.getByText(streamlined?'Signed handling':'Put-away',{exact:true}).waitFor();
+   await page.getByRole('button',{name:'Manage site',exact:true}).click();if(streamlined)await press(page.locator('[data-fold=stock] summary'));await page.getByRole('button',{name:'Pallet flow',exact:true}).click();await page.getByText(streamlined?'Forecast pallet moves':'Put-away',{exact:true}).waitFor();
    await page.getByRole('button',{name:'Build queue',exact:true}).click();await page.getByText('No investment work is queued.').waitFor();
    if(/^DOTv(?:17|18|19|20)$/.test(release)){
     await page.getByRole('heading',{name:'Equipment & stock control'}).waitFor();
@@ -68,15 +70,15 @@ try{
     await press(page.getByRole('button',{name:release==='DOTv17'||release==='DOTv18'?'Add one staff next month':'Add one days worker next turn'}));
     assert.equal((await state(page)).player.sites[0].staff,roster);
     await press(page.locator('#tabs').getByRole('button',{name:'Investment',exact:true}));
-    await page.getByRole('button',{name:/^Borrow/}).waitFor();
+    await page.getByRole('button',{name:release==='DOTv26'?/starter cash$/:/^Borrow/}).waitFor();
     await page.getByRole('heading',{name:'Dock doors & fire protection'}).waitFor();
    }
    if(streamlined){
     await press(page.getByRole('button',{name:'Increase Day staff',exact:true}));
     await press(page.getByRole('button',{name:'Apply next-turn plan',exact:true}));
     await press(page.locator('#tabs').getByRole('button',{name:'Invest',exact:true}));
-    await press(page.locator('[data-fold=bank] summary'));await page.getByRole('button',{name:/^Borrow/}).waitFor();
-    await press(page.getByRole('button',{name:'Risk',exact:true}));
+    await press(page.locator('[data-fold=bank] summary'));await page.getByRole('button',{name:release==='DOTv26'?/starter cash$/:/^Borrow/}).waitFor();
+    await press(page.getByRole('button',{name:release==='DOTv26'?'Fire protection':'Risk',exact:true}));
     await page.getByRole('heading',{name:'Tank and pumps',exact:true}).waitFor();
    }
    const w=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,view:innerWidth}));assert.ok(w.doc<=w.view+1,JSON.stringify(w));
@@ -106,12 +108,12 @@ try{
     const candidate=await state(page);
     online=true;folder=legacy;
     await page.reload();
-    await page.title().then(t=>assert.match(t,/DOTv21/));
-    await page.waitForFunction(()=>navigator.serviceWorker.controller?.scriptURL.includes('v=DOTv21'));
-    assert.deepEqual(await state(page),before,'Rollback restores the untouched v21 save');
-    assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('warehouse_tycoon_dotv25'))),candidate,'Rollback preserves progress on the v25 branch');
+    await page.title().then(t=>assert.ok(t.includes(legacyVersion)));
+    await page.waitForFunction(v=>navigator.serviceWorker.controller?.scriptURL.includes('v='+v),legacyVersion);
+    assert.deepEqual(await state(page),before,'Rollback restores the untouched prior save');
+    assert.deepEqual(await page.evaluate(v=>JSON.parse(localStorage.getItem('warehouse_tycoon_'+v.toLowerCase())),release),candidate,'Rollback preserves progress on the candidate branch');
     assert.deepEqual(errors,[]);
-    console.log('PASS: same-origin v21 → v25 → v21 code, service worker and save rollback');
+    console.log('PASS: same-origin '+legacyVersion+' → '+release+' → '+legacyVersion+' code, service worker and save rollback');
    }
   }finally{await browser.close();}
  }

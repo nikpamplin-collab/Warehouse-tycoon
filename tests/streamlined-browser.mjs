@@ -20,7 +20,7 @@ try{
   p.on('pageerror',e=>errors.push(e.message));
   await p.goto(url);await p.locator('#newBusiness').fill('Amber Pallet Co');await p.locator('#newSite').fill('Mercia DC');await p.getByRole('button',{name:'Start playing'}).click();
   const nav=p.locator('#tabs');assert.deepEqual(await nav.locator('button').allInnerTexts(),['Map','Ops','Bids','Invest','Cash']);
-  assert.match(await p.locator('footer').innerText(),/DOTv25/);assert.match(await p.title(),/DOTv25/);
+  assert.match(await p.locator('footer').innerText(),/DOTv26/);assert.match(await p.title(),/DOTv26/);
   const tap=async l=>width<500?l.tap():l.click();const btn=n=>p.getByRole('button',{name:n,exact:true});const jump=n=>tap(nav.getByRole('button',{name:n,exact:true}));
   const save=()=>p.evaluate(()=>JSON.parse(localStorage.getItem(key)));
   await jump('Ops');
@@ -37,8 +37,24 @@ try{
   await tap(btn('Increase rack blocks'));assert.match(await p.locator('#d21-upgrade').innerText(),/£30,000/);
   if(width===390)await p.screenshot({path:'/tmp/wt21-investment.png',fullPage:true});
   await tap(btn('Queue racking →'));assert.equal((await save()).player.sites[0].projects.length,2);
-  await tap(btn('Flow'));assert.match(await p.locator('#d21-upgrade').innerText(),/Dock door/);
-  await tap(btn('Risk'));assert.match(await p.locator('#d21-upgrade').innerText(),/Commission tank and pumps first/);
+  assert.match(await p.locator('#d21-upgrade').innerText(),/Dock door/i);await tap(btn('Productivity'));assert.match(await p.locator('#d21-upgrade').innerText(),/Automation/);
+  if(width===390){
+   await tap(p.locator('[data-fold=bank] summary'));
+   const beforeLoan=await save();
+   await tap(btn('Borrow £25,000 starter cash'));
+   assert.equal((await save()).player.cash,beforeLoan.player.cash+25000);
+   assert.equal((await save()).player.debt,beforeLoan.player.debt+25000);
+   await tap(p.locator('[data-fold=sites] summary'));
+   assert.ok(await btn('Use extension mortgage').isDisabled());
+   await p.evaluate(()=>{state.player.history=Array.from({length:6},()=>({profit:20000}));state.player.cash=400000;render();});
+   await tap(btn('Use extension mortgage'));
+   await tap(btn('Confirm mortgage'));
+   assert.equal((await save()).player.cash,150000);
+   assert.equal((await save()).player.debt,775000);
+   await p.reload();await jump('Invest');
+   assert.equal((await save()).player.sites[0].projects.filter(x=>x.mortgaged).length,1);
+  }
+  await tap(btn('Fire protection'));assert.match(await p.locator('#d21-upgrade').innerText(),/Commission tank and pumps first/);
   await jump('Bids');const price=p.locator('[id^="s-t"]').first();await price.fill('22');assert.match(await p.locator('output.d21-bid-quote').first().innerText(),/At these rates/);
   await jump('Cash');await p.getByRole('heading',{name:'Trading & cash',exact:true}).waitFor();
   await jump('Map');await tap(btn('Rival operators →'));await p.getByRole('heading',{name:'Rival operators',exact:true}).waitFor();
@@ -120,7 +136,7 @@ try{
   assert.ok(dockPoint,'visible dock has a tappable region');
   if(width<500)await p.touchscreen.tap(dockPoint.x,dockPoint.y);else await p.mouse.click(dockPoint.x,dockPoint.y);
   assert.equal(await p.evaluate(()=>document.activeElement.id),'d17-facilities');
-  assert.equal(await p.getByRole('button',{name:'Flow',exact:true}).getAttribute('aria-pressed'),'true');
+  assert.equal(await p.getByRole('button',{name:'Racking & docks',exact:true}).getAttribute('aria-pressed'),'true');
   await p.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
   assert.equal(await sceneBack().evaluate(el=>getComputedStyle(el).position),'fixed');
   await tap(sceneBack());
@@ -145,7 +161,7 @@ try{
   assert.ok(await p.locator('details[data-fold="stock"]').evaluate(el=>el.open));
   assert.ok(Math.abs(await opsYard.evaluate(el=>el.getBoundingClientRect().top)-inOps)<2);
   await p.reload();await jump('Ops');
-  await ctx.setOffline(true);await p.reload();assert.match(await p.title(),/DOTv25/);await jump('Ops');
+  await ctx.setOffline(true);await p.reload();assert.match(await p.title(),/DOTv26/);await jump('Ops');
   assert.match(await p.locator('#d21-plan').innerText(),/Next-turn plan saved/);
   assert.deepEqual(errors,[]);await ctx.close();console.log('passed browser '+width+'px: navigation, fit, draft, orders, bids and offline');
  }

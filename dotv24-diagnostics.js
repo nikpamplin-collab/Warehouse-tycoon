@@ -12,8 +12,8 @@ function d24Diagnostic(s,{moves,capacity,occupied,spaces,fleet,assignments}){
   rows.push({type:'storage',label:occupied>spaces?'Storage over capacity':'Storage nearly full',detail:num(occupied)+' committed / '+num(spaces)+' commissioned pallet spaces.',tone:'warn',route:'storage'});
  const assigned=Math.max(0,...assignments.map(x=>x.mhe));
  const idle=moves?Math.max(0,fleet-assigned):fleet;
- if(idle>0)rows.push({type:'idle',label:num(idle)+' leased forklift'+(idle===1?' idle':'s idle'),detail:moves?'No staffed shift requires these additional trucks.':'No signed handling work this turn.',tone:'info',route:'mhe'});
+ if(idle>0)rows.push({type:'idle',label:num(idle)+' leased forklift'+(idle===1?' idle':'s idle'),detail:moves?'No staffed shift requires these additional trucks.':'No pallet moves forecast this month.',tone:'info',route:'mhe'});
  if(sites.length)rows.push({type:'works',label:sites.length+' queued project'+(sites.length===1?'':'s'),detail:'Next completion in '+Math.min(...sites.map(p=>Math.max(1,p.remaining)))+' turn(s). Queued assets are not counted as live.',tone:'info',route:'projects'});
- if(!rows.length)rows.push({type:'clear',label:moves?'Within modelled capacity':'No signed work this turn',detail:moves?num(capacity-moves)+' spare handling moves at current staffing.':'Check Bids before adding labour or equipment.',tone:'ok',route:'handling'});
+ if(!rows.length)rows.push({type:'clear',label:moves?'Within modelled capacity':'No pallet moves forecast this month',detail:moves?num(capacity-moves)+' spare handling moves at current staffing.':'Check Bids before adding labour or equipment.',tone:'ok',route:'handling'});
  return rows;
 }

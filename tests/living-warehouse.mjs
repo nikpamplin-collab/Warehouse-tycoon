@@ -4,7 +4,7 @@ import {compile,boot,setup} from './runtime.mjs';
 const code=compile(new URL('..',import.meta.url).pathname);
 test('cutaway diagnoses current constraints, idle fleet, and queued projects without changing the save',()=>{
  const g=boot(code,42);setup(g);
- assert.match(g.run('warehouseGraphic(selectedSite())'),/No signed work this turn/);
+ assert.match(g.run('warehouseGraphic(selectedSite())'),/No pallet moves forecast this month/);
  g.run(`const ws24=selectedSite(); ws24.racks=9; ws24.staff=15; ws24.mheTrucks=20;
  ws24.contracts=[{id:'test',name:'Dock pressure',start:1,end:12,spaces:2500,moves:12500}];
  ws24.projects=[{type:'Racking',remaining:1,cost:15000}];save()`);
