@@ -27,3 +27,40 @@
 @media(prefers-reduced-motion:reduce){.d21-shuttle,.d21-stride{animation:none}}
 @media(max-width:380px){.d21-yard-controls button{font-size:10px;padding:4px 3px}.d21-yard-metrics strong{font-size:15px}}
 .d21-yard-controls [data-scene-motion]{display:grid;place-items:center}
+/* One scheduled journey: approach, yard manoeuvre, reverse, unload, leave. */
+.d21-yard-lorry,.d21-lorry-direction,.d21-unload-pallet{transform-box:view-box;animation-duration:29s;animation-iteration-count:infinite;animation-timing-function:linear}
+.d21-yard-lorry{animation-name:d21-lorry-journey}
+.d21-lorry-direction{opacity:0;animation-timing-function:steps(1,end)}
+.d21-lorry-east{animation-name:d21-lorry-east}
+.d21-lorry-in{animation-name:d21-lorry-in}
+.d21-lorry-west{animation-name:d21-lorry-west}
+.d21-lorry-out{animation-name:d21-lorry-out}
+.d21-unload-pallet{opacity:0;animation-name:d21-lorry-unload}
+.d21-parked-lorry{display:none}
+.d21-paused .d21-yard-lorry,.d21-paused .d21-lorry-direction,.d21-paused .d21-unload-pallet{animation-play-state:paused}
+@keyframes d21-lorry-journey{
+ 0%{transform:translate(var(--p0))}
+ 26%,28%{transform:translate(var(--p1))}
+ 37%{transform:translate(var(--p2))}
+ 49%{transform:translate(var(--p3))}
+ 52%,53%{transform:translate(var(--p4))}
+ 61%,75%{transform:translate(var(--p5))}
+ 81%{transform:translate(var(--p6))}
+ 89%{transform:translate(var(--p7))}
+ 94%{transform:translate(var(--p8))}
+ 100%{transform:translate(var(--p9))}
+}
+@keyframes d21-lorry-east{0%,81%,94%,100%{opacity:1}28%,89%{opacity:0}}
+@keyframes d21-lorry-in{0%,37%,100%{opacity:0}28%{opacity:1}}
+@keyframes d21-lorry-west{0%,52%,100%{opacity:0}37%{opacity:1}}
+@keyframes d21-lorry-out{0%,81%,94%,100%{opacity:0}52%,89%{opacity:1}}
+@keyframes d21-lorry-unload{
+ 0%,63%{opacity:0;transform:translate(0,0)}
+ 65%{opacity:1;transform:translate(0,0)}
+ 72%,74%{opacity:1;transform:translate(var(--ux),var(--uy))}
+ 75%,100%{opacity:0;transform:translate(var(--ux),var(--uy))}
+}
+@media(prefers-reduced-motion:reduce){
+ .d21-yard-lorry,.d21-unload-pallet{display:none}
+ .d21-parked-lorry{display:inline}
+}

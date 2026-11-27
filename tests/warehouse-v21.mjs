@@ -7,7 +7,7 @@ const open=()=>{const g=boot(script);setup(g);return g;};
 const howMany=(s,needle)=>s.split(needle).length-1;
 test('rack fit-out and loads are independent proportions, with conventional rack geometry',()=>{
  const g=open();
- for(const [racks,sections,stock,bays,load] of [[0,1,0,0,0],[0,1,125,0,6],[9,2,1250,6,27],[18,2,1125,12,48],[18,2,2250,12,96]]){
+ for(const [racks,sections,stock,bays,load] of [[0,1,0,0,0],[0,1,125,0,12],[9,2,1250,6,27],[18,2,1125,12,48],[18,2,2250,12,96]]){
   const r=g.run(`DOT21Yard.render({sections:${sections},racks:${racks},occupied:${stock},spaces:${racks?2250:250},staff:0,dockDoors:2})`);
   assert.equal(howMany(r,'data-levels="4" data-pallets-per-level="2"'),bays);
   assert.equal(howMany(r,'class="d21-pallet"'),load);
@@ -56,4 +56,36 @@ test('office seats reflect appointed roles and only outdoor lane markings are da
   assert.match(pic,/class="d21-public-road"[\s\S]*?stroke-dasharray="11 8"/);
  }
  assert.equal(g.run('JSON.stringify(state)'),before);
+});
+test('unracked stock is block-stacked proportionally up to the 250-pallet floor limit',()=>{
+ const g=open();
+ const draw=()=>g.run('warehouseGraphic(selectedSite())');
+ assert.doesNotMatch(draw(),/class="d21-bulk-stack"/);
+ g.run('selectedSite().contracts=[{start:1,end:3,spaces:125,moves:90}]');
+ let pic=draw();
+ assert.match(pic,/data-fit="0%" data-occupancy="50%"/);
+ assert.equal(howMany(pic,'class="d21-bulk-stack" data-tiers="1"'),12);
+ g.run('selectedSite().contracts[0].spaces=250');
+ pic=draw();
+ assert.match(pic,/250 of 250 pallet spaces · bulk floor storage/);
+ assert.equal(howMany(pic,'class="d21-bulk-stack" data-tiers="2"'),12);
+ assert.equal(howMany(pic,'class="d21-pallet"'),24);
+});
+test('extra dock doors are rendered once commissioned; active handling gets one lorry loop',()=>{
+ const g=open();
+ const draw=()=>g.run('warehouseGraphic(selectedSite())');
+ let pic=draw();
+ assert.equal(howMany(pic,'class="d21-dock-door"'),2);
+ assert.doesNotMatch(pic,/class="d21-yard-lorry"/);
+ g.run('selectedSite().projects=[{type:"Dock door",remaining:1}];selectedSite().contracts=[{start:1,end:3,spaces:200,moves:500}];selectedSite().hs=true');
+ pic=draw();
+ assert.equal(howMany(pic,'class="d21-dock-door"'),2);
+ assert.match(pic,/class="d21-office-person"[^]*class="d21-office-badge"/);
+ assert.equal(howMany(pic,'class="d21-office-badge"'),1);
+ assert.equal(howMany(pic,'class="d21-yard-lorry"'),1);
+ assert.equal(howMany(pic,'class="d21-unload-pallet"'),1);
+ g.run('progress(state.player)');
+ assert.equal(howMany(draw(),'class="d21-dock-door"'),3);
+ g.run('Object.assign(selectedSite(),{sections:8,facilityDocks:1})');
+ assert.equal(howMany(draw(),'class="d21-dock-door"'),10);
 });

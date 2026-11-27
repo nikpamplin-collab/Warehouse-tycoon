@@ -353,7 +353,14 @@ document.addEventListener('click',event=>{
  const yardControl=event.target.closest('[data-scene-motion],[data-scene-zoom]');
  if(yardControl&&(yardControl.dataset.sceneZoom!==undefined||yardControl.dataset.sceneMotion!==undefined)){
   if(yardControl.dataset.sceneZoom!==undefined)d21ZoomYard(Number(yardControl.dataset.sceneZoom));
-  else {visualSceneMotion=!visualSceneMotion;render();document.querySelector('[data-scene-motion]')?.focus({preventScroll:true});}
+  else {
+   visualSceneMotion=!visualSceneMotion;
+   document.querySelectorAll('.d21-yard-view,.d21-zoom-svg').forEach(el=>el.classList.toggle('d21-paused',!visualSceneMotion));
+   document.querySelectorAll('[data-scene-motion]').forEach(el=>{
+    el.setAttribute('aria-label',visualSceneMotion?'Pause motion':'Resume motion');
+    el.querySelector('path')?.setAttribute('d',visualSceneMotion?'M5 3h3v12H5zm5 0h3v12h-3z':'M5 3l10 6-10 6z');
+   });
+  }
   return;
  }
  const link=event.target.closest('a[data-d15-open-site]');

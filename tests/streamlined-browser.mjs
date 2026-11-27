@@ -55,7 +55,32 @@ try{
   assert.equal(await yard.locator('svg text').count(),0);
   assert.equal(await yard.locator('.d21-public-road,.d21-loading-yard').count(),2);
   assert.ok(await yard.locator('.d21-perimeter-tree').count()>=10);
-  assert.equal(await yard.locator(".d21-cutaway-office .d21-office-person").count(),3);
+  assert.equal(await yard.locator(".d21-cutaway-office .d21-office-person .d21-office-badge").count(),3);
+  assert.equal(await yard.locator(".d21-dock-door").count(),3);
+  const delivery=yard.locator('.d21-delivery');
+  const sample=async fraction=>yard.locator('.d21-yard-svg').evaluate((svg,f)=>{
+   for(const e of svg.querySelectorAll('.d21-yard-lorry,.d21-lorry-direction,.d21-unload-pallet')){
+    for(const a of e.getAnimations()){ a.pause();a.currentTime=a.effect.getTiming().duration*f; }
+   }
+   const active=[...svg.querySelectorAll('.d21-lorry-direction')].filter(x=>Number(getComputedStyle(x).opacity)>.99);
+   return {position:getComputedStyle(svg.querySelector('.d21-yard-lorry')).transform,
+    heading:active.map(x=>x.classList[1]),load:Number(getComputedStyle(svg.querySelector('.d21-unload-pallet')).opacity)};
+  },fraction);
+  assert.equal(await delivery.count(),1);
+  const road=await sample(.17),reverse=await sample(.56),parked=await sample(.68),leave=await sample(.97);
+  assert.deepEqual(road.heading,['d21-lorry-east']);
+  assert.deepEqual(reverse.heading,['d21-lorry-out']);
+  assert.deepEqual(parked.heading,['d21-lorry-out']);assert.equal(parked.load,1);
+  assert.deepEqual(leave.heading,['d21-lorry-east']);
+  assert.equal(new Set([road.position,reverse.position,parked.position,leave.position]).size,4);
+  if(width===1280&&process.env.WT_YARD_FRAMES){
+   fs.mkdirSync(process.env.WT_YARD_FRAMES,{recursive:true});
+   for(let i=0;i<65;i++){
+    await sample(i/65);
+    await yard.locator('.d21-yard-svg').screenshot({path:path.join(process.env.WT_YARD_FRAMES,'frame-'+String(i).padStart(3,'0')+'.png')});
+   }
+  }
+  await sample(.68);
   assert.equal(await yard.locator('svg [stroke-dasharray="9 8"]').count(),0);
   assert.equal(await yard.locator('.d21-forklift.d21-shuttle').count(),2);
   assert.equal(await yard.locator('.d20-water-tank').count(),1);
@@ -64,7 +89,10 @@ try{
   if(width===390||width===1280)await yard.screenshot({path:'/tmp/wt21-cutaway-'+width+'.png'});
   await tap(yard.getByRole('button',{name:'Pause motion'}));
   assert.equal(await yard.locator('.d21-shuttle').first().evaluate(x=>getComputedStyle(x).animationPlayState),'paused');
+  assert.equal(await yard.locator('.d21-yard-lorry').evaluate(x=>getComputedStyle(x).animationPlayState),'paused');
   await p.emulateMedia({reducedMotion:'reduce'});
+  assert.equal(await yard.locator('.d21-yard-lorry').evaluate(x=>getComputedStyle(x).display),'none');
+  assert.equal(await yard.locator('.d21-parked-lorry').evaluate(x=>getComputedStyle(x).display),'inline');
   assert.equal(await yard.locator('.d21-shuttle').first().evaluate(x=>getComputedStyle(x).animationName),'none');
   await tap(yard.getByRole('button',{name:'Enlarge'}));assert.equal(await p.locator('#dialog .d21-yard-svg').count(),1);
   await tap(p.getByRole('button',{name:'Close',exact:true}));
