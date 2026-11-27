@@ -75,3 +75,4 @@ import './warehouse-v21.mjs';
 
 import './first-contract.mjs';
 import './commercial-pressure.mjs';
+import './living-warehouse.mjs';

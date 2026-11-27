@@ -76,3 +76,8 @@
 .d21-scene-back{position:fixed;z-index:7;inset:auto max(12px,calc((100vw - 1170px)/2)) 16px auto;display:block;min-height:44px;padding:9px 16px;border-radius:24px;border:1px solid #d4e2c7;background:#29493b;color:#fff9e8;font-weight:750;box-shadow:0 3px 12px #18281944}
 .d21-scene-back:focus-visible,.d21-yard-links button:focus-visible{outline:3px solid #d59a52;outline-offset:2px}
 @media(max-width:650px){.d21-scene-back{bottom:calc(72px + env(safe-area-inset-bottom,0px));right:12px}}
+
+.d24-signals{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:5px;margin:8px 0}
+.d24-signal{text-align:left;min-height:44px;padding:8px 10px;border-radius:8px;border:1px solid #496677;background:#17384d;color:#eef7ff;cursor:pointer}
+.d24-signal.warn{background:#4a2a27;border-color:#d49982;color:#fff4ea}
+.d24-signal small{display:block;color:inherit}

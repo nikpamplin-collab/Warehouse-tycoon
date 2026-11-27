@@ -1,0 +1,2 @@
+# DOTv24 · The Living Warehouse
+Review candidate. Current site data drives distinct warnings for binding dock capacity, staffed handling shortfalls, near-full or overcommitted storage, idle leased trucks, and queued works. Signals name the basis and link to the relevant controls; scene navigation still restores position and zoom. No truck queue is invented. No simulation, rate or save changes in this release.

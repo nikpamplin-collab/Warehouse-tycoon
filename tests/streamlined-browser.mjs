@@ -20,7 +20,7 @@ try{
   p.on('pageerror',e=>errors.push(e.message));
   await p.goto(url);await p.locator('#newBusiness').fill('Amber Pallet Co');await p.locator('#newSite').fill('Mercia DC');await p.getByRole('button',{name:'Start playing'}).click();
   const nav=p.locator('#tabs');assert.deepEqual(await nav.locator('button').allInnerTexts(),['Map','Ops','Bids','Invest','Cash']);
-  assert.match(await p.locator('footer').innerText(),/DOTv23/);assert.match(await p.title(),/DOTv23/);
+  assert.match(await p.locator('footer').innerText(),/DOTv24/);assert.match(await p.title(),/DOTv24/);
   const tap=async l=>width<500?l.tap():l.click();const btn=n=>p.getByRole('button',{name:n,exact:true});const jump=n=>tap(nav.getByRole('button',{name:n,exact:true}));
   const save=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('warehouse_tycoon_v11')));
   await jump('Ops');
@@ -145,7 +145,7 @@ try{
   assert.ok(await p.locator('details[data-fold="stock"]').evaluate(el=>el.open));
   assert.ok(Math.abs(await opsYard.evaluate(el=>el.getBoundingClientRect().top)-inOps)<2);
   await p.reload();await jump('Ops');
-  await ctx.setOffline(true);await p.reload();assert.match(await p.title(),/DOTv23/);await jump('Ops');
+  await ctx.setOffline(true);await p.reload();assert.match(await p.title(),/DOTv24/);await jump('Ops');
   assert.match(await p.locator('#d21-plan').innerText(),/Next-turn plan saved/);
   assert.deepEqual(errors,[]);await ctx.close();console.log('passed browser '+width+'px: navigation, fit, draft, orders, bids and offline');
  }
