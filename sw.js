@@ -1,9 +1,9 @@
 // Versioned static app cache. Restrict fetches and cleanup to this deployment.
-const VERSION='DOTv22';
-const FILES=['./dotv22-first.js','./dotv22-first.css','./dotv21-warehouse.js','./dotv21-warehouse.css','./dotv21-ui.js','./dotv21-ui.css','./v18-economy.js','./v18-economy.css','./manifest.webmanifest','./icon.png','./icon-512.png','./dotv13.css','./dotv13.js','./dotv14.css','./dotv14.js','./v15.css','./v16.css','./v16.js','./v17-nav.css','./dotv17-facilities.css','./dotv17-facilities.js','./v17-staff.css','./v17-staff.js','./dotv20-fire.css','./dotv20-fire.js'];
+const VERSION='DOTv23';
+const FILES=['./dotv23-pressure.js','./dotv22-first.js','./dotv22-first.css','./dotv21-warehouse.js','./dotv21-warehouse.css','./dotv21-ui.js','./dotv21-ui.css','./v18-economy.js','./v18-economy.css','./manifest.webmanifest','./icon.png','./icon-512.png','./dotv13.css','./dotv13.js','./dotv14.css','./dotv14.js','./v15.css','./v16.css','./v16.js','./v17-nav.css','./dotv17-facilities.css','./dotv17-facilities.js','./v17-staff.css','./v17-staff.js','./dotv20-fire.css','./dotv20-fire.js'];
 const scope=new URL(self.registration.scope);
 const family="warehouse-tycoon:"+scope.pathname+":";
-const CACHE=family+"22.0.0";
+const CACHE=family+"23.0.0";
 const shell=new URL('index.html',scope);shell.searchParams.set('release',VERSION);
 const assets=new Set([...FILES,'./','./index.html'].map(f=>new URL(f,scope).pathname));
 self.addEventListener('install',event=>event.waitUntil((async()=>{
