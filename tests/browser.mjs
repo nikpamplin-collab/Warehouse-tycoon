@@ -8,7 +8,8 @@ const current=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const legacy=process.env.WT_LEGACY_FOLDER||process.env.WT_V12_FOLDER;
 const release=(await fs.readFile(path.join(current,'index.html'),'utf8')).match(/<title>Warehouse Tycoon (DOTv[0-9]+)<\/title>/)?.[1];
 assert.ok(release,'Expected a versioned app title');
-const cacheKey='warehouse-tycoon:/game/:'+release.replace('DOTv','')+'.0.0';
+const revision=(await fs.readFile(path.join(current,'sw.js'),'utf8')).match(/const CACHE=family\+"([\d.]+)"/)?.[1];
+const cacheKey='warehouse-tycoon:/game/:'+(revision||release.replace('DOTv','')+'.0.0');
 assert.ok(legacy,'Provide WT_LEGACY_FOLDER or WT_V12_FOLDER with the prior build.');
 const streamlined=release==='DOTv21', home=streamlined?'Map':'Office';
 let folder=legacy, online=true;
@@ -56,7 +57,7 @@ try{
    await page.locator('#d15-staff').waitFor();
    assert.deepEqual(await state(page),beforeLink);
    await page.locator('#tabs').getByRole('button',{name:home,exact:true}).click();
-   await page.getByRole('button',{name:'Manage site',exact:true}).click();if(streamlined)await press(page.locator('[data-fold=stock] summary'));await page.getByRole('button',{name:'Pallet flow',exact:true}).click();await page.getByText('Put-away',{exact:true}).waitFor();
+   await page.getByRole('button',{name:'Manage site',exact:true}).click();if(streamlined)await press(page.locator('[data-fold=stock] summary'));await page.getByRole('button',{name:'Pallet flow',exact:true}).click();await page.getByText(streamlined?'Signed handling':'Put-away',{exact:true}).waitFor();
    await page.getByRole('button',{name:'Build queue',exact:true}).click();await page.getByText('No investment work is queued.').waitFor();
    if(/^DOTv(?:17|18|19|20)$/.test(release)){
     await page.getByRole('heading',{name:'Equipment & stock control'}).waitFor();

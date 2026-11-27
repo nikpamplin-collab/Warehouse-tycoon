@@ -11,3 +11,9 @@
 - `node --test tests/regression.mjs`
 - `node tests/streamlined-browser.mjs` with Playwright Chromium installed. `WT_CHROMIUM` can select an existing headless Chromium binary.
 - `WT_LEGACY_FOLDER=/path/to/v20 node tests/browser.mjs` for a real previous-build save and offline upgrade. Set `WT_BROWSER_ONLY=Chromium` to run without WebKit.
+
+## Warehouse cutaway update
+
+The scene separates installed rack blocks as a share of potential fit-out from active pallet commitments as a share of current pallet capacity. An in-game example of 1,250 of 2,250 active positions is about 56%; the display shows roughly that share of representative pallet positions, not one sprite per real position. Future booked work does not fill the current scene prematurely. The rack artwork uses two pallets side-by-side on the slab plus three supported beam levels. Storage, handling and construction readouts are outside the scene.
+
+A staffed site shows representative walking figures; material handling equipment is visible only when trucks have arrived, with truck motion only when staff are assigned and there is signed handling work. The exterior tank and pump house and installed sprinkler stages appear only when commissioned, with pending work reported separately. The cutaway includes a zoom control, a pause button, and respects reduced motion. Drawn figures and layouts do not feed back into the engine.

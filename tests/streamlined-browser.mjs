@@ -43,6 +43,28 @@ try{
   await jump('Cash');await p.getByRole('heading',{name:'Trading & cash',exact:true}).waitFor();
   await jump('Map');await tap(btn('Rival operators →'));await p.getByRole('heading',{name:'Rival operators',exact:true}).waitFor();
   await p.evaluate(()=>navigator.serviceWorker.ready);await p.waitForFunction(()=>navigator.serviceWorker.controller);
+  await jump('Map');await p.evaluate(()=>{
+   const s=state.player.sites[0];Object.assign(s,{sections:2,racks:9,staff:4,shiftStaff:[4,0,0],mheTrucks:2,fireProtection:{water:1,roof:1,rack:1}});
+   const capacity=siteSpace(s);s.contracts=[{start:state.month,end:state.month+3,spaces:Math.round(capacity*1250/2250),moves:4200}];
+   render(); // visual QA only; the fixture must not alter the saved readback below.
+  });
+  const yard=p.locator('.d21-yard-view').first();assert.equal(await yard.getAttribute('data-fit'),'50%');
+  assert.equal(await yard.getAttribute('data-occupancy'),'56%');
+  assert.equal(await yard.locator('.d21-rack-bay').count(),6);
+  assert.equal(await yard.locator('.d21-pallet').count(),27);
+  assert.equal(await yard.locator('svg text').count(),0);
+  assert.equal(await yard.locator('.d21-forklift.d21-shuttle').count(),2);
+  assert.equal(await yard.locator('.d20-water-tank').count(),1);
+  assert.equal(await yard.locator('.d20-roof-pipework').count(),1);
+  assert.ok(await yard.locator('.d20-rack-pipework').count()>0);
+  if(width===390||width===1280)await yard.screenshot({path:'/tmp/wt21-cutaway-'+width+'.png'});
+  await tap(yard.getByRole('button',{name:'Pause motion'}));
+  assert.equal(await yard.locator('.d21-shuttle').first().evaluate(x=>getComputedStyle(x).animationPlayState),'paused');
+  await p.emulateMedia({reducedMotion:'reduce'});
+  assert.equal(await yard.locator('.d21-shuttle').first().evaluate(x=>getComputedStyle(x).animationName),'none');
+  await tap(yard.getByRole('button',{name:'Enlarge'}));assert.equal(await p.locator('#dialog .d21-yard-svg').count(),1);
+  await tap(p.getByRole('button',{name:'Close',exact:true}));
+  await p.reload();await jump('Ops');
   await ctx.setOffline(true);await p.reload();assert.match(await p.title(),/DOTv21/);await jump('Ops');
   assert.match(await p.locator('#d21-plan').innerText(),/Next-turn plan saved/);
   assert.deepEqual(errors,[]);await ctx.close();console.log('passed browser '+width+'px: navigation, fit, draft, orders, bids and offline');

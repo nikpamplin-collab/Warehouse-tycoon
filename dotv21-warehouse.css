@@ -1,0 +1,29 @@
+.d21-yard-view{margin:8px 0;color:#252b24;background:#f2eee1;border:1px solid #c9c5b3;border-radius:11px;overflow:hidden}
+.d21-yard-head{display:flex;align-items:center;justify-content:space-between;padding:1px 7px 0 11px;min-height:44px}
+.d21-yard-head button,.d21-yard-controls button{background:#e9e4d4;color:#33392f;border:1px solid #d1cbb8;border-radius:7px;padding:5px 7px;font-weight:700;min-height:44px}
+.d21-yard-head button{background:transparent;border-color:transparent;padding:4px 8px}
+.d21-yard-svg{display:block;width:100%;height:auto;background:#ebe4d4}
+.d21-yard-view figcaption{padding:7px 8px 8px}
+.d21-yard-controls{display:grid;grid-template-columns:1fr 1fr 1fr 44px;gap:4px}
+.d21-yard-controls button{font-size:12px;line-height:1.1;box-shadow:none}
+.d21-yard-controls button[aria-pressed=true]{background:#28392d;color:#fcf3de;border-color:#28392d}
+.d21-yard-controls [data-scene-motion]{font-size:17px;min-width:44px}
+.d21-yard-metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
+.d21-yard-metrics>div{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 6px;justify-content:space-between;background:#dedfcf;border-radius:7px;padding:6px 7px}
+.d21-yard-metrics b,.d21-yard-metrics small{font-size:11px;color:#434b3d}
+.d21-yard-metrics strong{font-size:17px;color:#284a35}
+.d21-yard-metrics small{display:block;width:100%}
+.d21-yard-view .d21-yard-fire{font-size:11px;color:#4f5847;margin:7px 2px 0}
+.d21-yard-projects li{display:flex;justify-content:space-between;gap:8px;margin:5px 0}.d21-yard-projects ul{list-style:none;padding:0 4px}
+.d21-yard-links{display:flex;flex-wrap:wrap;gap:4px 12px;margin:5px 4px 0}
+.d21-yard-links a{color:#405b45;text-decoration:underline;display:flex;align-items:center;gap:3px;min-height:44px;font-size:12px;font-weight:700}
+.d21-shuttle{animation:d21-shuttle var(--period,6s) ease-in-out var(--delay,0s) infinite alternate;transform-box:view-box}
+.d21-stride{animation:d21-stride .55s steps(2,end) infinite}
+.d21-paused .d21-shuttle,.d21-paused .d21-stride{animation-play-state:paused}
+@keyframes d21-shuttle{0%,11%{transform:translate(0,0)}88%,100%{transform:translate(var(--dx),var(--dy))}}
+@keyframes d21-stride{0%,100%{opacity:1}50%{opacity:.73}}
+.d21-zoom-svg .d21-yard-svg{width:auto;min-width:100%;height:min(57vh,430px)}
+.d21-zoom-svg{overflow:auto;background:#ebe4d4;border-radius:8px}
+@media(prefers-reduced-motion:reduce){.d21-shuttle,.d21-stride{animation:none}}
+@media(max-width:380px){.d21-yard-controls button{font-size:10px;padding:4px 3px}.d21-yard-metrics strong{font-size:15px}}
+.d21-yard-controls [data-scene-motion]{display:grid;place-items:center}
