@@ -79,3 +79,5 @@ body[data-d27=rivals] .d27-title{color:#f3f8f4}.d27-more .table-scroll{max-width
 .d27-report-details ul{margin:4px 0 8px;padding-inline-start:20px}
 .d27-report-continue{position:sticky;bottom:0;box-shadow:0 0 0 3px var(--d27-paper)}
 body[data-d27=office]>header h1{flex:0 0 auto;white-space:nowrap;overflow-wrap:normal}
+
+.d29-shift-warning{margin:0;padding:7px 9px;border-top:1px solid var(--d27-edge);font:inherit;font-size:14px;color:var(--d27-ink);background:var(--d27-soft)}

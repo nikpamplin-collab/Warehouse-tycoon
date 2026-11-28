@@ -185,6 +185,25 @@ try{
   await btn('View previous part of warehouse').click();assert.equal(await camera(),origin);
   assert.deepEqual(errors,[]);await ctx.close();console.log('PASS Compact Block growth, extra doors and same-scale navigation');
  }
+ {
+  const ctx=await browser.newContext({viewport:{width:320,height:640},hasTouch:true,isMobile:true});
+  const p=await ctx.newPage();const btn=n=>p.getByRole('button',{name:n,exact:true});
+  await p.goto(url);await p.locator('#newBusiness').fill('Ops fix');await btn('Start playing').click();
+  await p.evaluate(()=>{const s=selectedSite();Object.assign(s,{sections:1,racks:9,staff:7,shiftStaff:[6,1,0],mheTrucks:0,automationAssets:[],projects:[],ci:1});
+   s.contracts=[{start:state.month,end:state.month+6,spaces:2400,moves:12000}];});
+  await p.locator('#tabs').getByRole('button',{name:'Ops Office',exact:true}).click();
+  const row=p.getByRole('row').filter({has:btn('About Pallet handling')});
+  assert.match(await row.innerText(),/12,000\s+11,880\s+Breach/);
+  const note=p.locator('.d29-shift-warning');await note.waitFor();
+  assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth),320);
+  await btn('About Pallet handling').click();
+  await p.getByRole('dialog',{name:'Pallet handling'}).getByText(/crew and kit could handle 13,860 moves/).waitFor();
+  await p.keyboard.press('Escape');
+  await btn('Reduce Day shift').click();await btn('Increase Late shift').click();
+  assert.match(await row.innerText(),/12,000\s+13,860\s+Safe/);
+  assert.equal(await note.count(),0);
+  await ctx.close();console.log('PASS Ops Office shows constrained capacity, and live roster changes remove the warning');
+ }
  if(process.env.WT_V28_FOLDER){
   const ctx=await browser.newContext();const p=await ctx.newPage(),oldKey='warehouse_tycoon_dotv28',newKey='warehouse_tycoon_dotv29';
   base=process.env.WT_V28_FOLDER;await p.goto(url);await p.locator('#newBusiness').fill('Saved v28 company');

@@ -105,20 +105,23 @@ function d27Heading(title,s){
 }
 function d27Capacity(s,roster,trucks){
  const m=state.month+1, p=d21Projection(s), ops=d21OpsModel(s,roster,trucks);
- const handling=dot19ShiftPlan(p,m,roster,trucks).reduce((n,x)=>n+Math.round(x.workforce*ops.efficiency),0);
- return {p,m,ops,handling,dock:DOT17Facilities.dockCapacity(p,roster.filter(n=>n>0).length),storage:d21Storage(s),booked:contracts(s,m).reduce((n,k)=>n+k.spaces,0)};
+ const shifts=dot19ShiftPlan(p,m,roster,trucks);
+ const handling=Math.round(shifts.reduce((n,x)=>n+x.workforce*ops.efficiency,0));
+ const uneven=shifts.some(x=>x.dock>0&&x.workforce*ops.efficiency>x.dock)&&
+   shifts.some(x=>x.dock>0&&x.workforce*ops.efficiency<x.dock);
+ return {p,m,ops,handling,uneven,dock:DOT17Facilities.dockCapacity(p,roster.filter(n=>n>0).length),storage:d21Storage(s),booked:contracts(s,m).reduce((n,k)=>n+k.spaces,0)};
 }
 function d27Status(need,cap){
  return need>cap?['over','Breach']:need>0&&need>=cap*.9?['close','Close']:['safe','Safe'];
 }
 const d27Panel=(body,id='',extra='')=>'<section class="d27-panel '+extra+'"'+(id?' id="'+id+'"':'')+'>'+body+'</section>';
 function d27OpsPanel(s){
- const d=d21Draft(s), {dock,handling,storage,booked,ops}=d27Capacity(s,d.roster,d.trucks);
+ const d=d21Draft(s), {dock,handling,storage,booked,ops,uneven}=d27Capacity(s,d.roster,d.trucks);
  const amt=[...d.roster,d.trucks], live=[...dot19Roster(s),dot19TruckCount(s,state.month)], plan=[...dot19TargetRoster(s),dot19TruckTarget(s)];
  const unsaved=amt.some((x,i)=>x!==plan[i]),planned=plan.some((x,i)=>x!==live[i]);
  const metrics=[
   ['docks','Dock pallet moves',ops.demand,dock,'Receipt and despatch share the dock limit. Only staffed shifts count.'],
-  ['handling','Pallet handling',ops.demand,handling,'This is what your roster and equipment can handle next month before dock limits. Actual effective capacity across shifts: '+num(ops.future)+' moves.'],
+  ['handling','Pallet handling',ops.demand,ops.future,'Usable capacity is the lower of dock capacity and what the crew and kit can handle on each shift. Before dock limits, crew and kit could handle '+num(handling)+' moves.'],
   ['storage','Pallet storage',booked,storage,'Booked pallet spaces next month versus usable storage, including racking or projects due by then.']];
  const table='<table class="d27-table"><thead><tr><th scope="col">Measure</th><th scope="col">Forecast</th><th scope="col">Capacity</th><th scope="col">Status</th></tr></thead><tbody>'+metrics.map(([id,name,need,cap,help])=>{
    const [tone,label]=d27Status(need,cap);
@@ -129,7 +132,9 @@ function d27OpsPanel(s){
   const name=shifts[i], help=i===3?'Leased forklifts cost '+fmt(DOT19_OPS.lease)+' each per month. A forklift needs an operator and can work on more than one shift.':'Changes take effect next month when you save. A staffed shift unlocks dock time. Shift premiums are included in the labour cost shown.';
   return '<div class="d27-roster"'+(i===3?' id="d21-mhe"':'')+'><b class="d27-with-info">'+name+d27Info('shift'+i,name,'<p>'+help+'</p>')+'</b><strong>'+num(live[i])+'</strong><strong>'+num(n)+'</strong><div class="d27-step">'+[-1,1].map(dx=>'<button type="button" data-step="'+i+':'+dx+'" aria-label="'+(dx<0?'Reduce ':'Increase ')+name+'" onclick="d21OpsStep('+i+','+dx+')"'+d27Disabled(state.finished||(dx<0?!n:i!==3&&dot19Total(d.roster)>=150))+'>'+(dx<0?'−':'+')+'</button>').join('')+'</div></div>';
  }).join('');
- return '<h3 id="d15-operations">Capacity next month</h3>'+d27Panel(table)+
+ const warning=uneven&&ops.demand>ops.future&&ops.future<Math.min(dock,handling)?
+  '<p class="d29-shift-warning" role="status">An imbalance in shift staffing limits how many pallets you can move.</p>':'';
+ return '<h3 id="d15-operations">Capacity next month</h3>'+d27Panel(table+warning)+
    '<h3>People &amp; equipment</h3>'+d27Panel(rows+'<div class="d27-cost"><span>Labour + trucks / month</span><strong>'+fmt(ops.plannedCost)+'</strong></div>'+
    d27Button(unsaved?'Save for next month':planned?'Plan saved for next month':'No changes to save','d21ApplyOps()',!unsaved||state.finished,'wide'));
 }
