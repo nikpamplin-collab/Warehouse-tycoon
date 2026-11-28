@@ -30,9 +30,50 @@ function d27ModalKey(e){
 function d27ShowInfo(source,id){const item=D27.info.get(id);if(item)d27Modal(item.title,item.detail,source);}
 function d27Complete(source){
  const extra=(state.eventOffer?d27Button('Choose response','d27Close(false);showEvent()'):'')+d25Challenge()+(!state.finished&&!d23Signals().length?d27Button('Skip up to 3 quiet months','d27Close(false);d23Advance()',false,'quiet'):'');
- d27Modal('Complete '+monthName(state.month),'<p>'+num(Object.keys(state.bids).length)+' of '+num(state.tenders.length)+' tenders bid.</p>'+
-   (d21Unapplied()?'<p class="d27-warning">You have an unsaved staff or truck plan. Save it in Ops Office before completing the month.</p>':'')+
+ d27Modal('Complete '+monthName(state.month),d31Checklist()+
    d27Button('Complete month','d27Close(false);nextMonth()',state.finished)+extra,source);
+}
+function d31RoundChecks(){
+ const c=state.player,m=state.month, tenders=state.tenders, sites=c.sites;
+ const ready=tenders.filter(t=>availableSite(c,t)), bid=t=>!!state.bids[t.id];
+ const sent=ready.filter(bid).length,pending=ready.length-sent;
+ const bids=!ready.length?['blank','No tenders fit']:!sent?['blank',num(pending)+' to consider']:
+  pending?['check',sent+' of '+ready.length+' submitted'] : ['done',sent+' submitted'];
+ const value=k=>(k.spaces||0)*(k.storage||0)+Math.min(k.moves||0,(k.spaces||0)*5)*(k.handling||0);
+ const active=sites.flatMap(s=>contracts(s,m)),book=active.reduce((sum,k)=>sum+value(k),0);
+ const renewal=tenders.map(t=>({t,k:active.find(k=>t.id==='renew-'+m+'-'+k.id)}))
+  .filter(x=>x.k&&book>0&&value(x.k)>=.2*book);
+ const urgent=renewal.filter(x=>!bid(x.t)).sort((a,b)=>value(b.k)-value(a.k))[0];
+ const renew=urgent?['check',urgent.k.name+' · '+Math.round(100*value(urgent.k)/book)+'% of booked revenue · closes this round']:
+  renewal.length?['done','Key renewal bids submitted']:['blank','No key renewal due'];
+ const plan=d21Unapplied()?['check','Staff or forklift changes not saved']:
+  sites.some(s=>s.staffPlan?.effective===m+1||s.mhePlan?.effective===m+1)?['done','Changes saved for next month']:['blank','No staffing changes planned'];
+ const misses=[];
+ for(const s of sites){
+  const current=contracts(s,m).reduce((sum,k)=>sum+Math.min(k.moves,k.spaces*5),0);
+  const now=siteCapacity(s,managementPenalty(c,s),m), next=d21OpsModel(s,dot19TargetRoster(s,m+1),dot19TruckTarget(s,m+1));
+  if(current>now)misses.push({site:s.name,when:'This month',gap:current-now,rank:0});
+  else if(next.demand>next.future)misses.push({site:s.name,when:'Next month',gap:next.demand-next.future,rank:1});
+ }
+ const miss=misses.sort((a,b)=>a.rank-b.rank||b.gap-a.gap)[0];
+ const fit=miss?['check',miss.when+': '+num(miss.gap)+' moves short'+(sites.length>1?' at '+miss.site:'')]:
+  sites.length?['done','Booked moves fit the saved plan']:['blank','No operating site'];
+ const works=sites.reduce((sum,s)=>sum+s.projects.length,0),welfare=sites.filter(s=>s.welfareBoughtMonth===m).length;
+ const invest=works||welfare?['done',[works?num(works)+' project'+(works===1?'':'s')+' under way':'',welfare?'Welfare opened':''].filter(Boolean).join(' · ')]:['blank','No projects under way'];
+ const funds=c.cash<2*playerRecurringCosts(c)?['check','Less than two months of recurring costs']:['done','At least two months of recurring costs'];
+ return [['Bids submitted',...bids],['Key renewals',...renew,urgent?tenders.indexOf(urgent.t):null],['Resource plan',...plan],['Forecast coverage',...fit],['Investment',...invest],['Cash buffer',...funds]];
+}
+function d31Checklist(){
+ const icon={done:'✓',check:'?',blank:''},states={done:'Ready',check:'Needs review',blank:'No action recorded'};
+ return '<ul class="d31-round-checks" aria-label="Round checklist">'+d31RoundChecks().map(([label,status,detail,target])=>
+  '<li class="d31-check-'+status+(Number.isInteger(target)?' d31-check-link':'')+'"><span class="d31-check-icon" role="img" aria-label="'+states[status]+'">'+icon[status]+'</span><span><b>'+esc(label)+'</b><small>'+esc(detail)+'</small></span>'+
+  (Number.isInteger(target)?d27Button('Review','d31ReviewRenewal('+target+')',false,'quiet'):'')+'</li>').join('')+'</ul>';
+}
+function d31ReviewRenewal(i){
+ if(!state.tenders[i])return;
+ d27Close(false);D27.bidView='all';goFromContext('market');
+ const tender=document.getElementById('d27-tender-'+i);
+ if(tender){tender.tabIndex=-1;tender.focus({preventScroll:true});tender.scrollIntoView?.({block:'start',behavior:'instant'});}
 }
 function d27Report(results,progressNotes,skip){
  const c=state.player,r=c.last;if(!r)return;
@@ -158,22 +199,46 @@ function d27Ops(){
 }
 function d27Investment(){
  const s=selectedSite(), c=state.player, r=regionOf(selected);
- const categories=[['storage','Racking &amp; docks'],['flow','Automation'],['risk','Fire protection'],['bank','Borrowing']];
+ const categories=[['storage','Racking &amp; docks'],['flow','Automation'],['risk','Fire protection'],['bank','Borrowing'],['welfare','Welfare']];
  let html=d27Heading('Invest',s)+'<div class="d27-menu" aria-label="Investment options">'+categories.map(([k,label])=>'<button type="button" data-d27-invest="'+k+'" aria-pressed="'+(D21.upgrade===k)+'" onclick="d27Upgrade(\''+k+'\')">'+label+'</button>').join('')+'</div>'+
    '<div class="d27-cost d27-cash"><b>Cash available</b><strong>'+cash(c)+'</strong></div>';
  if(D21.upgrade==='bank')return html+d27Bank();
+ if(D21.upgrade==='welfare'&&s)return html+d31WelfareInvest(s);
  if(!s)return html+d27Buy('Open warehouse',fmt(r.cost),'Immediate','25,000 sq ft',"openRegion(\'"+r.id+"\')",state.finished||c.cash<r.cost,'newsite','Opening gives access to tenders in this territory. Starting running costs: '+fmt(playerSiteOverhead({region:r.id,sections:1}))+' per month.','','Open warehouse');
  html+='<div id="d15-investment"><div id="d21-upgrade">'+d27Orders(s)+'</div></div>';
  return html+d27Expansion(s)+(s.projects.length?d27Panel('<div class="d27-with-info"><h3 id="d15-projects">Work in progress · '+s.projects.length+'</h3></div>'+s.projects.map((p,i)=>'<div class="d27-project"><b>'+esc(p.type==='CI'?'Continuous improvement programme':p.type)+'</b><span>'+num(p.remaining)+' '+(p.remaining===1?'month':'months')+'</span>'+d27Button('Cancel','cancelProject('+i+')',p.mortgaged||p.type==='Replacement','quiet')+'</div>').join('')):'<div id="d15-projects"></div>');
 }
 function d27Upgrade(k){
- if(!['storage','flow','risk','bank'].includes(k))return;
+ if(!['storage','flow','risk','bank','welfare'].includes(k))return;
  D21.upgrade=k; render();document.querySelector('[data-d27-invest="'+k+'"]')?.focus({preventScroll:true});
 }
 function d27Buy(title,price,lead,impact,action,disabled,id,help,extra='',label='',anchor=''){
  return d27Panel('<div class="d27-with-info"><h3>'+esc(title)+'</h3>'+d27Info(id,title,'<p>'+esc(help)+'</p>')+'</div>'+
  '<div class="d27-buy-numbers"><strong>'+price+'</strong><b>'+lead+'</b></div><p class="d27-effect">'+impact+'</p>'+extra+
  d27Button(label||'Buy '+esc(title.toLowerCase()),action,disabled,'wide'),anchor,'d27-buy');
+}
+function d31WelfareInvest(s){
+ const c=state.player, active=DOT31Welfare.installed(s);
+ const stateText=active?'On site: '+active.name:'No canteen installed';
+ return '<section id="d31-welfare" tabindex="-1" aria-label="Staff welfare">'+d27Panel('<div class="d27-cost"><b>'+esc(stateText)+'</b>'+d27Info('welfare','Staff welfare','<p>Canteens lift workforce mood as soon as they open and soften a drop caused by poor management. They do not replace good management.</p>')+'</div>')+
+  DOT31Welfare.options.map(o=>{
+   const q=DOT31Welfare.quote(s,o.id), installed=active?.id===o.id;
+   if(!q)return installed?d27Panel('<div class="d27-cost"><b>'+esc(o.name)+'</b><span class="d27-chip safe">In use</span></div><p class="d27-effect">'+esc(o.features)+'</p>'):'';
+   const note=q.credit?'Includes '+fmt(q.credit)+' reuse credit.':'No earlier tier required.';
+   return d27Buy(o.name,fmt(q.cost),'Immediate',esc(o.features),'d31WelfareConfirm(this,'+o.id+')',state.finished||c.cash<q.cost,
+    'welfare'+o.id,o.benefit+' '+note,q.credit?'<p class="d27-effect">'+esc(note)+'</p>':'',
+    (active?'Upgrade to ':'Buy ')+o.name.toLowerCase());
+  }).join('')+'</section>';
+}
+function d31WelfareConfirm(source,id){
+ const s=selectedSite(),q=DOT31Welfare.quote(s,id);if(!q||state.finished||state.player.cash<q.cost)return;
+ d27Modal(q.next.name,'<p><b>'+fmt(q.cost)+'</b> · opens immediately. '+esc(q.next.benefit)+'</p>'+
+  d27Button('Confirm welfare purchase','d31WelfareBuy('+id+')',false,'wide'),source);
+}
+function d31WelfareBuy(id){
+ const s=selectedSite(),q=DOT31Welfare.buy(state,s,id);if(!q)return;
+ state.log.unshift('WELFARE: '+q.next.name+' opened at '+s.name+' for '+fmt(q.cost)+'.');
+ d27Close(false);save();render();document.getElementById('d31-welfare')?.focus({preventScroll:true});
 }
 function d27Orders(s){
  const c=state.player, off=(cost)=>state.finished||c.cash<cost, group=D21.upgrade;
@@ -239,6 +304,7 @@ function d27PopupScene(index,key,source){
   safety:['H&S manager','In post',s.hs?'Yes':'No'],
   tank:['Tank and pumps','Ready',DOT20Fire.view(s).water?'Yes':'No'],roof:['Roof sprinklers','Protection',DOT20Fire.view(s).roof?'Fitted':'Not fitted'],
   'rack-fire':['In-rack sprinklers','Protection',DOT20Fire.view(s).rack?'Fitted':'Not fitted'],
+  welfare:['Staff welfare','Ready to use',DOT31Welfare.installed(s)?.name||'None'],
   automation:['Automation','Sections equipped',dot19Lanes(s,state.month).length],
   expansion:['Expansion','Warehouse sections',s.sections],projects:['Site work','Projects in progress',s.projects.length]
  }[key]||['Warehouse'];

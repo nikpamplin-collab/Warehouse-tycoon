@@ -263,6 +263,53 @@ const DOT21Yard=(()=>{
   art+=face([[x+w,y,.13],[x+w,y+d,.13],[x+w,y+d,1.06],[x+w,y,.62]],'#9eb5af88',frame,.85);
   return art+'</g>';
  }
+ // Welfare sits in the starter building beside the management office, clear of the racking.
+ function canteen(tier,hit){
+  if(!Number.isInteger(tier)||tier<1||tier>3)return '';
+  const x=3,y=.55,w=12.7,d=4.68,frame='#537679',tile=['','#d7c995','#d8c8a8','#87a69f'][tier];
+  const wood=['#d9b583','#b1875d','#8d6246'], metal=['#c0d2cf','#839c9d','#637c81'];
+  const dining=(a,b)=>{
+   let art=box(a+.15,b+.25,.14,.15,.65,'steel',.13)+box(a+1.57,b+.25,.14,.15,.65,'steel',.13)+
+    box(a,b,1.86,.85,.14,wood,.76);
+   for(const c of [a+.2,a+1.1])art+=box(c,b-.45,.5,.34,.35,'warm',.13);
+   art+=box(a+.18,b+1.0,.54,.35,.36,'mint',.13)+box(a+1.08,b+1.0,.54,.35,.36,'mint',.13);
+   return art+dot(a+.48,b+.45,.93,1.65,'#f6e9d5')+dot(a+1.36,b+.45,.93,1.65,'#f6e9d5');
+  };
+  let art='<g class="d31-canteen d31-canteen-'+tier+'" data-welfare-tier="'+tier+'">'+
+   box(x,y,w,d,.10,'clad',.02)+plane(x+.08,y+.08,w-.16,d-.16,tile,.13,frame)+
+   face([[x,y+d,.13],[x+w,y+d,.13],[x+w,y+d,2.05],[x,y+d,2.05]],'#a4bbaa50',frame,1.05);
+  for(const a of [x+2,x+5,x+8,x+11])art+=line([[a,y+d,.14],[a,y+d,2.05]],frame,1.1);
+  art+=line([[x,y+d,2.05],[x+w,y+d,2.05]],'#82999a',1.65);
+  if(tier===1){
+   art+='<g class="d31-cold-counter">'+box(x+.45,y+2.65,3.55,.78,.83,wood,.13)+
+    box(x+.55,y+2.78,.68,.48,.3,'mint',.97)+box(x+1.71,y+2.8,.5,.46,.43,'steel',.97)+
+    dot(x+1.95,y+3.02,1.41,1.5,'#dbab54')+'</g>';
+   art+=dining(x+4.85,y+1.38)+dining(x+8.65,y+1.38);
+  }else{
+   art+='<g class="d31-hot-kitchen">'+box(x+.42,y+3.37,3.70,.78,.86,metal,.13)+
+    box(x+.42,y+3.48,3.66,.72,.23,'steel',1.84);
+   for(const a of [x+.65,x+1.72,x+2.79])art+=plane(a,y+3.50,.76,.45,'#b1663b',1.02,'#e5ad71');
+   art+=box(x+1.07,y+1.43,2.82,.88,.91,wood,.13)+
+    plane(x+1.29,y+1.59,.70,.51,'#e9a76a',1.06,frame)+plane(x+2.23,y+1.59,.72,.51,'#e3b95d',1.06,frame)+
+    line([[x+1.18,y+1.76,1.2],[x+1.18,y+1.76,1.66],[x+3.77,y+1.76,1.66],[x+3.77,y+1.76,1.2]],'#c6dfdd',1.6)+'</g>';
+   if(tier===2)art+=dining(x+4.96,y+1.45)+dining(x+8.65,y+1.45);
+   else{
+    const px=x+5.15,py=y+2.06, tvx=x+10.66,tvy=y+3.45;
+    art+='<g class="d31-pool-table">'+box(px+.25,py+.18,.2,.24,.74,'steel',.13)+box(px+2.38,py+.92,.20,.23,.74,'steel',.13)+
+     box(px,py,2.94,1.42,.20,wood,.83)+plane(px+.16,py+.145,2.62,1.13,'#237866',1.05,'#a3d7ac')+
+     dot(px+.64,py+.58,1.08,1.7,'#f5e8cc')+dot(px+1.82,py+.77,1.08,1.6,'#efb048')+
+     dot(px+2.02,py+.70,1.08,1.6,'#c9634c')+line([[px+.29,py+.24,1.14],[px+1.44,py+.98,1.14]],'#e1c091',1.05)+'</g>';
+    art+='<g class="d31-games-console">'+box(tvx-.22,tvy-.21,1.74,.46,.57,'dark',.13)+
+     face([[tvx,tvy,.73],[tvx+1.31,tvy,.73],[tvx+1.31,tvy,1.66],[tvx,tvy,1.66]],'#213641',frame,1.5)+
+     face([[tvx+.10,tvy-.012,.86],[tvx+1.22,tvy-.012,.86],[tvx+1.22,tvy-.012,1.55],[tvx+.10,tvy-.012,1.55]],'#79afc8')+
+     line([[tvx+.15,tvy-.022,1.05],[tvx+.52,tvy-.022,1.28],[tvx+.87,tvy-.022,1.07],[tvx+1.16,tvy-.022,1.21]],'#dff2dc',1.3)+
+     box(tvx+1.37,tvy+.03,.1,.25,.32,'clad',.72)+box(x+9.97,y+1.27,2.45,.66,.47,'mint',.13)+
+     box(x+9.97,y+1.22,2.45,.18,.85,'mint',.13)+'</g>';
+   }
+  }
+  art+=face([[x,y,.13],[x+w,y,.13],[x+w,y,.58],[x,y,.58]],'#799b94',frame,1.03)+'</g>';
+  return hit('welfare',['','Basic canteen','Hot-food canteen','Staff lounge'][tier],art);
+ }
  function automationShell(x,y){
   const w=10.18,d=9.23,z=6.8,metal=['#b4c5c5','#859d9f','#647e84'];
   let shell='<g class="d21-automation d28-auto-shell">';
@@ -367,7 +414,7 @@ const DOT21Yard=(()=>{
    add(x,y,hit('handling','Warehouse staff',walker(x,y,i)));
   }
   if(!m.fleet&&v.staff>0&&v.moves>0){
-   const x=7.6,y=3.2;
+   const x=v.welfareTier?14.2:7.6,y=v.welfareTier?5.57:3.2;
    add(x,y,hit('handling','Pallet truck and handling','<g class="d21-pallet-jack">'+box(x,y,.57,.41,.17,'warm')
     +line([[x+.18,y,.08],[x+.18,y+.93,.08]],'#b66f31',2.1)
     +line([[x+.48,y,.08],[x+.48,y+.93,.08]],'#b66f31',2.1)
@@ -392,7 +439,7 @@ const DOT21Yard=(()=>{
    art+=hit('rack-fire','In-rack sprinkler system',rackTargets);
   }
   if(!pickup&&delivery.interior)art+=hit('handling','Unloading and handling',delivery.interior);
-  art+=office(v,hit);
+  art+=office(v,hit)+canteen(v.welfareTier,hit);
   // Draw external plant and in-building sprinklers only on commissioning.
   if(fire.water>0){
    const tx=-3.8,ty=-3.6,[x,y]=P(tx,ty,.02);

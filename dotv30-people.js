@@ -89,7 +89,7 @@ const DOT30People=(()=>{
   }
   if(point.hours>0&&point.demand>0&&!r.incident)s.peopleTelemetry=[...(s.peopleTelemetry||[]).slice(-11),point];
   const before=mood(s),target=teamScore(s,'ops','people',.9);
-  s.peopleMood=clampTo(before+clampTo((target-before)*.22,-.65,.65),1,10);
+  s.peopleMood=clampTo(before+DOT31Welfare.damp(s,clampTo((target-before)*.22,-.65,.65)),1,10);
   s.peopleMoodTrend=Math.abs(s.peopleMood-before)<.08?0:Math.sign(s.peopleMood-before);
  }
  function hire(g,s,r,id){

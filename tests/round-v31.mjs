@@ -1,0 +1,47 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {fileURLToPath} from 'node:url';
+import {boot,compile,setup} from './runtime.mjs';
+const script=compile(fileURLToPath(new URL('..',import.meta.url)));
+const start=()=>{const g=boot(script);setup(g);g.run('const s=selectedSite();state.player.cash=1000000');return g;};
+const rows=g=>new Map(JSON.parse(g.run('JSON.stringify(d31RoundChecks())')).map(([name,kind,desc])=>[name,{kind,desc}]));
+test('exactly six non-blocking checks are confined to the Complete month modal',()=>{
+ const g=start();const before=g.run('JSON.stringify(state)');
+ assert.doesNotMatch(g.el('view').innerHTML,/Round checklist/);
+ g.run('d27Complete(null)');const modal=g.el('dialog').innerHTML;
+ assert.match(modal,/Round checklist/);assert.equal((modal.match(/class="d31-check-(done|check|blank)"/g)||[]).length,6);
+ assert.match(modal,/d27Close\(false\);nextMonth\(\)/);
+ assert.equal(g.run('JSON.stringify(state)'),before);
+});
+test('checks distinguish action taken, review needed and no action recorded',()=>{
+ const g=start();g.run(`
+  const m=state.month;
+  Object.assign(s,{racks:9,staff:7,shiftStaff:[6,1,0],mheTrucks:0,projects:[],contracts:[{id:'anchor',name:'Anchor Retail',start:m,end:m+1,spaces:2400,moves:12000,storage:15,handling:5}]});
+  const bid={id:'renew-'+m+'-anchor',name:'Anchor Retail · renewal',start:m+2,region:s.region,spaces:2400,moves:12000};
+  const other={id:'extra',name:'Extra',start:m+2,region:s.region,spaces:50,moves:200};
+  state.tenders=[bid,other];state.bids={};
+ `);
+ let r=rows(g);
+ assert.equal(r.get('Bids submitted').kind,'blank');
+ assert.equal(r.get('Key renewals').kind,'check');assert.match(r.get('Key renewals').desc,/Anchor Retail.*100%.*closes this round/);
+ assert.equal(r.get('Resource plan').kind,'blank');
+ assert.equal(r.get('Forecast coverage').kind,'check');assert.match(r.get('Forecast coverage').desc,/120 moves short/);
+ assert.equal(r.get('Investment').kind,'blank');
+ assert.equal(r.get('Cash buffer').kind,'done');
+ assert.match(g.run('d31Checklist()'),/d31ReviewRenewal\(0\)/);
+ g.run("state.player.name='Renamed operator'");
+ assert.equal(rows(g).get('Key renewals').kind,'check');
+ g.run(`d21Draft(s).roster=[5,2,0];state.bids[bid.id]={storage:15,handling:5};`);
+ r=rows(g);
+ assert.equal(r.get('Bids submitted').kind,'check');
+ assert.equal(r.get('Key renewals').kind,'done');
+ assert.equal(r.get('Resource plan').kind,'check');
+ assert.equal(r.get('Forecast coverage').kind,'check');
+ g.run(`state.bids[other.id]={storage:15,handling:5};s.staffPlan={count:7,shifts:[5,2,0],effective:m+1};DOT31Welfare.buy(state,s,1);`);
+ r=rows(g);
+ assert.equal(r.get('Bids submitted').kind,'done');assert.equal(r.get('Resource plan').kind,'done');assert.equal(r.get('Investment').kind,'done');
+ g.run('s.shiftStaff=[5,2,0];state.player.cash=500');
+ r=rows(g);assert.equal(r.get('Forecast coverage').kind,'done');assert.equal(r.get('Cash buffer').kind,'check');
+ g.run("state.month++;state.tenders=[]");
+ assert.equal(rows(g).get('Key renewals').kind,'blank');assert.doesNotMatch(g.run('d31Checklist()'),/d31ReviewRenewal/);
+});

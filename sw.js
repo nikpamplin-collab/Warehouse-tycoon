@@ -1,9 +1,9 @@
 // Versioned static app cache. Restrict fetches and cleanup to this deployment.
-const VERSION='DOTv30';
-const FILES=['./dotv30-people.js?release=DOTv30','./dotv30-people-ui.js?release=DOTv30','./dotv30-people.css?release=DOTv30','./night-shift.css?release=DOTv29','./dotv27-desks.css?release=DOTv30','./dotv27-desks.js?release=DOTv30','./dotv26-growth.js?release=DOTv26.1','./dotv25-campaign.js?release=DOTv26.1','./dotv24-diagnostics.js?release=DOTv26.1','./dotv23-pressure.js?release=DOTv28','./dotv22-first.js?release=DOTv26.1','./dotv22-first.css?release=DOTv26.1','./dotv21-warehouse.js?release=DOTv29','./dotv21-warehouse.css?release=DOTv29','./dotv21-ui.js?release=DOTv28','./dotv21-ui.css?release=DOTv26.1','./v18-economy.js?release=DOTv26.1','./v18-economy.css','./manifest.webmanifest','./icon.png','./icon-512.png','./dotv13.css','./dotv13.js','./dotv14.css','./dotv14.js','./v15.css','./v16.css','./v16.js?release=DOTv28','./v17-nav.css','./dotv17-facilities.css','./dotv17-facilities.js','./v17-staff.css','./v17-staff.js?release=DOTv30','./dotv20-fire.css','./dotv20-fire.js?release=DOTv30'];
+const VERSION='DOTv31';
+const FILES=['./dotv31-welfare.js?release=DOTv31','./dotv30-people.js?release=DOTv31','./dotv30-people-ui.js?release=DOTv30','./dotv30-people.css?release=DOTv30','./night-shift.css?release=DOTv29','./dotv27-desks.css?release=DOTv31','./dotv27-desks.js?release=DOTv31','./dotv26-growth.js?release=DOTv26.1','./dotv25-campaign.js?release=DOTv26.1','./dotv24-diagnostics.js?release=DOTv26.1','./dotv23-pressure.js?release=DOTv28','./dotv22-first.js?release=DOTv26.1','./dotv22-first.css?release=DOTv26.1','./dotv21-warehouse.js?release=DOTv31','./dotv21-warehouse.css?release=DOTv29','./dotv21-ui.js?release=DOTv28','./dotv21-ui.css?release=DOTv26.1','./v18-economy.js?release=DOTv26.1','./v18-economy.css','./manifest.webmanifest','./icon.png','./icon-512.png','./dotv13.css','./dotv13.js','./dotv14.css','./dotv14.js','./v15.css','./v16.css','./v16.js?release=DOTv28','./v17-nav.css','./dotv17-facilities.css','./dotv17-facilities.js','./v17-staff.css','./v17-staff.js?release=DOTv30','./dotv20-fire.css','./dotv20-fire.js?release=DOTv30'];
 const scope=new URL(self.registration.scope);
 const family="warehouse-tycoon:"+scope.pathname+":";
-const CACHE=family+"30.0.0";
+const CACHE=family+"31.0.0";
 const shell=new URL('index.html',scope);shell.searchParams.set('release',VERSION);
 const assets=new Set([...FILES,'./','./index.html'].map(f=>new URL(f,scope).pathname));
 self.addEventListener('install',event=>event.waitUntil((async()=>{

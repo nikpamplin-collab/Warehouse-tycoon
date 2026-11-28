@@ -85,8 +85,13 @@ try{
   await btn('About How Finances works').click();await p.getByRole('dialog',{name:'How Finances works'}).getByText('Profit includes the month',{exact:false}).waitFor();await p.keyboard.press('Escape');
   await btn('Contracts').click();await p.getByRole('heading',{name:'Fixture'}).waitFor();await noOverflow();
   await btn('Company').click();await btn('Borrowing').click();await btn('Repay up to £25,000').waitFor();
+  assert.equal(await p.getByRole('list',{name:'Round checklist'}).count(),0);
   await p.locator('#metrics').getByRole('button',{name:'Complete month'}).click();
+  const checks=p.getByRole('list',{name:'Round checklist'});
+  assert.equal(await checks.getByRole('listitem').count(),6);
+  assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth),width);
   await p.getByRole('dialog').getByRole('button',{name:'Complete month',exact:true}).click();
+  assert.equal(await checks.count(),0);
   assert.equal((await saved()).month,2);
   const result=p.getByRole('dialog',{name:'January 2026 results'});await result.waitFor();
   assert.match(await result.innerText(),/Cash now[\s\S]+Pallet move results[\s\S]+Not completed/);
@@ -245,8 +250,46 @@ try{
   assert.deepEqual(errors,[]);
   await ctx.close();console.log('PASS candidate shortlist, appointment, team record, release, mood and role info on small phone');
  }
+ {
+  const ctx=await browser.newContext({viewport:{width:390,height:740},hasTouch:true,isMobile:true,reducedMotion:'reduce'});
+  const p=await ctx.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+  const btn=n=>p.getByRole('button',{name:n,exact:true});
+  const nav=n=>p.locator('#tabs').getByRole('button',{name:n,exact:true});
+  await p.goto(url);await p.locator('#newBusiness').fill('Welfare test');await btn('Start playing').click();
+  const view=p.locator('.d21-yard-svg'), frame=await view.getAttribute('viewBox');
+  assert.equal(await p.locator('[data-scene-hit="welfare"]').count(),0);
+  await nav('Invest').click();await btn('Welfare').click();
+  const panel=p.locator('#d31-welfare');await panel.getByText('£125,000',{exact:true}).waitFor();
+  for(const [tier,name,price,a] of [[1,'Buy basic canteen','£20,000','d31-cold-counter'],[2,'Upgrade to hot-food canteen','£35,000','d31-hot-kitchen'],[3,'Upgrade to staff lounge','£85,000','d31-games-console']]){
+   const old=await p.evaluate(()=>state.player.cash),mood=await p.evaluate(()=>DOT30People.mood(selectedSite()));
+   await btn(name).click();await p.getByRole('dialog').getByText(price,{exact:true}).waitFor();
+   await btn('Confirm welfare purchase').click();
+   assert.equal(await p.evaluate(()=>state.player.cash),old-Number(price.replace(/[^0-9]/g,'')));
+   assert.ok(await p.evaluate(()=>DOT30People.mood(selectedSite()))>mood);
+   await nav('Home').click();const art=p.locator('[data-welfare-tier="'+tier+'"]');
+   await art.locator('.'+a).waitFor();
+   assert.equal(await view.getAttribute('viewBox'),frame);
+   const hit=p.locator('[data-scene-hit="welfare"]');await hit.focus();await p.keyboard.press('Enter');
+   await p.getByRole('dialog',{name:'Staff welfare'}).waitFor();
+   await btn('View in Invest').click();await panel.waitFor();
+  }
+  await p.reload();await nav('Home').click();await p.locator('[data-welfare-tier="3"] .d31-games-console').waitFor();
+  assert.deepEqual(errors,[]);await ctx.close();console.log('PASS welfare purchase, upgrade credits, immediate mood, each SVG tier and Home to Invest routing');
+ }
+ if(process.env.WT_V30_FOLDER){
+  const ctx=await browser.newContext();const p=await ctx.newPage(),oldKey='warehouse_tycoon_dotv30',newKey='warehouse_tycoon_dotv31';
+  base=process.env.WT_V30_FOLDER;await p.goto(url);await p.locator('#newBusiness').fill('Saved v30 company');await p.getByRole('button',{name:'Start playing'}).click();
+  await p.evaluate(()=>{const s=selectedSite();DOT30People.hire(state,s,'ops',DOT30People.pool(state,s,'ops')[0].id);s.peopleMood=4.4;save();});
+  const old=await p.evaluate(k=>localStorage.getItem(k),oldKey);assert.ok(old);
+  base=root;await p.goto(url+'?fresh=v31');await p.locator('#d27-home-title').waitFor();
+  const imported=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),newKey);
+  assert.equal(imported.player.sites[0].peopleHires.length,1);assert.equal(imported.player.sites[0].peopleMood,4.4);
+  assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
+  base=process.env.WT_V30_FOLDER;await p.goto(url+'?fresh=v30');assert.match(await p.title(),/DOTv30/);assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
+  await ctx.close();base=root;console.log('PASS v30 → v31 → v30, named team and mood preserved');
+ }
  if(process.env.WT_V29_FOLDER){
-  const ctx=await browser.newContext();const p=await ctx.newPage(),oldKey='warehouse_tycoon_dotv29',newKey='warehouse_tycoon_dotv30';
+  const ctx=await browser.newContext();const p=await ctx.newPage(),oldKey='warehouse_tycoon_dotv29',newKey='warehouse_tycoon_dotv31';
   base=process.env.WT_V29_FOLDER;await p.goto(url);await p.locator('#newBusiness').fill('Saved v29 company');await p.getByRole('button',{name:'Start playing'}).click();
   await p.evaluate(()=>{Object.assign(selectedSite(),{managers:2,hs:true,stockController:true});save();});
   const old=await p.evaluate(k=>localStorage.getItem(k),oldKey);assert.ok(old);
@@ -258,10 +301,10 @@ try{
   await p.evaluate(()=>{state.player.cash+=1234;save();});
   assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
   base=process.env.WT_V29_FOLDER;await p.goto(url+'?fresh=v29');assert.match(await p.title(),/DOTv29/);assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
-  await ctx.close();base=root;console.log('PASS v29 → v30 → v29, original save and managers preserved');
+  await ctx.close();base=root;console.log('PASS v29 → v31 → v29, original save and managers preserved');
  }
  if(process.env.WT_V28_FOLDER){
-  const ctx=await browser.newContext();const p=await ctx.newPage(),oldKey='warehouse_tycoon_dotv28',newKey='warehouse_tycoon_dotv30';
+  const ctx=await browser.newContext();const p=await ctx.newPage(),oldKey='warehouse_tycoon_dotv28',newKey='warehouse_tycoon_dotv31';
   base=process.env.WT_V28_FOLDER;await p.goto(url);await p.locator('#newBusiness').fill('Saved v28 company');
   await p.getByRole('button',{name:'Start playing'}).click();
   await p.evaluate(()=>{Object.assign(selectedSite(),{sections:4,racks:20,facilityDocks:2});save();});
@@ -274,21 +317,21 @@ try{
   assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
   base=process.env.WT_V28_FOLDER;await p.goto(url+'?fresh=v28');assert.match(await p.title(),/DOTv28/);
   assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
-  await ctx.close();base=root;console.log('PASS v28 → v30 → v28, independent saves');
+  await ctx.close();base=root;console.log('PASS v28 → v31 → v28, independent saves');
  }
  if(legacy){
   const ctx=await browser.newContext();const p=await ctx.newPage();base=legacy;
   await p.goto(url);await p.locator('#newBusiness').fill('Migrating v25');await p.locator('#newSite').fill('Original warehouse');await p.getByRole('button',{name:'Start playing'}).click();
-  const v25key='warehouse_tycoon_dotv25', v30key='warehouse_tycoon_dotv30';
+  const v25key='warehouse_tycoon_dotv25', v31key='warehouse_tycoon_dotv31';
   const v25=await p.evaluate(k=>localStorage.getItem(k),v25key);assert.ok(v25);
   base=root;await p.goto(url+'?fresh=v28');await p.locator('#d27-home-title').waitFor();
-  assert.equal((await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),v30key)).player.name,'Migrating v25');
+  assert.equal((await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),v31key)).player.name,'Migrating v25');
   await p.evaluate(()=>{state.player.cash+=1234;save();});assert.equal(await p.evaluate(k=>localStorage.getItem(k),v25key),v25);
   base=legacy;await p.goto(url+'?fresh=v25');assert.match(await p.title(),/DOTv25/);assert.equal(await p.evaluate(k=>localStorage.getItem(k),v25key),v25);
-  await ctx.close();console.log('PASS v25 → v30 → v25, independent saves');
+  await ctx.close();console.log('PASS v25 → v31 → v25, independent saves');
  }
  if(process.env.WT_V27_FOLDER){
-  const ctx=await browser.newContext();const p=await ctx.newPage(), oldKey='warehouse_tycoon_dotv27', newKey='warehouse_tycoon_dotv30';
+  const ctx=await browser.newContext();const p=await ctx.newPage(), oldKey='warehouse_tycoon_dotv27', newKey='warehouse_tycoon_dotv31';
   base=process.env.WT_V27_FOLDER;await p.goto(url);await p.locator('#newBusiness').fill('Saved v27 company');
   await p.getByRole('button',{name:'Start playing'}).click();
   const old=await p.evaluate(k=>localStorage.getItem(k),oldKey);assert.ok(old);
@@ -298,6 +341,6 @@ try{
   assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
   base=process.env.WT_V27_FOLDER;await p.goto(url+'?fresh=v27');assert.match(await p.title(),/DOTv27/);
   assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
-  await ctx.close();console.log('PASS v27 → v30 → v27, independent saves');
+  await ctx.close();console.log('PASS v27 → v31 → v27, independent saves');
  }
 }finally{await browser.close();await new Promise(r=>server.close(r));}

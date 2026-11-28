@@ -81,3 +81,15 @@ body[data-d27=rivals] .d27-title{color:#f3f8f4}.d27-more .table-scroll{max-width
 body[data-d27=office]>header h1{flex:0 0 auto;white-space:nowrap;overflow-wrap:normal}
 
 .d29-shift-warning{margin:0;padding:7px 9px;border-top:1px solid var(--d27-edge);font:inherit;font-size:14px;color:var(--d27-ink);background:var(--d27-soft)}
+
+#dialog .d31-round-checks{list-style:none;padding:0;margin:5px 0 9px;border:1px solid var(--d27-edge);border-radius:10px;overflow:hidden}
+#dialog .d31-round-checks li{display:grid;grid-template-columns:24px minmax(0,1fr);align-items:center;gap:8px;padding:5px 7px;margin:0;min-height:43px;line-height:1.15}
+#dialog .d31-round-checks li+li{border-top:1px solid var(--d27-edge)}
+.d31-round-checks b{display:block;font-size:15px}
+.d31-round-checks small{display:block;color:var(--d27-muted);font-size:12px;margin-top:2px;overflow-wrap:anywhere}
+.d31-check-icon{display:grid;place-items:center;width:21px;height:21px;border:1px solid var(--d27-edge);border-radius:5px;font-size:14px;font-weight:850}
+.d31-check-done .d31-check-icon{background:#c5f1d7;color:#10422a;border-color:transparent}
+.d31-check-check .d31-check-icon{background:#ffe29c;color:#533506;border-color:transparent}
+
+#dialog .d31-round-checks .d31-check-link{grid-template-columns:24px minmax(0,1fr) auto}
+#dialog .d31-check-link button{font-size:13px}
