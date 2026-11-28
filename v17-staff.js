@@ -120,7 +120,7 @@ function dot19CINext(s){return dot19CICount(s)>=DOT19_OPS.ciLimit?Infinity:Math.
 function dot19CIAvailable(s,m){return dot19CINext(s)<=m&&!s.projects.some(p=>p.type==='CI')}
 
 function dot17SiteOpsCosts(s,m=state.month) {
-  return {mheCost:dot19TruckCount(s,m)*DOT19_OPS.lease,stockControlCost:s.stockController===true?DOT17_WORK.stockControlCost:0};
+  return {mheCost:dot19TruckCount(s,m)*DOT19_OPS.lease,stockControlCost:DOT30People.salary(s,'stock')};
 }
 function dot17ToggleSiteOps(option) {
   const s=selectedSite();if(!s||state.finished||option!=='stock')return;
@@ -141,12 +141,13 @@ function dot17Inventory(c,s,ks,m,demand,capacity,random=Math.random) {
   const load=clamp(demand/Math.max(1,capacity),0,1);
   const pressure=(fill+load)/2;
   const control=s.stockController===true;
-  if(random()>=dot17StockOdds(control,pressure)) return none;
+  const people=DOT30People.influence(s);
+  if(random()>=clamp(dot17StockOdds(control,pressure)*people.stockOdds,0,.8)) return none;
   // Pick the affected customer proportional to their stock on site.
   let slot=random()*pallets;
   const customer=ks.find(k=>(slot-=k.spaces)<0)||ks.at(-1);
   const rate=(control?.003:.015)+random()*(control?.006:.030);
-  const shortage=Math.min(customer.spaces,Math.max(1,Math.round(pallets*rate)));
+  const shortage=Math.min(customer.spaces,Math.max(1,Math.round(pallets*rate*people.stockSeverity)));
   const fine=Math.min(DOT17_WORK.shortageCap,shortage*DOT17_WORK.shortageRate);
   return {...none,stockFines:fine,stockShortages:shortage,stockLoss:{site:s.name,customer:customer.name,pallets:shortage,fine}};
 }

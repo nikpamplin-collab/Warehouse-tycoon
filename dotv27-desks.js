@@ -71,7 +71,7 @@ function d27Header(){
  document.getElementById('headline').innerHTML=tab==='office'?'':d27Button('⌂ Return to Home','d27Return()',false,'quiet');
  document.getElementById('metrics').innerHTML=(tab==='office'?d27Button(D27.map?'＋ Back to warehouse':'− Zoom out to UK map','d27Zoom()',false,'quiet'):'')+
    d27Button(state.finished?'Bankrupt':'Complete month','d27Complete(this)',state.finished,'advance');
- const names=[['office','Home'],['warehouse','Ops Office'],['market','Bids'],['investment','Invest'],['history','Finances'],['rivals','Rivals']];
+ const names=[['office','Home'],['warehouse','Ops Office'],['market','Bids'],['investment','Invest'],['history','Finances'],['rivals','Rivals'],['people','People']];
  document.getElementById('tabs').innerHTML=names.map(([k,v])=>'<button aria-current="'+(tab===k?'page':'false')+'" class="'+(tab===k?'active':'')+'" id="d17-nav-'+k+'" onclick="'+(k==='office'?'d27Return()':"goFromNav(\'"+k+"\')")+'"><span>'+v+'</span></button>').join('');
 }
 const D27_PINS=[['north',159,113,60,-9,133],['mid',177,185,62,-7,98],['south',218,242,54,7,99]];
@@ -135,7 +135,7 @@ function d27OpsPanel(s){
  const warning=uneven&&ops.demand>ops.future&&ops.future<Math.min(dock,handling)?
   '<p class="d29-shift-warning" role="status">An imbalance in shift staffing limits how many pallets you can move.</p>':'';
  return '<h3 id="d15-operations">Capacity next month</h3>'+d27Panel(table+warning)+
-   '<h3>People &amp; equipment</h3>'+d27Panel(rows+'<div class="d27-cost"><span>Labour + trucks / month</span><strong>'+fmt(ops.plannedCost)+'</strong></div>'+
+   '<div class="d30-mood-head"><h3>People &amp; equipment</h3>'+d30Mood(s)+'</div>'+d27Panel(rows+'<div class="d27-cost"><span>Labour + trucks / month</span><strong>'+fmt(ops.plannedCost)+'</strong></div>'+
    d27Button(unsaved?'Save for next month':planned?'Plan saved for next month':'No changes to save','d21ApplyOps()',!unsaved||state.finished,'wide'));
 }
 function d27BlobIcons(occ,auto){
@@ -145,13 +145,14 @@ function d27BlobIcons(occ,auto){
 }
 function d27Ops(){
  const s=selectedSite();if(!s)return d27Heading('Ops Office',s)+d27Panel('<p>No warehouse in this territory.</p>'+d27Button('Explore opening a site',"goFromNav(\'investment\')"));
- const staff=[['d15-staff','Ops manager',s.managers||0,'hireManager(1)','hireManager(-1)','£5,000/month each. A manager covers up to ten staff for the purpose of the management penalty. Understaffed management reduces pallet move capacity.'],
- ['d21-site-stock','Stock manager',s.stockController?1:0,"dot17ToggleSiteOps(\'stock\')","dot17ToggleSiteOps(\'stock\')",'£3,000/month. Reduces the chance and size of stock shortages and associated fines.'],
- ['d21-site-safety','H&amp;S manager',s.hs?1:0,'hs()','hs()','£4,000/month. Reduces the chance of health and safety incidents. Fire protection equipment is managed in Invest.']];
+ const staff=[['d15-staff','ops'],['d21-site-stock','stock'],['d21-site-safety','safety']];
  const occ=siteSpace(s)?occupancy(s)/siteSpace(s):0, auto=dot19Lanes(s,state.month).length/s.sections;
  return d27Heading('Ops Office',s)+'<section id="d21-plan" tabindex="-1">'+d27OpsPanel(s)+'</section><h3>Site managers</h3>'+
- d27Panel(staff.map(([id,name,n,hire,release,info],i)=>'<div class="d27-role" id="'+id+'"><b class="d27-with-info">'+name+d27Info('role'+i,name.replace('&amp;','&'),'<p>'+info+'</p>')+'</b><strong>'+(i===0?num(n)+' in post':n?'In post':'Vacant')+'</strong><div class="d27-role-buttons">'+
-  (i===0||n?d27Button('Release',release,!n||state.finished,'quiet'):'')+(i===0||!n?d27Button('Employ',hire,state.finished):'')+'</div></div>').join(''))+
+ d27Panel(staff.map(([id,role])=>{
+   const def=DOT30People.roles[role], n=DOT30People.team(s).filter(x=>x.role===role).length;
+   return '<div class="d27-role d30-role-row" id="'+id+'"><b class="d27-with-info">'+esc(def.name)+d27Info('role-'+role,def.name,'<p>'+esc(def.info)+'</p>')+'</b><strong>'+(n?n+' in post':'Vacant')+'</strong>'+
+    d27Button(n?'View team':'Recruit',"d30PeopleOpen('"+role+"',"+!!n+")",false,'quiet')+'</div>';
+ }).join(''))+
  '<h3>Warehouse operations</h3>'+d27Panel('<div id="d21-stock-levels" class="d27-blobs"><b>Storage &amp; automation</b>'+d27Info('blobs','Storage and automation','<p>Gold shows storage booked: '+num(occupancy(s))+' of '+num(siteSpace(s))+' pallet spaces. A ring shows automation: '+num(dot19Lanes(s,state.month).length)+' of '+num(s.sections)+' sections.</p>'+d27Button('Rename warehouse','d27Close(false);renameSite()',state.finished,'quiet'))+
  d27BlobIcons(occ,auto)+'</div>');
 }
@@ -266,7 +267,7 @@ function d27Render(){
  const view=document.getElementById('view');
  D27.info.clear();document.body?.setAttribute('data-d27',tab);
  d27Header();
- const fn={office:d27Home,warehouse:d27Ops,investment:d27Investment,market:d27Bids,history:d27Finances,rivals:d27Rivals}[tab];
+ const fn={office:d27Home,warehouse:d27Ops,investment:d27Investment,market:d27Bids,history:d27Finances,rivals:d27Rivals,people:d30PeopleScreen}[tab];
  view.innerHTML=fn();D21.renderedTab=tab;
 }
 

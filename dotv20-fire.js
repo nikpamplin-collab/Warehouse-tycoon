@@ -68,9 +68,10 @@
  }
  // Keep the old H&S-sensitive probability of ignition. Mitigation changes the
  // size of a fire loss only. A dry pump installation never prevents a fire.
- function fireRisk(s){return (s?.hs?.1:.4)*.12;}
+ const incidentRisk=s=>DOT30People.influence(s).safetyOdds;
+ function fireRisk(s){return incidentRisk(s)*.12;}
  function incidentKind(s,roll){
-  return roll<fireRisk(s)?'Fire':roll<(s?.hs?.1:.4)?'Safety':null;
+  return roll<fireRisk(s)?'Fire':roll<incidentRisk(s)?'Safety':null;
  }
  function outcome(s,baseCost,baseDisruption){
   const x=footprint(s), divisor=sections(s);
@@ -88,9 +89,8 @@
  function shortStatus(s){
   const x=view(s), previous=s?.last?.incident;
   const assets=x.water?('Water supply ready · roof '+x.roof+'/'+x.sections+' · in-rack '+x.rack+'/'+rackable(s)):(x.waterWorks?'Tank and pumps being installed':'No fire protection ready to use');
-  const risk=(fireRisk(s)*100).toLocaleString('en-GB',{maximumFractionDigits:2});
   const note=previous?.kind==='Fire'?' · Fire last month':'';
-  return '<div class="'+(x.roof?'d17-facility-added':'')+'"><strong>Fire protection</strong><span>'+assets+'</span><span>'+risk+'% chance of a fire each month · sprinklers reduce damage, not the chance of a fire'+note+'</span></div>';
+  return '<div class="'+(x.roof?'d17-facility-added':'')+'"><strong>Fire protection</strong><span>'+assets+'</span><span>Sprinklers reduce fire damage, not the chance of a fire'+note+'</span></div>';
  }
  function controls(s,balance){
   const x=view(s), cost=runningCost(s);
