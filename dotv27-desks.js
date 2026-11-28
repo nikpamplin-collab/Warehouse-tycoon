@@ -6,10 +6,10 @@ const d27Info=(id,title,detail)=>{
  D27.info.set(id,{title,detail});
  return '<button class="d27-info" type="button" aria-label="About '+esc(title)+'" onclick="d27ShowInfo(this,\''+id+'\')"><span aria-hidden="true">i</span></button>';
 };
-function d27Modal(title,body,source){
+function d27Modal(title,body,source,closeLabel='Close'){
  D27.modalFocus=source;D27.modalOpen=true;
  dialog('<div class="d27-popup"><h2 id="d27-dialog-title" tabindex="-1">'+esc(title)+'</h2>'+body+
-   d27Button('Close','d27Close()',false,'quiet')+'</div>');
+   d27Button(closeLabel,'d27Close()',false,closeLabel==='Continue'?'d27-report-continue':'quiet')+'</div>');
  const wrap=document.getElementById('dialog');
  wrap.querySelector?.('[role=dialog]')?.setAttribute('aria-labelledby','d27-dialog-title');
  document.getElementById('d27-dialog-title')?.focus({preventScroll:true});
@@ -22,7 +22,7 @@ function d27ModalKey(e){
  if(!D27.modalOpen||document.getElementById('dialog').classList.contains?.('hidden'))return;
  if(e.key==='Escape'){e.preventDefault();d27Close();}
  if(e.key==='Tab'){
-  const bs=[...(document.getElementById('dialog').querySelectorAll?.('button:not([disabled])')||[])];
+  const bs=[...(document.getElementById('dialog').querySelectorAll?.('button:not([disabled]),a[href],select:not([disabled]),input:not([disabled]),summary')||[])].filter(el=>el.getClientRects().length);
   if(bs.length&&e.shiftKey&&(document.activeElement===bs[0]||document.activeElement?.id==='d27-dialog-title')){e.preventDefault();bs.at(-1).focus();}
   if(bs.length&&!e.shiftKey&&document.activeElement===bs.at(-1)){e.preventDefault();bs[0].focus();}
  }
@@ -33,6 +33,32 @@ function d27Complete(source){
  d27Modal('Complete '+monthName(state.month),'<p>'+num(Object.keys(state.bids).length)+' of '+num(state.tenders.length)+' tenders bid.</p>'+
    (d21Unapplied()?'<p class="d27-warning">You have an unsaved staff or truck plan. Save it in Ops Office before completing the month.</p>':'')+
    d27Button('Complete month','d27Close(false);nextMonth()',state.finished)+extra,source);
+}
+function d27Report(results,progressNotes,skip){
+ const c=state.player,r=c.last;if(!r)return;
+ const stat=(name,value,style='')=>'<div><dt>'+name+'</dt><dd class="'+style+'">'+value+'</dd></div>';
+ const section=(title,content)=>'<details class="d27-report-details"><summary>'+title+'</summary>'+content+'</details>';
+ const list=items=>items.length?'<ul>'+items.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<p>None this month.</p>';
+ const incidentCount=r.incidents?.length||0, missed=r.missed||0;
+ const notes=state.events||[], urgent=notes.filter(x=>/^(STOCK SHORTAGE|CHALLENGE COMPLETE):/.test(x));
+ const other=notes.filter(x=>!urgent.includes(x));
+ const tenders=regions.map(region=>{
+  const items=results.filter(x=>x.region===region.id);return items.length?'<h3>'+esc(region.name)+'</h3>'+list(items.map(x=>x.text)):'';
+ }).join('');
+ const changes=progressNotes.length||results.length||other.length;
+ const tally='<dl class="d27-report-kpis">'+stat(r.profit<0?'Loss':'Profit',money(r.profit),r.profit<0?'bad':'good')+stat('Cash now',cash(c))+'</dl>';
+ const moves='<h3>Pallet move results</h3><dl class="d27-report-moves">'+stat('Completed',num(r.handled)+' of '+num(r.demand))+stat('Not completed',num(missed),missed?'bad':'good')+'</dl>';
+ const exceptions=(incidentCount?'<p class="d27-warning">'+num(incidentCount)+' safety incident'+(incidentCount===1?'':'s')+'. See details below.</p>':'')+
+  urgent.map(x=>'<p class="d27-warning">'+esc(x.replace(/^STOCK SHORTAGE:/,'Stock shortage:').replace(/^CHALLENGE COMPLETE:/,'Challenge complete:'))+'</p>').join('')+
+  (state.finished?'<p class="d27-warning">Your business is bankrupt.</p>':'');
+ const why=d22Report(r,c);
+ const moveDetails='<dl class="d27-report-lines">'+stat('Forecast pallet moves',num(r.forecast))+stat('Pallet move capacity',num(r.capacity))+'</dl>'+incidentSummary(r);
+ const bids=tenders||'<p>No tender results this month.</p>';
+ const changeDetails=(progressNotes.length?'<h3>Site changes</h3>'+list(progressNotes):'')+(other.length?'<h3>Market news</h3>'+list(other):'')+'<h3>Tender results by region</h3>'+bids;
+ const range=skip?'<p>'+num(skip.count)+' month'+(skip.count===1?'':'s')+' advanced. '+(skip.interrupted?'Stopped because something needs attention.':skip.next?'Stopped at the next decision.':'No interruption.')+'</p>':'';
+ d27Modal(monthName(r.month)+' results','<div class="d27-report">'+range+tally+moves+exceptions+
+  section('Profit details',why)+section('Moves and incidents',moveDetails)+section(changes?'Tenders, site changes and news':'Tenders and site changes',changeDetails)+'</div>',
+  document.querySelector('#metrics .advance'),'Continue');
 }
 function d27Return(){
  D27.map=false;D27.region=null;
@@ -127,7 +153,7 @@ function d27Investment(){
  if(D21.upgrade==='bank')return html+d27Bank();
  if(!s)return html+d27Buy('Open warehouse',fmt(r.cost),'Immediate','25,000 sq ft',"openRegion(\'"+r.id+"\')",state.finished||c.cash<r.cost,'newsite','Opening gives access to tenders in this territory. Starting running costs: '+fmt(playerSiteOverhead({region:r.id,sections:1}))+' per month.','','Open warehouse');
  html+='<div id="d15-investment"><div id="d21-upgrade">'+d27Orders(s)+'</div></div>';
- return html+d27Expansion(s)+(s.projects.length?d27Panel('<div class="d27-with-info"><h3 id="d15-projects">Work in progress · '+s.projects.length+'</h3></div>'+s.projects.map((p,i)=>'<div class="d27-project"><b>'+esc(p.type==='CI'?'Productivity improvement':p.type)+'</b><span>'+num(p.remaining)+' '+(p.remaining===1?'month':'months')+'</span>'+d27Button('Cancel','cancelProject('+i+')',p.mortgaged||p.type==='Replacement','quiet')+'</div>').join('')):'<div id="d15-projects"></div>');
+ return html+d27Expansion(s)+(s.projects.length?d27Panel('<div class="d27-with-info"><h3 id="d15-projects">Work in progress · '+s.projects.length+'</h3></div>'+s.projects.map((p,i)=>'<div class="d27-project"><b>'+esc(p.type==='CI'?'Continuous improvement programme':p.type)+'</b><span>'+num(p.remaining)+' '+(p.remaining===1?'month':'months')+'</span>'+d27Button('Cancel','cancelProject('+i+')',p.mortgaged||p.type==='Replacement','quiet')+'</div>').join('')):'<div id="d15-projects"></div>');
 }
 function d27Upgrade(k){
  if(!['storage','flow','risk','bank'].includes(k))return;
@@ -156,7 +182,7 @@ function d27Orders(s){
  if(group==='flow'){
   const lane=newAutomationSection(s), ci=dot19CIAvailable(s,state.month), cost=ciCost(s);
   return d27Buy('Automation',fmt(C.auto),'3 months',lane===undefined?'No eligible section':'+30% storage in section '+(lane+1),'automate()',lane===undefined||off(C.auto),'automation','One lane can handle up to 30 moves/hour with an operator. Staffing and docks still limit site capacity.','',null,'d21-upgrade-automation')+
-  d27Buy('Productivity improvement',fmt(cost),'3 months','1–8% productivity gain','startCI()',!ci||off(cost),'ci','At least 24 months between projects; maximum three per warehouse. Used: '+dot19CICount(s)+'.')+
+  d27Buy('Continuous improvement programme',fmt(cost),'3 months','1–8% productivity gain','startCI()',!ci||off(cost),'ci','At least 24 months between projects; maximum three per warehouse. Used: '+dot19CICount(s)+'.')+
   (s.automationAssets.length?d27Panel('<h3>Replace automation</h3>'+s.automationAssets.map(a=>'<div class="d27-project"><b>Section '+(a.section+1)+'</b><span>Ends '+esc(monthName(a.expires))+'</span>'+d27Button('Replace','replaceAutomation('+a.section+')',state.finished,'quiet')+'</div>').join('')):'');
  }
  return [DOT20Fire.WATER,DOT20Fire.ROOF,DOT20Fire.RACK].map((type,i)=>{

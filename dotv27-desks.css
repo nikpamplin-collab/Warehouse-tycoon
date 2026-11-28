@@ -66,3 +66,16 @@ body[data-d27=rivals] .d27-title{color:#f3f8f4}.d27-more .table-scroll{max-width
 @media(orientation:landscape) and (max-height:500px){.d27-home{height:calc(100svh - 108px - env(safe-area-inset-bottom));min-height:205px}.d27-home .d27-motion{bottom:4px}}
 .d27-operator-name{display:block;font-size:16px;overflow-wrap:anywhere;margin-top:4px}
 @media(max-width:360px){.d27-operator-name{font-size:15px}}
+
+/* The completed-month view uses the same compact card and action styles as Ops Office. */
+.d27-report h3{font-size:17px;margin:9px 0 5px}
+.d27-report dl{margin:0 0 8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.d27-report dl>div{border:1px solid var(--d27-edge);border-radius:9px;padding:7px 8px;background:var(--d27-soft)}
+.d27-report dt{font-weight:700;font-size:14px}
+.d27-report dd{font-weight:820;margin:2px 0 0;font-size:clamp(18px,5vw,25px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.d27-report-details{border-top:1px solid var(--d27-edge);margin:4px 0}
+.d27-report-details summary{cursor:pointer;display:list-item;min-height:44px;padding:10px 0;font-weight:750}
+.d27-report-details .d22-card{margin:0;padding:0;border:0;background:transparent;color:inherit;box-shadow:none}
+.d27-report-details ul{margin:4px 0 8px;padding-inline-start:20px}
+.d27-report-continue{position:sticky;bottom:0;box-shadow:0 0 0 3px var(--d27-paper)}
+body[data-d27=office]>header h1{flex:0 0 auto;white-space:nowrap;overflow-wrap:normal}

@@ -5,7 +5,8 @@ const DOT21Yard=(()=>{
  const count=n=>Number.isFinite(n)?Math.max(0,Math.floor(n)):0;
  const cap=(n,a,b)=>Math.max(a,Math.min(b,n));
  const panels={floor:'Warehouse',flow:'Pallet moves',build:'Work in progress'};
- const names={'Racking':'Racking','Expansion':'Expansion','Automation':'Automation','Replacement':'Automation replacement','CI':'Productivity improvement project','Dock door':'Dock door','Tank and pumps':'Tank and pumps','Roof sprinklers':'Roof sprinklers','In-rack sprinklers':'In-rack sprinklers','Sprinklers':'Legacy sprinklers'};
+ const names={'Racking':'Racking','Expansion':'Expansion','Automation':'Automation','Replacement':'Automation replacement','CI':'Continuous improvement programme','Dock door':'Dock door','Tank and pumps':'Tank and pumps','Roof sprinklers':'Roof sprinklers','In-rack sprinklers':'In-rack sprinklers','Sprinklers':'Legacy sprinklers'};
+ const rackLevels=[.018,1.81,3.62,5.43];
  const colours={slab:['#bcbab0','#86847a','#6d716b'],steel:['#637581','#465b69','#354654'],blue:['#4b7189','#355369','#2c455c'],beam:['#d27a49','#ad532e','#88391c'],wood:['#c39560','#aa7748','#8d5e38'],goods1:['#dac19b','#bb986c','#a28157'],goods2:['#d0ae7b','#b08b59','#977446'],goods3:['#dec9a6','#c4a984','#a88f6b'],warm:['#f0bd55','#d18b32','#ac6429'],dark:['#4b534b','#343f38','#27362d'],clad:['#e1ddcf','#c1c1b6','#a9b0a5'],mint:['#88a997','#608471','#476b59'],tank:['#819c8f','#49786d','#335e55']};
  const layout=[
   [4,12.7],[7.2,12.7],[10.4,12.7],[4,6.4],[7.2,6.4],[10.4,6.4],
@@ -45,27 +46,43 @@ const DOT21Yard=(()=>{
     line([[x+.28,y+.04,z+.15],[x+.28,y+.04,z+1.17],[x+.28,y+1.154,z+1.17]],'#eadebf',.78)+
     line([[x+.81,y+.04,z+.15],[x+.81,y+.04,z+1.17],[x+.81,y+1.154,z+1.17]],'#eadebf',.78);
  }
- function bay(x,y,i,m,rackFire) {
+ function rackPallet(x,y,z,variant){
+  // Runners span the front and rear load beams; the three ends leave two fork openings.
+  let art='';
+  for(const dx of [.025,.444,.864])art+=box(x+dx,y,.155,1.20,.088,'wood',z);
+  return art+box(x,y,1.045,1.20,.052,'wood',z+.088)+
+   box(x+.04,y+.07,.965,1.06,.95,'goods'+variant,z+.14)+
+   [x+.27,x+.8].map(a=>line([[a,y+.07,z+.15],[a,y+.07,z+1.09],[a,y+1.13,z+1.09]],'#eadebf',.78)).join('');
+ }
+ function bay(x,y,i,m,rackFire,pickup) {
+  const span=2.73,depth=1.10,top=6.65,levels=rackLevels,beamHeight=.12;
   let art='<g class="d21-rack-bay" data-levels="4" data-pallets-per-level="2">';
-  for(const xx of [x,x+2.73]) {
-   art+=line([[xx,y+1.30,0],[xx,y+1.30,7.05]],'#365569',2.7);
-   for(const z of [.4,2.2,4.0,5.8])art+=line([[xx,y+.04,z],[xx,y+1.30,z+1.2]],'#6d8590',1.1);
+  for(const xx of [x,x+span]){
+   art+=box(xx-.06,y+depth-.068,.12,.136,top,'blue');
+   for(let tier=0;tier<4;tier++){
+    const z=levels[tier]+.06, hi=tier<3?levels[tier+1]-.08:top;
+    art+=line(tier%2?[[xx,y+depth,z],[xx,y,hi]]:[[xx,y,z],[xx,y+depth,hi]],'#6d8590',1.3);
+   }
   }
   for(let tier=3;tier>=0;tier--){
-   const z=[.025,1.82,3.64,5.46][tier];
-   if(tier>0)art+=box(x,y+1.19,2.73,.10,.13,'beam',z-.12);
+   const z=levels[tier];
+   // The rear support is painted first: it is visible beside/through gaps, not over stock.
+   if(tier>0)art+='<g class="d21-rear-load-beam">'+
+    box(x+.055,y+depth-.035,span-.11,.07,beamHeight,'beam',z-beamHeight)+'</g>';
    if(rackFire&&(tier===2||tier===3)){
-    art+='<g class="d20-rack-pipework">';
-    art+=line([[x,y+1.30,z+1.42],[x+2.73,y+1.30,z+1.42]],'#a74537',1.4)+dot(x+1.35,y+1.27,z+1.30,1.35,'#e5a047')+'</g>';
+    art+='<g class="d20-rack-pipework">'+line([[x,y+depth,z+1.32],[x+span,y+depth,z+1.32]],'#a74537',1.4)+dot(x+1.35,y+1.27,z+1.24,1.35,'#e5a047')+'</g>';
    }
    for(let j=0;j<2;j++)if(m.loaded.has(i*8+tier*2+j)){
-    const xx=x+.21+j*1.13;art+='<g class="d21-pallet">'+pallet(xx,y+.04,z,(i+tier+j)%3+1)+'</g>';
+    const xx=x+.235+j*1.22;art+='<g class="d21-pallet'+(pickup?.bay===i&&pickup.slot===tier*2+j?' d21-retrieval-source':'')+'">'+rackPallet(xx,y-.026,z,(i+tier+j)%3+1)+'</g>';
    }
-   if(tier>0)art+=box(x,y-.045,2.73,.12,.14,'beam',z-.13);
   }
-  for(const xx of [x,x+2.73]){
-   art+=line([[xx,y,0],[xx,y,7.05]],'#35576c',3.1)+line([[xx,y,7.05],[xx,y+1.3,7.05]],'#6e8791',1.6);
-   art+=box(xx-.075,y-.075,.15,.17,.17,'beam');
+  // Paint the aisle-facing face last, so the slim 120 mm profile reads as an unbroken support.
+  for(const z of levels.slice(1))art+='<g class="d21-front-load-beam">'+
+   box(x+.055,y-.047,span-.11,.075,beamHeight,'beam',z-beamHeight)+'</g>';
+  for(const xx of [x,x+span]){
+   art+=box(xx-.072,y-.075,.144,.15,top,'blue')+line([[xx,y,top],[xx,y+depth,top]],'#6e8791',1.6);
+   for(const z of levels.slice(1))art+=box(xx-.078,y-.081,.156,.045,.18,'beam',z-.16);
+   art+=box(xx-.135,y-.13,.27,.28,.055,'steel');
   }
   return art+'</g>';
  }
@@ -73,9 +90,32 @@ const DOT21Yard=(()=>{
   const [a,b]=P(x,y), delta=P(x,y+(i%2?3.2:-3.2)).map((c,k)=>c-[a,b][k]);
   return '<g transform="translate('+a+' '+b+')"><g class="d21-worker d21-shuttle" style="--dx:'+delta[0]+'px;--dy:'+delta[1]+'px;--period:'+(5.6+i*.8)+'s;--delay:-'+(i*.73)+'s"><ellipse cx="0" cy="1" rx="4.6" ry="1.8" fill="#343a30" opacity=".26"/><path class="d21-stride" d="M-2 -7l-1 5-2 2M2 -7l2 4 2 2" stroke="#33424a" stroke-width="2.3" stroke-linecap="round" fill="none"/><path d="M-3 -15l-3 5m9-5 3 4" stroke="#526b75" stroke-width="1.9" stroke-linecap="round"/><path d="M-3 -16h6l1 8h-8z" fill="#e4a13b" stroke="#80562e" stroke-width=".65"/><path d="M-3.7 -11h7.4" stroke="#f7e7ad" stroke-width="1.4"/><circle cy="-18.5" r="2.25" fill="#b9845d"/><path d="M-3 -19.3a3 2.8 0 0 1 6 0z" fill="#edbc57"/></g></g>';
  }
+ function forkliftArt(active,moveForks=false){
+  return '<ellipse cx="1" cy="2" rx="16" ry="5" fill="#34392f" opacity=".2"/><path d="M-13 -5l18 5 12-7-18-5z" fill="#e6ad4f"/><path d="M-13 -5l18 5v5l-18-5zm18 5 12-7v5l-12 7z" fill="#c78930"/><circle cx="-8" cy="2" r="3.6" fill="#333d3b"/><circle cx="4" cy="5" r="4.2" fill="#333d3b"/><circle cx="13" cy="-1" r="3.4" fill="#333d3b"/><path d="M-11 -5v-16l15 4v16m0-16 9-5v16m-24-15 9-5 15 4" fill="none" stroke="#36464a" stroke-width="2"/>'+(active?'<path d="M-3 -8v-6l5 1v6z" fill="#e4a13b"/><circle cx="-1" cy="-16" r="2" fill="#eec761"/>':'')+'<path d="M14 -2v-17m4 15v-17" fill="none" stroke="#4d5756" stroke-width="2" stroke-linecap="round"/>'+(moveForks?'<path class="d21-live-forks" d="M14 -7l19 5m-16-8 19 5" fill="none" stroke="#444e4f" stroke-width="2.2" stroke-linecap="round"/>':'<path d="M14 -2l11 3m-7-5 11 3" fill="none" stroke="#4d5756" stroke-width="2" stroke-linecap="round"/>');
+ }
  function forklift(x,y,active,i){
   const [a,b]=P(x,y),delta=P(x-3.7,y).map((c,k)=>c-[a,b][k]);
-  return '<g transform="translate('+a+' '+b+')"><g class="d21-forklift'+(active?' d21-shuttle':'')+'" style="--dx:'+delta[0]+'px;--dy:'+delta[1]+'px;--period:'+(7+i*.8)+'s;--delay:-'+(i*1.2)+'s"><ellipse cx="1" cy="2" rx="16" ry="5" fill="#34392f" opacity=".2"/><path d="M-13 -5l18 5 12-7-18-5z" fill="#e6ad4f"/><path d="M-13 -5l18 5v5l-18-5zm18 5 12-7v5l-12 7z" fill="#c78930"/><circle cx="-8" cy="2" r="3.6" fill="#333d3b"/><circle cx="4" cy="5" r="4.2" fill="#333d3b"/><circle cx="13" cy="-1" r="3.4" fill="#333d3b"/><path d="M-11 -5v-16l15 4v16m0-16 9-5v16m-24-15 9-5 15 4" fill="none" stroke="#36464a" stroke-width="2"/>'+(active?'<path d="M-3 -8v-6l5 1v6z" fill="#e4a13b"/><circle cx="-1" cy="-16" r="2" fill="#eec761"/>':'')+'<path d="M14 -2v-17m4 15v-17m-4 17 11 3m-7-5 11 3" fill="none" stroke="#4d5756" stroke-width="2" stroke-linecap="round"/></g></g>';
+  return '<g transform="translate('+a+' '+b+')"><g class="d21-forklift'+(active?' d21-shuttle':'')+'" style="--dx:'+delta[0]+'px;--dy:'+delta[1]+'px;--period:'+(7+i*.8)+'s;--delay:-'+(i*1.2)+'s">'+forkliftArt(active)+'</g></g>';
+ }
+ function pickupPoint(m,dock,v){
+  if(!dock||!m.assigned||!(v.moves>0)||!m.loads)return null;
+  if(m.floorMode)return {bay:-1,slot:m.loads>12?1:0,x:4.3,y:8.45,z:.02+(m.loads>12?1.18:0),variant:m.loads>12?2:1};
+  const bay=layout.findIndex((_,i)=>i<m.bays&&i<6&&Array.from({length:8},(_,j)=>j).some(j=>m.loaded.has(i*8+j)));
+  if(bay<0)return null;
+  const [x,y]=layout[bay], slot=[4,5,2,3,6,7,0,1].find(j=>m.loaded.has(bay*8+j));
+  return {bay,slot,x:x+.235+(slot%2)*1.22,y:y-.026,z:rackLevels[Math.floor(slot/2)],variant:(bay+Math.floor(slot/2)+slot%2)%3+1};
+ }
+ function dispatchFork(p,dock){
+  const dockX=dock.x+dock.width/2;
+  // Route: rack-face aisle, west cross-aisle, then the parked lorry's rear at the open dock.
+  const [sx,sy]=P(p.x,p.y,0), pick=[sx-18,sy+7];
+  const stage=P(2.05,p.y-1.75), dockSide=P(2.05,23.1);
+  const threshold=P(dockX,24.25), setDown=P(dockX,26.0).map((n,i)=>n-[22,1][i]);
+  const pts=[stage,pick,stage,dockSide,threshold,setDown];
+  const vars=pts.map((a,i)=>'--f'+i+':'+a.map(n=>n+'px').join(',')).join(';')+';--lift:'+(-p.z*12.85)+'px';
+  const carried='<g class="d21-carried-pallet"><g transform="translate(-86 -357)">'+(p.bay<0?pallet(0,0,.02,p.variant):rackPallet(0,0,.02,p.variant))+'</g></g>';
+  return '<g class="d21-dispatch-fork" style="'+vars+'" aria-hidden="true"><g class="d21-dispatch-mast">'+carried+forkliftArt(true,true)+'</g></g>'+
+   '<g class="d21-dispatch-static" aria-hidden="true">'+forklift(2.05,p.y-1.75,false,0)+'</g>';
  }
  function dockPlan(n) {
   const total=count(n), pitch=Math.min(5.1,29/Math.max(1,total)), width=Math.min(3.25,pitch*.72);
@@ -212,7 +252,7 @@ const DOT21Yard=(()=>{
    return '<g class="d21-scene-hit" role="button" tabindex="'+(first?'0':'-1')+'" data-scene-hit="'+key+'" data-scene-site="'+idx+'" aria-label="'+esc(label)+'"><title>'+esc(label)+'</title>'+shape+'</g>';
   };
   let art=grounds(docks,hit);
-  const delivery=yardDelivery(docks[0],v.moves);
+  const pickup=pickupPoint(m,docks[0],v), delivery=yardDelivery(docks[0],v.moves);
   if(delivery.exterior)art+=hit('handling','Lorry traffic',delivery.exterior);
   if(v.sections>1)for(let i=0;i<Math.min(2,count(v.sections)-1);i++){
    const x=19+i*7.0;
@@ -258,7 +298,7 @@ const DOT21Yard=(()=>{
   const fire=v.fireProtection||{}, div=Math.max(1,count(v.sections));
   const items=[];
   const add=(x,y,paint)=>items.push({depth:y-.28*x,paint});
-  layout.slice(0,m.bays).forEach(([x,y],i)=>add(x,y,hit('storage','Pallet racking',bay(x,y,i,m,i<Math.round(m.bays*proportion(count(fire.rack),div))))));
+  layout.slice(0,m.bays).forEach(([x,y],i)=>add(x,y,hit('storage','Pallet racking',bay(x,y,i,m,i<Math.round(m.bays*proportion(count(fire.rack),div)),pickup))));
   // Unracked storage uses representative, two-high block stacks on the slab.
   if(m.floorMode&&m.loads){
    for(let i=0;i<12;i++){
@@ -266,7 +306,7 @@ const DOT21Yard=(()=>{
     const layers=Number(i<m.loads)+Number(i+12<m.loads);
     if(!layers)continue;
     let load='';
-    for(let tier=0;tier<layers;tier++)load+='<g class="d21-pallet">'+pallet(x,y,.02+1.18*tier,(i+tier)%3+1)+'</g>';
+    for(let tier=0;tier<layers;tier++)load+='<g class="d21-pallet'+(pickup?.bay===-1&&i===0&&pickup.slot===tier?' d21-retrieval-source':'')+'">'+pallet(x,y,.02+1.18*tier,(i+tier)%3+1)+'</g>';
     add(x,y,hit('stock-levels','Bulk pallet stacks','<g class="d21-bulk-stack" data-tiers="'+layers+'">'+load+'</g>'));
    }
   }
@@ -289,18 +329,19 @@ const DOT21Yard=(()=>{
     +line([[x+.31,y-.02,.17],[x+.31,y-.38,.86]],'#53706a',1.65)
     +line([[x+.14,y-.38,.86],[x+.47,y-.38,.86]],'#53706a',1.65)+'</g>'));
   }
-  for(let i=0;i<m.fleet;i++){
+  for(let i=pickup?1:0;i<m.fleet;i++){
    const x=[18.0,24.2,29.1][i],y=[10.7,18.8,21.4][i];
    // Vehicles are drawn in clear vehicle lanes. Parked leases never imply operating capacity.
    add(x,y,hit('mhe','Forklift and leased equipment',forklift(x,y,i<m.assigned&&v.moves>0,i)));
   }
   art+=items.sort((a,b)=>b.depth-a.depth).map(x=>x.paint).join('');
+  if(pickup)art+=hit('mhe','Forklift carrying a pallet to the dock',dispatchFork(pickup,docks[0]));
   const protectedBays=Math.round(m.bays*proportion(count(fire.rack),div));
   if(protectedBays){
    const rackTargets=layout.slice(0,protectedBays).map(([x,y])=>line([[x,y+1.30,6.88],[x+2.73,y+1.30,6.88]],'transparent',13)).join('');
    art+=hit('rack-fire','In-rack sprinkler system',rackTargets);
   }
-  if(delivery.interior)art+=hit('handling','Unloading and handling',delivery.interior);
+  if(!pickup&&delivery.interior)art+=hit('handling','Unloading and handling',delivery.interior);
   art+=office(v,hit);
   // Draw external plant and in-building sprinklers only on commissioning.
   if(fire.water>0){

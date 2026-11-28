@@ -81,3 +81,43 @@
 .d24-signal{text-align:left;min-height:44px;padding:8px 10px;border-radius:8px;border:1px solid #496677;background:#17384d;color:#eef7ff;cursor:pointer}
 .d24-signal.warn{background:#4a2a27;border-color:#d49982;color:#fff4ea}
 .d24-signal small{display:block;color:inherit}
+
+/* Fleet activity is decorative: no visible load is taken unless work, an equipped driver and stock exist. */
+.d21-dispatch-fork,.d21-carried-pallet,.d21-retrieval-source{transform-box:view-box;animation-duration:29s;animation-iteration-count:infinite;animation-timing-function:linear}
+.d21-dispatch-fork{animation-name:d21-fork-dispatch}
+.d21-carried-pallet{opacity:0;animation-name:d21-fork-load}
+.d21-retrieval-source{animation-name:d21-fork-pick}
+.d21-dispatch-static{display:none}
+@keyframes d21-fork-dispatch{
+ 0%,10%{transform:translate(var(--f0))}
+ 21%,30%{transform:translate(var(--f1))}
+ 39%{transform:translate(var(--f2))}
+ 54%{transform:translate(var(--f3))}
+ 61%{transform:translate(var(--f4))}
+ 68%,71%{transform:translate(var(--f5))}
+ 76%{transform:translate(var(--f4))}
+ 84%{transform:translate(var(--f3))}
+ 96%,100%{transform:translate(var(--f0))}
+}
+@keyframes d21-fork-load{
+ 0%,23.9%{opacity:0;transform:translateY(var(--lift))}
+ 24%,28%{opacity:1;transform:translateY(var(--lift))}
+ 37%,70%{opacity:1;transform:translateY(0)}
+ 70.1%,100%{opacity:0;transform:translateY(0)}
+}
+@keyframes d21-fork-pick{
+ 0%,23.9%,97%,100%{opacity:1}
+ 24%,96.9%{opacity:0}
+}
+.d21-paused :is(.d21-dispatch-fork,.d21-carried-pallet,.d21-retrieval-source){animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){
+ .d21-dispatch-fork{display:none}
+ .d21-dispatch-static{display:inline}
+ .d21-carried-pallet,.d21-retrieval-source{animation:none}
+}
+.d21-live-forks{transform-box:view-box;animation:d21-fork-lift 29s linear infinite}
+@keyframes d21-fork-lift{
+ 0%,19%,40%,100%{transform:translateY(0)}
+ 24%,28%{transform:translateY(var(--lift))}
+}
+.d21-paused .d21-live-forks{animation-play-state:paused}

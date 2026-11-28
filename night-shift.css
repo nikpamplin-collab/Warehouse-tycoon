@@ -1,0 +1,52 @@
+/* Night Shift. The warehouse art and semantic status colours are not a theme surface. */
+:root{
+  color-scheme:dark;background:#182431;color:#eff5f8;
+  --night-floor:#182431;--night-raised:#233240;--night-inset:#1b2936;
+  --night-line:#536a78;--night-type:#eff5f8;--night-muted:#c6d4db;
+  --night-teal:#8ddbd5;--night-teal-hover:#b1eee8;--night-teal-ink:#122c33;
+  --night-gold:#ffce69;--night-gold-hover:#ffdf99;--night-gold-ink:#352300;
+  --night-secondary:#324956;--night-secondary-hover:#405c6b;--night-disabled:#293946;
+  --d27-ink:var(--night-type);--d27-muted:var(--night-muted);--d27-paper:var(--night-floor);
+  --d27-shell:#141e28;--d27-teal:var(--night-teal);--d27-edge:var(--night-line);--d27-soft:var(--night-secondary);
+  --d13-muted:var(--night-muted);
+}
+body[data-d27],body{background:var(--night-floor);color:var(--night-type)}
+body[data-d27]>header,body[data-d27]>main>#tabs{border-color:var(--night-line)}
+body[data-d27]>main>#tabs button.active{background:#335360;border-color:#73a5b1;color:white}
+body[data-d27]>main>#tabs button:not(.active):hover{background:#283b49}
+body[data-d27]>footer,a{color:var(--night-muted)}
+.d27-home{background:radial-gradient(ellipse at 48% 46%,#e4ece8,#c6d2d0)}
+.d27-home h2{background:var(--night-raised);color:var(--night-type)}
+.d27-home.d27-map{background:#b9c8cb}
+.d27-panel,.panel,.metric,.contract,.d22-card,.modal{background:var(--night-raised);color:var(--night-type);border-color:var(--night-line)}
+.d27-table thead,.d27-roster-head,.d27-cost.d27-cash,.d27-buy-numbers>b,.notice,.comparison>div{background:var(--night-secondary);color:var(--night-type)}
+.d27-table :is(td,th),.d27-roster,.d27-role,.d27-project,.d27-report-details,.modal-actions{border-color:var(--night-line)}
+.d27-title select,.d27-compare select,.contract input,.modal input,.modal select,
+:is(#newBusiness,#newSite,#newRegion){color:var(--night-type);background:var(--night-secondary);border:1px solid var(--night-line)}
+.d27-info,.d27-effect,.d27-role>strong,.d13-kicker{color:var(--night-teal)}
+.d27-info span{border-color:currentColor}
+.muted,.d16-note,.d27-report-details small,.d21-bid-quote{color:var(--night-muted)}
+.d16-dispatch,.d16-finance{--d16-line:var(--night-line);--d16-inset:var(--night-inset);--d16-muted:var(--night-muted);--d16-quiet:var(--night-type);--d16-accent:var(--night-gold);--d16-good:#99e8b8;--d16-bad:#ffb8af;--d16-watch:var(--night-gold)}
+.tag{background:#36505f;color:#e4f5f8}
+.good{color:#99e8b8}.bad{color:#ffb8af}.warning{color:var(--night-gold)}
+.d27-chip.safe{background:#c5f1d7;color:#10422a}.d27-chip.close{background:#ffe29c;color:#533506}.d27-chip.over{background:#ffb9ae;color:#621d1d}
+.modal-actions{background:var(--night-raised)}
+#dialog .modal:has(.d27-popup){background:var(--night-raised);color:var(--night-type);border-color:var(--night-line)}
+.d27-report dl>div{background:var(--night-inset)}
+.d27-report .d27-warning{background:#483523;color:#ffe1a3}
+.d27-report .d22-card :is(p,li,small){color:inherit}
+:is(.d27-button,.d27-menu button,.btn,.d21-primary){background:var(--night-teal);color:var(--night-teal-ink);border-color:transparent}
+:is(.d27-button,.d27-menu button,.btn,.d21-primary):not(:disabled):hover{background:var(--night-teal-hover);color:var(--night-teal-ink)}
+.d27-button.advance,.d27-button.d27-report-continue{background:var(--night-gold);color:var(--night-gold-ink)}
+.d27-button:is(.advance,.d27-report-continue):not(:disabled):hover{background:var(--night-gold-hover);color:var(--night-gold-ink)}
+:is(.d27-button.quiet,.d27-step button,.d27-menu button[aria-pressed=false],.btn.secondary){background:var(--night-secondary);color:var(--night-type);border:1px solid var(--night-line)}
+:is(.d27-button.quiet,.d27-step button,.d27-menu button[aria-pressed=false],.btn.secondary):not(:disabled):hover{background:var(--night-secondary-hover);color:var(--night-type)}
+.d25-filter button[aria-pressed=true]{background:var(--night-teal);color:var(--night-teal-ink)}
+:is(.btn.danger,.d27-button.danger){background:#9b413d;color:#fff}
+:is(.btn.danger,.d27-button.danger):not(:disabled):hover{background:#a84944;color:#fff}
+:is(.d27-button,.d27-step button,.btn,.d21-primary,.d27-menu button):disabled{
+  background:var(--night-disabled);color:#b9c8ce;opacity:1;border:1px dashed #647985;cursor:not-allowed
+}
+:is(button,select,input,summary,a):focus-visible{outline:3px solid #91dfec;outline-offset:2px}
+.d27-button.advance:focus-visible,.d27-report-continue:focus-visible{outline-color:white}
+.d27-info:focus-visible,.d27-step button:focus-visible,.d27-menu button:focus-visible,.d27-compare select:focus-visible{outline-color:#91dfec;outline-offset:-2px}

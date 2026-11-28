@@ -66,19 +66,85 @@ try{
   await p.locator('#metrics').getByRole('button',{name:'Complete month'}).click();
   await p.getByRole('dialog').getByRole('button',{name:'Complete month',exact:true}).click();
   assert.equal((await saved()).month,2);
+  const result=p.getByRole('dialog',{name:'January 2026 results'});await result.waitFor();
+  assert.match(await result.innerText(),/Cash now[\s\S]+Pallet move results[\s\S]+Not completed/);
+  assert.equal(await result.locator('details[open]').count(),0);
+  await result.getByText('Moves and incidents',{exact:true}).click();
+  assert.equal(await result.locator('details[open]').count(),1);
+  await btn('Continue').click();assert.equal(await result.count(),0);
+  assert.equal(await p.locator('#metrics .advance').evaluate(el=>el===document.activeElement),true);
   await p.evaluate(()=>navigator.serviceWorker.ready);await p.waitForFunction(()=>navigator.serviceWorker.controller);
   await ctx.setOffline(true);await p.reload();await nav('Ops Office').click();assert.equal((await saved()).month,2);
   assert.deepEqual(errors,[],width+': '+errors.join(';'));await ctx.close();console.log('PASS',width,height);
  }
+ {
+  const ctx=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'no-preference'});
+  const p=await ctx.newPage();const errors=[];p.on('pageerror',x=>errors.push(x.message));
+  await p.goto(url);await p.locator('#newBusiness').fill('Dispatch test');
+  await p.getByRole('button',{name:'Start playing'}).click();
+  const nav=n=>p.locator('#tabs').getByRole('button',{name:n,exact:true});
+  const btn=n=>p.getByRole('button',{name:n,exact:true});
+  const theme=()=>p.evaluate(()=>getComputedStyle(document.body).backgroundColor);
+  for(const tab of ['Home','Ops Office','Invest','Bids','Finances','Rivals']){
+   await nav(tab).click();
+   assert.equal(await theme(),'rgb(24, 36, 49)',tab);
+   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth),390,tab);
+  }
+  await nav('Invest').click();
+  const palette=await btn('Buy racking').evaluate(el=>{
+   const color=x=>x.match(/\d+/g).slice(0,3).map(Number);
+   const lum=c=>c.map(x=>x/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4).reduce((a,n,i)=>a+n*[.2126,.7152,.0722][i],0);
+   const ratio=(a,b)=>{const [l,d]=[lum(color(a)),lum(color(b))].sort((x,y)=>y-x);return (l+.05)/(d+.05)};
+   const primary=getComputedStyle(el), action=getComputedStyle(document.querySelector('#metrics .advance')), panel=getComputedStyle(el.closest('.d27-buy'));
+   return {primary:ratio(primary.color,primary.backgroundColor),cta:ratio(action.color,action.backgroundColor),edge:ratio(primary.backgroundColor,panel.backgroundColor)};
+  });
+  assert.ok(palette.primary>=4.5&&palette.cta>=4.5&&palette.edge>=3,JSON.stringify(palette));
+  await btn('Automation').click();await btn('Buy continuous improvement programme').waitFor();
+  await nav('Home').click();
+  await p.evaluate(()=>{const s=state.player.sites[0];Object.assign(s,{racks:9,staff:5,shiftStaff:[5,0,0],mheTrucks:1});s.contracts=[{start:1,end:5,spaces:2100,moves:6300,storage:16,handling:5.5}];render();});
+  const seek=async t=>p.evaluate(t=>{
+   const timeline=document.querySelector('.d21-yard-svg').getAnimations({subtree:true});
+   for(const a of timeline){a.pause();a.currentTime=t*29000;}
+   const val=sel=>Number(getComputedStyle(document.querySelector(sel)).opacity);
+   const translate=sel=>getComputedStyle(document.querySelector(sel)).transform;
+   return {stock:val('.d21-retrieval-source'),carried:val('.d21-carried-pallet'),fork:translate('.d21-dispatch-fork'),lorry:translate('.d21-yard-lorry')};
+  },t);
+  const approach=await seek(.15), pick=await seek(.25), drive=await seek(.49), load=await seek(.69), leave=await seek(.78);
+  assert.equal(approach.stock,1);assert.equal(approach.carried,0);
+  assert.equal(pick.stock,0);assert.equal(pick.carried,1);
+  assert.equal(drive.carried,1);assert.notEqual(drive.fork,pick.fork);
+  assert.equal(load.carried,1);assert.equal(load.lorry,(await seek(.63)).lorry);
+  assert.equal(leave.carried,0);assert.notEqual(leave.lorry,load.lorry);
+  await p.emulateMedia({reducedMotion:'reduce'});
+  assert.equal(await p.locator('.d21-dispatch-fork').evaluate(e=>getComputedStyle(e).display),'none');
+  assert.equal(await p.locator('.d21-retrieval-source').evaluate(e=>getComputedStyle(e).opacity),'1');
+  await p.evaluate(()=>{state.player.sites[0].mheTrucks=0;render();});
+  assert.equal(await p.locator('.d21-dispatch-fork').count(),0);
+  assert.deepEqual(errors,[]);await ctx.close();
+  console.log('PASS Night Shift on all tabs, action contrast and synchronised rack-to-lorry animation');
+ }
  if(legacy){
   const ctx=await browser.newContext();const p=await ctx.newPage();base=legacy;
   await p.goto(url);await p.locator('#newBusiness').fill('Migrating v25');await p.locator('#newSite').fill('Original warehouse');await p.getByRole('button',{name:'Start playing'}).click();
-  const v25key='warehouse_tycoon_dotv25', v27key='warehouse_tycoon_dotv27';
+  const v25key='warehouse_tycoon_dotv25', v28key='warehouse_tycoon_dotv28';
   const v25=await p.evaluate(k=>localStorage.getItem(k),v25key);assert.ok(v25);
-  base=root;await p.goto(url+'?fresh=v27');await p.locator('#d27-home-title').waitFor();
-  assert.equal((await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),v27key)).player.name,'Migrating v25');
+  base=root;await p.goto(url+'?fresh=v28');await p.locator('#d27-home-title').waitFor();
+  assert.equal((await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),v28key)).player.name,'Migrating v25');
   await p.evaluate(()=>{state.player.cash+=1234;save();});assert.equal(await p.evaluate(k=>localStorage.getItem(k),v25key),v25);
   base=legacy;await p.goto(url+'?fresh=v25');assert.match(await p.title(),/DOTv25/);assert.equal(await p.evaluate(k=>localStorage.getItem(k),v25key),v25);
-  await ctx.close();console.log('PASS v25 → v27 → v25, independent saves');
+  await ctx.close();console.log('PASS v25 → v28 → v25, independent saves');
+ }
+ if(process.env.WT_V27_FOLDER){
+  const ctx=await browser.newContext();const p=await ctx.newPage(), oldKey='warehouse_tycoon_dotv27', newKey='warehouse_tycoon_dotv28';
+  base=process.env.WT_V27_FOLDER;await p.goto(url);await p.locator('#newBusiness').fill('Saved v27 company');
+  await p.getByRole('button',{name:'Start playing'}).click();
+  const old=await p.evaluate(k=>localStorage.getItem(k),oldKey);assert.ok(old);
+  base=root;await p.goto(url+'?fresh=v28');await p.locator('#d27-home-title').waitFor();
+  assert.equal((await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),newKey)).player.name,'Saved v27 company');
+  await p.evaluate(()=>{state.player.cash+=1000;save();});
+  assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
+  base=process.env.WT_V27_FOLDER;await p.goto(url+'?fresh=v27');assert.match(await p.title(),/DOTv27/);
+  assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
+  await ctx.close();console.log('PASS v27 → v28 → v27, independent saves');
  }
 }finally{await browser.close();await new Promise(r=>server.close(r));}

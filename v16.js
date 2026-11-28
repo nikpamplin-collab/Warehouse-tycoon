@@ -69,8 +69,8 @@
     if (/^(NEW ENTRANT|Competitor update):/i.test(message)) return 'competitor';
     if (/^(Milestone|OBJECTIVE ACHIEVED):/i.test(message)) return 'milestone';
     if (/^(ACQUISITION|TAKEOVER COMPLETE|CONTROL):/i.test(message)) return 'acquisition';
-    if (/\b(?:(?:installation(?:s)?|CI) completed|productivity improvement project complete)\b/i.test(message)) return 'completed';
-    if (/^Cancelled (?:Racking|Expansion|Automation|CI|productivity improvement|Dock door|Sprinklers|Tank and pumps|Roof sprinklers|In-rack sprinklers) project\b|:\s+(?:Racking|Expansion|Automation|Replacement|CI|Productivity improvement project|Dock door|Sprinklers|Tank and pumps|Roof sprinklers|In-rack sprinklers) \d+ months? remaining\.$/i.test(message)) return 'project';
+    if (/\b(?:(?:installation(?:s)?|CI) completed|(?:productivity improvement project|continuous improvement programme) complete)\b/i.test(message)) return 'completed';
+    if (/^Cancelled continuous improvement programme\b|^Cancelled (?:Racking|Expansion|Automation|CI|productivity improvement|Dock door|Sprinklers|Tank and pumps|Roof sprinklers|In-rack sprinklers) project\b|:\s+(?:Racking|Expansion|Automation|Replacement|CI|Productivity improvement project|Continuous improvement programme|Dock door|Sprinklers|Tank and pumps|Roof sprinklers|In-rack sprinklers) \d+ months? remaining\.$/i.test(message)) return 'project';
     if (/:\s*(?:no suitable bids|no bid qualified|customers rejected bids above market budget|bids exceeded the customer’s budget)\.$/i.test(message)) return 'tender';
     if (/\bwon \([^)]+\/month (?:forecast|at forecast volumes)\)\.$/i.test(message)) {
       return playerName && message.includes(': ' + playerName + ' won (') ? 'win' : 'award';

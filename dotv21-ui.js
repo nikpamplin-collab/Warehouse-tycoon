@@ -120,7 +120,7 @@ function d21OrderCards(s){
   const a=newAutomationSection(s);
   return tabs+
    buy('Automation','One automation lane with an operator: up to 30 pallet moves per hour.',C.auto,'Ready in 3 months',a===undefined?'No eligible section.':'+30% storage on section '+(a+1)+'; site capacity still depends on staffing and docks.','automate()',a===undefined,'','d21-upgrade-automation')+
-   buy('Productivity improvement project','Help staff move more pallets by hand and by forklift.',ciCost(s),'Ready in 3 months','1–8% productivity gain when complete. '+dot19CICount(s)+' of 3 programmes used.','startCI()',!ci,!ci?'At least 24 months between starts; no more than three projects per site.':'')+
+   buy('Continuous improvement programme','Help staff move more pallets by hand and by forklift.',ciCost(s),'Ready in 3 months','1–8% productivity gain when complete. '+dot19CICount(s)+' of 3 programmes used.','startCI()',!ci,!ci?'At least 24 months between starts; no more than three projects per site.':'')+
    d21Why('Automation capacity is per lane. The whole site is still limited by staff and dock doors.');
  }
  return tabs+[DOT20Fire.WATER,DOT20Fire.ROOF,DOT20Fire.RACK].map((type,i)=>{

@@ -44,8 +44,7 @@ function d23Advance(){
   if(interrupted||d23Signals().length)break;
  }
  render();
- if(last){report(last.results,last.progressNotes);const e=document.querySelector('#dialog .modal');
- if(e?.insertAdjacentHTML)e.insertAdjacentHTML('afterbegin','<p class="d22-show"><b>'+i+' month'+(i===1?'':'s')+' advanced.</b> '+(interrupted?'Stopped because something needs attention.':d23Signals().length?'Stopped at the next decision.':'No interruption within the three-month limit.')+'</p>');}
+ if(last)report(last.results,last.progressNotes,{count:i,interrupted,next:!!d23Signals().length});
 }
 function d23Pressure(){
  const signals=d23Signals();

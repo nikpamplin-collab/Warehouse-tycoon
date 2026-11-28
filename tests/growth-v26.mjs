@@ -64,7 +64,7 @@ test('v25 save imports without being overwritten and challenge funding stays unc
  const legacy=play().run('JSON.stringify(state)');
  const store=new Map([['warehouse_tycoon_dotv25',legacy]]);
  const g=play(93,store);assert.equal(g.run('state.player.name'),'Amber Pallet Co');
- g.run('d26BorrowStarter()');assert.ok(store.get('warehouse_tycoon_dotv27'));
+ g.run('d26BorrowStarter()');assert.ok(store.get(g.run('key')));
  assert.equal(store.get('warehouse_tycoon_dotv25'),legacy);
  const mode=boot(code,91);mode.el('d25-mode').value='cash';setup(mode);
  assert.equal(mode.run('d26StarterAvailable(state.player)'),0);

@@ -11,6 +11,8 @@ test('rack fit-out and loads are independent proportions, with conventional rack
   const r=g.run(`DOT21Yard.render({sections:${sections},racks:${racks},occupied:${stock},spaces:${racks?2250:250},staff:0,dockDoors:2})`);
   assert.equal(howMany(r,'data-levels="4" data-pallets-per-level="2"'),bays);
   assert.equal(howMany(r,'class="d21-pallet"'),load);
+  assert.equal(howMany(r,'class="d21-front-load-beam"'),bays*3);
+  assert.equal(howMany(r,'class="d21-rear-load-beam"'),bays*3);
   assert.doesNotMatch(r,/<text\b|Put-away/);
  }
 });
@@ -22,7 +24,9 @@ test('cutaway uses active contracts, landed fleet and commissioned hardware with
  let pic=draw();
  assert.match(pic,/data-fit="89%" data-occupancy="56%"/);
  assert.equal(howMany(pic,'class="d21-worker d21-shuttle"'),2);
- assert.equal(howMany(pic,'class="d21-forklift d21-shuttle"'),2);
+ assert.equal(howMany(pic,'class="d21-forklift d21-shuttle"'),1);
+ assert.equal(howMany(pic,'class="d21-dispatch-fork"'),1);
+ assert.equal(howMany(pic,'class="d21-pallet d21-retrieval-source"'),1);
  assert.doesNotMatch(pic,/d20-water-tank|d20-roof-pipework|d20-rack-pipework/);
  assert.equal(g.run('JSON.stringify(state)'),before);
  g.run("selectedSite().staff=0;selectedSite().shiftStaff=[0,0,0];selectedSite().fireProtection={water:1,roof:1,rack:1}");
