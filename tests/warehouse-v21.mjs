@@ -7,7 +7,7 @@ const open=()=>{const g=boot(script);setup(g);return g;};
 const howMany=(s,needle)=>s.split(needle).length-1;
 test('rack fit-out and loads are independent proportions, with conventional rack geometry',()=>{
  const g=open();
- for(const [racks,sections,stock,bays,load] of [[0,1,0,0,0],[0,1,125,0,12],[9,2,1250,6,27],[18,2,1125,12,48],[18,2,2250,12,96]]){
+ for(const [racks,sections,stock,bays,load] of [[0,1,0,0,0],[0,1,125,0,12],[9,2,1250,12,53],[18,2,1125,24,96],[18,2,2250,24,192]]){
   const r=g.run(`DOT21Yard.render({sections:${sections},racks:${racks},occupied:${stock},spaces:${racks?2250:250},staff:0,dockDoors:2})`);
   assert.equal(howMany(r,'data-levels="4" data-pallets-per-level="2"'),bays);
   assert.equal(howMany(r,'class="d21-pallet"'),load);

@@ -22,8 +22,10 @@ test('one-month jobs keep existing saved identity and tender filter does not cla
  g.run(`state.tenders=[{id:'old-spot',region:'mid',name:'Overflow storage · February 2026',spot:true,term:1,spaces:200,moves:400,start:2}];go('market')`);
  assert.match(g.u(),/One-month storage job/);assert.match(g.u(),/Short-term storage · February 2026/);
  assert.equal(g.run('state.tenders[0].name'),'Overflow storage · February 2026');
- assert.match(g.u(),/Checks storage only, not staff or docks/);
- assert.match(g.u(),/One pallet received or despatched counts as one move/);
+ assert.doesNotMatch(g.u(),/checks storage only, not staff or docks/i);
+ const rules=g.run("D27.info.get('bids-help').detail");
+ assert.match(rules,/checks storage only, not staff or docks/i);
+ assert.match(rules,/One pallet received or despatched counts as one move/);
 });
 test('£500k cash can fund the deposit but undrawn credit is not cash',()=>{
  const g=boot(code);setup(g);

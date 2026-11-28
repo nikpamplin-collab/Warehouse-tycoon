@@ -29,7 +29,7 @@ test('Operations has day-to-day actions, Investment has capital, and Finances ha
  g.run("d27Upgrade('bank')");assert.match(g.u(),/onclick="borrow\(/);
  assert.doesNotMatch(g.u(),/onclick="staff\(|id="d15-staff"/);
  move(g,'history');
- assert.match(g.u(),/Banking &amp; investment/);
+ assert.match(g.u(),/Finance sections/);
  assert.match(g.u(),/Profit &amp; cash/);
  assert.doesNotMatch(g.u(),/onclick="borrow\(/);
  assert.equal(g.run('JSON.stringify(state)'),before);

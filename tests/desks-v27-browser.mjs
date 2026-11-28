@@ -62,7 +62,24 @@ try{
   await p.locator('.d27-more summary').click();await noOverflow();
   if(width===320)await p.screenshot({path:'/tmp/wt27-rivals.png',fullPage:false});
   await nav('Bids').click();await p.getByRole('heading',{name:/UK customer tenders/}).waitFor();
-  await nav('Finances').click();await p.getByRole('heading',{name:'Profit & cash',exact:true}).waitFor();
+  assert.equal(await p.getByText('Price and reputation affect normal awards',{exact:false}).count(),0);
+  await btn('About How Bids works').click();
+  await p.getByRole('dialog',{name:'How Bids works'}).getByText('Price and reputation affect normal awards',{exact:false}).waitFor();
+  await p.keyboard.press('Escape');
+  await p.evaluate(()=>{state.player.sites[0].racks=1;state.tenders.unshift({id:'ready',name:'Compact bid test',region:'mid',start:2,term:4,spaces:100,moves:250});render();});
+  await p.locator('#d27-tender-0').getByRole('button',{name:'Place bid'}).click();
+  const quote=p.locator('#q-ready');await p.locator('#s-ready').fill('20');await p.locator('#h-ready').fill('2');
+  assert.equal(await quote.innerText(),'Est. £2,500 / month');
+  await btn('Submit bid').click();assert.deepEqual((await saved()).bids.ready,{storage:20,handling:2});
+  await btn('My bids').click();assert.equal(await p.locator('.d27-tender').count(),1);
+  await btn('Review bid').click();await btn('Withdraw bid').click();assert.equal((await saved()).bids.ready,undefined);
+  await btn('Default prices').click();await p.getByLabel('Storage (£ / pallet / month)',{exact:true}).fill('22');
+  await p.getByLabel('Pallet move (£ / move)',{exact:true}).focus();
+  assert.equal((await saved()).settings.storage,22);await btn('Close').click();
+  await nav('Finances').click();await p.getByRole('heading',{name:'Profit & cash',exact:true}).waitFor();await noOverflow();
+  await btn('About How Finances works').click();await p.getByRole('dialog',{name:'How Finances works'}).getByText('Profit includes the month',{exact:false}).waitFor();await p.keyboard.press('Escape');
+  await btn('Contracts').click();await p.getByRole('heading',{name:'Fixture'}).waitFor();await noOverflow();
+  await btn('Company').click();await btn('Borrowing').click();await btn('Repay up to £25,000').waitFor();
   await p.locator('#metrics').getByRole('button',{name:'Complete month'}).click();
   await p.getByRole('dialog').getByRole('button',{name:'Complete month',exact:true}).click();
   assert.equal((await saved()).month,2);
@@ -118,24 +135,85 @@ try{
   await p.emulateMedia({reducedMotion:'reduce'});
   assert.equal(await p.locator('.d21-dispatch-fork').evaluate(e=>getComputedStyle(e).display),'none');
   assert.equal(await p.locator('.d21-retrieval-source').evaluate(e=>getComputedStyle(e).opacity),'1');
+  await p.evaluate(()=>{ const s=state.player.sites[0];s.automationAssets=[{section:0,commissioned:1,expires:120}];render(); });
+  assert.equal(await p.locator('.d28-auto-mesh-front').count(),1);
+  assert.equal(await p.locator('.d28-auto-mesh-side').count(),1);
+  assert.equal(await p.locator('.d28-auto-lamp').count(),3);
+  assert.equal(await p.locator('.d28-auto-lamp circle').first().evaluate(x=>getComputedStyle(x).animationName),'none');
+  await p.emulateMedia({reducedMotion:'no-preference'});
+  assert.equal(await p.locator('.d28-auto-lamp circle').first().evaluate(x=>getComputedStyle(x).animationName),'d28-automation-glow');
+  await btn('Pause motion').click();
+  assert.equal(await p.locator('.d28-auto-lamp circle').first().evaluate(x=>getComputedStyle(x).animationPlayState),'paused');
+  await nav('Ops Office').click();
+  assert.equal(await p.locator('.d27-indicators i.auto svg').count(),10);
+  await nav('Home').click();
+  await p.evaluate(()=>{state.player.sites[0].automationAssets[0].expires=state.month;render();});
+  assert.equal(await p.locator('.d28-auto-mesh-front').count(),0);
   await p.evaluate(()=>{state.player.sites[0].mheTrucks=0;render();});
   assert.equal(await p.locator('.d21-dispatch-fork').count(),0);
   assert.deepEqual(errors,[]);await ctx.close();
   console.log('PASS Night Shift on all tabs, action contrast and synchronised rack-to-lorry animation');
  }
+ {
+  const ctx=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce'});
+  const p=await ctx.newPage(), errors=[];p.on('pageerror',e=>errors.push(e.message));
+  const btn=n=>p.getByRole('button',{name:n,exact:true});
+  await p.goto(url);await p.locator('#newBusiness').fill('Compact test');await btn('Start playing').click();
+  const camera=()=>p.locator('.d21-yard-svg').getAttribute('viewBox');
+  const origin=await camera();
+  const configure=sections=>p.evaluate(n=>{
+   Object.assign(selectedSite(),{sections:n,racks:n*6,staff:3,shiftStaff:[3,0,0],facilityDocks:n,fireProtection:{water:1,roof:1,rack:1},
+    automationAssets:[{section:n-1,commissioned:1,expires:120}],contracts:[{start:1,end:5,spaces:1500,moves:3000}],mheTrucks:1});
+   render();
+  },sections);
+  for(const n of [1,2,3,4,5,8]){
+   await configure(n);
+   assert.equal(await camera(),origin);
+   assert.equal(await p.locator('.d21-dock-door').count(),1+2*n);
+   assert.equal(await p.locator('.d21-floor-section').count(),n);
+   assert.equal(await p.locator('.d28-auto-mesh-front').count(),1);
+   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth),390);
+   if(process.env.WT_CAPTURES&&[1,4].includes(n))await p.screenshot({path:'/tmp/wt29-compact-'+n+'.png'});
+  }
+  await btn('View next part of warehouse').click();const panned=await camera();assert.notEqual(panned,origin);
+  assert.deepEqual(panned.split(' ').slice(2),origin.split(' ').slice(2));
+  assert.equal(await p.locator('.d29-estate-controls output').innerText(),'Site view 2 / 3');
+  // Use the visible dock in column 3 to open Invest and return to the same estate window.
+  await p.locator('[data-dock-centre="70.5"]').locator('polygon').first().click();
+  await btn('View in Invest').click();
+  await btn('⌂ Return to Home').click();assert.equal(await camera(),panned);
+  await btn('View previous part of warehouse').click();assert.equal(await camera(),origin);
+  assert.deepEqual(errors,[]);await ctx.close();console.log('PASS Compact Block growth, extra doors and same-scale navigation');
+ }
+ if(process.env.WT_V28_FOLDER){
+  const ctx=await browser.newContext();const p=await ctx.newPage(),oldKey='warehouse_tycoon_dotv28',newKey='warehouse_tycoon_dotv29';
+  base=process.env.WT_V28_FOLDER;await p.goto(url);await p.locator('#newBusiness').fill('Saved v28 company');
+  await p.getByRole('button',{name:'Start playing'}).click();
+  await p.evaluate(()=>{Object.assign(selectedSite(),{sections:4,racks:20,facilityDocks:2});save();});
+  const old=await p.evaluate(k=>localStorage.getItem(k),oldKey);assert.ok(old);
+  base=root;await p.goto(url+'?fresh=v29');await p.locator('#d27-home-title').waitFor();
+  const imported=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),newKey);
+  assert.equal(imported.player.name,'Saved v28 company');assert.equal(imported.player.sites[0].sections,4);
+  assert.equal(await p.locator('.d21-dock-door').count(),7);
+  await p.evaluate(()=>{state.player.cash+=1000;save();});
+  assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
+  base=process.env.WT_V28_FOLDER;await p.goto(url+'?fresh=v28');assert.match(await p.title(),/DOTv28/);
+  assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
+  await ctx.close();base=root;console.log('PASS v28 → v29 → v28, independent saves');
+ }
  if(legacy){
   const ctx=await browser.newContext();const p=await ctx.newPage();base=legacy;
   await p.goto(url);await p.locator('#newBusiness').fill('Migrating v25');await p.locator('#newSite').fill('Original warehouse');await p.getByRole('button',{name:'Start playing'}).click();
-  const v25key='warehouse_tycoon_dotv25', v28key='warehouse_tycoon_dotv28';
+  const v25key='warehouse_tycoon_dotv25', v29key='warehouse_tycoon_dotv29';
   const v25=await p.evaluate(k=>localStorage.getItem(k),v25key);assert.ok(v25);
   base=root;await p.goto(url+'?fresh=v28');await p.locator('#d27-home-title').waitFor();
-  assert.equal((await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),v28key)).player.name,'Migrating v25');
+  assert.equal((await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),v29key)).player.name,'Migrating v25');
   await p.evaluate(()=>{state.player.cash+=1234;save();});assert.equal(await p.evaluate(k=>localStorage.getItem(k),v25key),v25);
   base=legacy;await p.goto(url+'?fresh=v25');assert.match(await p.title(),/DOTv25/);assert.equal(await p.evaluate(k=>localStorage.getItem(k),v25key),v25);
-  await ctx.close();console.log('PASS v25 → v28 → v25, independent saves');
+  await ctx.close();console.log('PASS v25 → v29 → v25, independent saves');
  }
  if(process.env.WT_V27_FOLDER){
-  const ctx=await browser.newContext();const p=await ctx.newPage(), oldKey='warehouse_tycoon_dotv27', newKey='warehouse_tycoon_dotv28';
+  const ctx=await browser.newContext();const p=await ctx.newPage(), oldKey='warehouse_tycoon_dotv27', newKey='warehouse_tycoon_dotv29';
   base=process.env.WT_V27_FOLDER;await p.goto(url);await p.locator('#newBusiness').fill('Saved v27 company');
   await p.getByRole('button',{name:'Start playing'}).click();
   const old=await p.evaluate(k=>localStorage.getItem(k),oldKey);assert.ok(old);
@@ -145,6 +223,6 @@ try{
   assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
   base=process.env.WT_V27_FOLDER;await p.goto(url+'?fresh=v27');assert.match(await p.title(),/DOTv27/);
   assert.equal(await p.evaluate(k=>localStorage.getItem(k),oldKey),old);
-  await ctx.close();console.log('PASS v27 → v28 → v27, independent saves');
+  await ctx.close();console.log('PASS v27 → v29 → v27, independent saves');
  }
 }finally{await browser.close();await new Promise(r=>server.close(r));}

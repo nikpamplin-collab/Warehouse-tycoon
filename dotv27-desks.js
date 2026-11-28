@@ -1,5 +1,5 @@
 /* DOTv27: view-only desks; transactions and calculations use the existing engine. */
-const D27={map:false,region:null,pair:['player',null],info:new Map(),modalFocus:null,modalOpen:false};
+const D27={map:false,region:null,pair:['player',null],bidView:'all',financeView:'trading',info:new Map(),modalFocus:null,modalOpen:false};
 const d27Disabled=x=>x?' disabled':'';
 const d27Button=(label,action,disabled=false,style='')=>'<button type="button" class="d27-button '+style+'" onclick="'+action+'"'+d27Disabled(disabled)+'>'+label+'</button>';
 const d27Info=(id,title,detail)=>{
@@ -133,6 +133,11 @@ function d27OpsPanel(s){
    '<h3>People &amp; equipment</h3>'+d27Panel(rows+'<div class="d27-cost"><span>Labour + trucks / month</span><strong>'+fmt(ops.plannedCost)+'</strong></div>'+
    d27Button(unsaved?'Save for next month':planned?'Plan saved for next month':'No changes to save','d21ApplyOps()',!unsaved||state.finished,'wide'));
 }
+function d27BlobIcons(occ,auto){
+ const robot='<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M8 4V2M6.8 2h2.4M3 7H1.8m12.4 0H13M5 5h6a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="6" cy="8.8" r=".8" fill="currentColor"/><circle cx="10" cy="8.8" r=".8" fill="currentColor"/></svg>';
+ return '<span class="d27-indicators" role="img" aria-label="'+Math.round(occ*100)+' percent booked, '+Math.round(auto*100)+' percent automated">'+
+ Array.from({length:10},(_,i)=>{const automated=i<Math.round(auto*10);return '<i class="'+(i<Math.min(10,Math.round(occ*10))?'gold':'')+' '+(automated?'auto':'')+'">'+(automated?robot:'')+'</i>';}).join('')+'</span>';
+}
 function d27Ops(){
  const s=selectedSite();if(!s)return d27Heading('Ops Office',s)+d27Panel('<p>No warehouse in this territory.</p>'+d27Button('Explore opening a site',"goFromNav(\'investment\')"));
  const staff=[['d15-staff','Ops manager',s.managers||0,'hireManager(1)','hireManager(-1)','£5,000/month each. A manager covers up to ten staff for the purpose of the management penalty. Understaffed management reduces pallet move capacity.'],
@@ -143,7 +148,7 @@ function d27Ops(){
  d27Panel(staff.map(([id,name,n,hire,release,info],i)=>'<div class="d27-role" id="'+id+'"><b class="d27-with-info">'+name+d27Info('role'+i,name.replace('&amp;','&'),'<p>'+info+'</p>')+'</b><strong>'+(i===0?num(n)+' in post':n?'In post':'Vacant')+'</strong><div class="d27-role-buttons">'+
   (i===0||n?d27Button('Release',release,!n||state.finished,'quiet'):'')+(i===0||!n?d27Button('Employ',hire,state.finished):'')+'</div></div>').join(''))+
  '<h3>Warehouse operations</h3>'+d27Panel('<div id="d21-stock-levels" class="d27-blobs"><b>Storage &amp; automation</b>'+d27Info('blobs','Storage and automation','<p>Gold shows storage booked: '+num(occupancy(s))+' of '+num(siteSpace(s))+' pallet spaces. A ring shows automation: '+num(dot19Lanes(s,state.month).length)+' of '+num(s.sections)+' sections.</p>'+d27Button('Rename warehouse','d27Close(false);renameSite()',state.finished,'quiet'))+
- '<span role="img" aria-label="'+Math.round(occ*100)+' percent booked, '+Math.round(auto*100)+' percent automated">'+Array.from({length:10},(_,i)=>'<i class="'+(i<Math.min(10,Math.round(occ*10))?'gold':'')+' '+(i<Math.round(auto*10)?'auto':'')+'"></i>').join('')+'</span></div>');
+ d27BlobIcons(occ,auto)+'</div>');
 }
 function d27Investment(){
  const s=selectedSite(), c=state.player, r=regionOf(selected);
@@ -256,8 +261,101 @@ function d27Render(){
  const view=document.getElementById('view');
  D27.info.clear();document.body?.setAttribute('data-d27',tab);
  d27Header();
- const fn={office:d27Home,warehouse:d27Ops,investment:d27Investment,market:market,history:history,rivals:d27Rivals}[tab];
- view.innerHTML=(tab==='market'?d22Guide():'')+fn();D21.renderedTab=tab;
+ const fn={office:d27Home,warehouse:d27Ops,investment:d27Investment,market:d27Bids,history:d27Finances,rivals:d27Rivals}[tab];
+ view.innerHTML=fn();D21.renderedTab=tab;
 }
 
 const D27_OUTLINE='M95.2 201.3 L79.0 195.4 L65.7 195.8 L70.1 180.2 L65.7 164.7 L83.7 163.5 L106.8 181.4 L95.2 201.3 Z M162.0 214.8 L165.2 197.9 L150.5 179.7 L124.4 174.6 L119.2 166.7 L127.0 153.8 L120.0 145.8 L108.4 159.5 L107.1 131.5 L96.3 116.7 L104.1 86.8 L120.8 63.2 L138.0 65.5 L163.9 63.1 L140.9 94.5 L162.8 90.5 L186.4 90.6 L180.8 114.3 L161.4 140.3 L183.7 142.1 L204.5 179.4 L219.2 184.0 L232.5 217.1 L238.6 228.5 L264.7 234.1 L262.0 252.6 L251.1 261.1 L259.7 276.1 L240.3 291.3 L211.6 291.0 L175.0 299.0 L164.9 293.3 L150.7 306.9 L130.8 303.6 L115.7 314.7 L104.3 308.9 L135.8 278.4 L155.1 272.1 L121.3 267.3 L115.3 255.7 L137.7 246.8 L125.9 231.1 L130.0 212.1 L162.0 214.8 Z';
+
+/* Portrait commercial desks: the decision is visible; the rules are opt-in. */
+const d27DeskTitle=(name,help='')=>'<div class="d27-title"><h2 id="d17-screen-title" tabindex="-1">'+name+'</h2>'+help+'</div>';
+const d27Choice=(label,action,on,id='')=>'<button type="button"'+(id?' id="'+id+'"':'')+' aria-pressed="'+on+'" onclick="'+action+'">'+label+'</button>';
+const d27Numbers=rows=>'<dl class="d27-number-strip">'+rows.map(([l,v])=>'<div><dt>'+l+'</dt><dd>'+v+'</dd></div>').join('')+'</dl>';
+function d27BidView(k){if(!['all','fit','mine'].includes(k))return;D27.bidView=k;render();document.getElementById('d27-bid-'+k)?.focus({preventScroll:true});}
+function d27Bids(){
+ const c=state.player,help=d27Info('bids-help','How Bids works','<p>Storage is priced per pallet per month. One pallet received or despatched counts as one move. The storage filter checks storage only, not staff or docks. Storage must be ready when the bid is awarded.</p><p>Price and reputation affect normal awards; trial contracts are ranked by price. One-month jobs use higher default rates and do not renew.</p>');
+ const guide=d22Guide();
+ const guideCard=guide?d27Panel('<div class="d27-with-info"><b>The First Contract</b>'+d27Info('first-contract','The First Contract',guide.replaceAll('onclick="','onclick="d27Close(false);'))+'</div>','','d27-guide-card'):'';
+ const filtered=state.tenders.filter(t=>D27.bidView==='all'||(D27.bidView==='mine'?!!state.bids[t.id]:!!(state.bids[t.id]||availableSite(c,t))));
+ const tiles=filtered.map(t=>{
+  const i=state.tenders.indexOf(t), b=state.bids[t.id], fit=availableSite(c,t), forecast=t.spaces*(b?.storage??tenderDefault(t,'storage'))+t.moves*(b?.handling??tenderDefault(t,'handling'));
+  const tone=b?'safe':fit?'safe':'close';
+  const status=b?'Bid sent':fit?'Storage fits':owned(c,t.region).length?'Short on space':'No depot';
+  return d27Panel('<div class="d27-tender-title"><div><h3>'+esc(d26TenderName(t))+'</h3><span>'+esc(regionOf(t.region).name)+' · '+esc(monthName(t.start))+' · '+num(t.term)+' '+(t.term===1?'month':'months')+'</span></div>'+
+   '<span class="d27-chip '+tone+'">'+status+'</span></div>'+(t.spot?'<span class="d27-spot spot-badge">One-month storage job</span>':'')+
+   d27Numbers([['Pallet spaces',num(t.spaces)],['Moves / month',num(t.moves)],['Est. revenue / month',fmt(forecast)]])+
+   '<div class="d27-decision-actions">'+d27Info('fit'+i,'Storage fit for '+d26TenderName(t),d22FitHtml(t))+
+   d27Button(b?'Review bid':fit?'Place bid':'View tender','d27Tender('+i+',this)',false,fit&&!b?'':'quiet')+'</div>','d27-tender-'+i,'d27-tender');
+ }).join('');
+ return '<div class="d27-commercial">'+d27DeskTitle('UK customer tenders',help)+guideCard+
+ '<nav class="d27-choice" aria-label="Filter tenders">'+[['all','All'],['fit','Storage fits'],['mine','My bids']].map(([k,l])=>d27Choice(l,"d27BidView(\'"+k+"\')",D27.bidView===k,'d27-bid-'+k)).join('')+'</nav>'+
+ '<div class="d27-decision-actions d27-bids-tools">'+d27Button('Default prices','d27BidDefaults(this)',false,'quiet')+
+ d27Button('Bid on all that fit','d27BidAll(this)',state.finished,'quiet')+'</div>'+
+ (tiles||d27Panel('<p>'+(D27.bidView==='mine'?'You have not placed any bids this month.':'No tenders match this filter.')+'</p>','','d27-empty'))+'</div>';
+}
+function d27BidDefaults(source){
+ d27Modal('Default bid prices','<div class="d27-quote-fields"><label>Storage (£ / pallet / month)<input type="number" min="0" step=".1" value="'+standardRate('storage')+'" onchange="setRate(\'storage\',this.value)"></label>'+
+ '<label>Pallet move (£ / move)<input type="number" min="0" step=".1" value="'+standardRate('handling')+'" onchange="setRate(\'handling\',this.value)"></label></div>',source);
+}
+function d27BidAll(source){
+ d27Modal('Bid on all that fit?','<p>Submit default prices for every tender that fits your current storage. These bids do not reserve capacity.</p>'+
+ d27Button('Submit default bids','d27Close(false);bidAll()',state.finished,'wide'),source);
+}
+function d27Tender(i,source){
+ const t=state.tenders[i];if(!t)return;
+ const id=esc(t.id), c=state.player,fit=availableSite(c,t),b=state.bids[t.id];
+ const detail=d27Numbers([['Pallet spaces',num(t.spaces)],['Moves / month',num(t.moves)],['Starts',esc(monthName(t.start))]]);
+ const markup=b?d27Numbers([['Your storage price','£'+b.storage],['Your move price','£'+b.handling]])+
+  d27Button('Withdraw bid','d27FinishBid('+i+',true)',state.finished,'quiet wide'):
+  fit?'<div class="d27-quote-fields"><label>Storage (£ / pallet / month)<input type="number" id="s-'+id+'" inputmode="decimal" min="0" step="any" placeholder="'+tenderDefault(t,'storage')+'" oninput="d27Quote(this)"></label>'+
+  '<label>Pallet move (£ / move)<input type="number" id="h-'+id+'" inputmode="decimal" min="0" step="any" placeholder="'+tenderDefault(t,'handling')+'" oninput="d27Quote(this)"></label></div>'+
+  '<p class="d27-estimate" id="q-'+id+'">Est. '+fmt(t.spaces*tenderDefault(t,'storage')+t.moves*tenderDefault(t,'handling'))+' / month</p>'+
+  d27Button('Submit bid','d27FinishBid('+i+',false)',state.finished,'wide'):
+  '<p class="d27-warning">'+esc(d22Fit(t).label)+'</p>';
+ d27Modal(d26TenderName(t),'<div class="d27-tender-popup">'+detail+markup+'</div>',source);
+}
+function d27Quote(input){
+ const id=input.id.slice(2),t=state.tenders.find(t=>t.id===id);if(!t)return;
+ const get=(k,name)=>{const val=document.getElementById(k+'-'+id).value.trim();return val===''?tenderDefault(t,name):Number(val);};
+ const space=get('s','storage'),moves=get('h','handling');
+ document.getElementById('q-'+id).textContent=[space,moves].every(n=>Number.isFinite(n)&&n>=0)?'Est. '+fmt(t.spaces*space+t.moves*moves)+' / month':'Enter a valid, non-negative price.';
+}
+function d27FinishBid(i,withdraw){
+ const t=state.tenders[i];if(!t||state.finished)return;
+ if(withdraw)removeBid(t.id);else placeBid(t.id);
+ if(!!state.bids[t.id]===withdraw)return;
+ d27Close(false);document.querySelector('#d27-tender-'+i+' .d27-decision-actions .d27-button')?.focus({preventScroll:true});
+}
+function d27FinanceSwitch(k){
+ if(!['trading','contracts','company'].includes(k))return;D27.financeView=k;render();document.getElementById('d27-fin-'+k)?.focus({preventScroll:true});
+}
+function d27Finances(){
+ const c=state.player,r=c.last;
+ const explain=d27Info('finance-help','How Finances works','<p>Profit includes the month’s interest but does not subtract loan principal repayments. Those reduce cash. Current cash can also change after the month closes when you buy, borrow or repay.</p><p>Revenue estimates on bids are not money already earned.</p>');
+ const nav='<nav class="d27-choice" aria-label="Finance sections">'+[['trading','Trading'],['contracts','Contracts'],['company','Company']].map(([k,l])=>d27Choice(l,"d27FinanceSwitch(\'"+k+"\')",D27.financeView===k,'d27-fin-'+k)).join('')+'</nav>';
+ const top=d27Panel('<h3>Profit &amp; cash</h3>'+d27Numbers([['Cash now',cash(c)],['Last month '+(r?.profit<0?'loss':'profit'),r?money(r.profit):'—'],['Loan balance',fmt(c.debt||0)]]),'','d27-fin-top');
+ let main='';
+ if(D27.financeView==='trading'){
+  if(!r)main=d27Panel('<h3>Monthly financial results</h3><p>Complete a month to see results.</p>','','d27-fin-card');
+  else {
+   const costs=d22Drivers(r,c.history.at(-2)), revenue=(r.storage||0)+(r.handling||0), expense=-costs.filter(x=>x.value<0).reduce((n,x)=>n+x.value,0);
+   const body=costs.filter(x=>x.value).map(x=>'<tr><th scope="row">'+esc(x.name)+'</th><td>'+money(x.value)+'</td></tr>').join('');
+   main=d27Panel('<div class="d27-with-info"><h3>'+esc(monthName(r.month))+'</h3>'+d27Info('cost-help','Trading result','<p>Costs include labour, site overhead, safety, equipment, inspections, excess stock charges and loan interest. Cash change also includes loan principal and investment.</p>')+'</div>'+
+    d27Numbers([['Revenue',fmt(revenue)],['Trading costs',fmt(expense)],['Moves completed',num(r.handled||0)+' / '+num(r.demand||0)]])+
+    '<details><summary>Monthly financial results</summary><table class="d27-fin-ledger">'+body+
+    '<tr><th scope="row">Loan amount repaid, excluding interest</th><td>'+fmt(r.principal||0)+'</td></tr>'+
+    '<tr><th scope="row">Pallet moves requested</th><td>'+num(r.demand||0)+'</td></tr><tr><th scope="row">Pallet moves completed</th><td>'+num(r.handled||0)+'</td></tr></table></details>'+
+    '<details><summary>Revenue and profit trend</summary>'+trendChart()+'</details>'+
+    (r.incidents?.length?'<details><summary>Safety incidents · '+r.incidents.length+'</summary>'+incidentSummary(r)+'</details>':''),'','d27-fin-card');
+  }
+ }else if(D27.financeView==='contracts'){
+  const list=c.sites.flatMap(s=>committed(s).map(k=>d27Panel('<h3>'+esc(d26TenderName(k))+'</h3><p>'+esc(s.name)+' · '+esc(monthName(k.start))+' to '+esc(monthName(k.end))+'</p>'+
+   d27Numbers([['Spaces',num(k.spaces)],['Moves / month',num(k.moves)],['Storage / move','£'+k.storage+' / £'+k.handling]]),'','d27-fin-card'))).join('');
+  main=list||d27Panel('<p>No customer contracts.</p>','','d27-empty');
+ }else {
+  main=d27Panel('<h3>Company</h3>'+d27Numbers([['Business value',fmt(valuation(c))],['Cash now',cash(c)],['Loan balance',fmt(c.debt||0)]])+
+   '<div class="d27-decision-actions">'+d27Button('Borrowing',"d27Upgrade(\'bank\');goFromNav(\'investment\')")+d27Button('Rename business','renameBusiness()',false,'quiet')+
+    d27Button('Start new game','confirmReset()',false,'danger')+'</div>','','d27-fin-card');
+ }
+ return '<div class="d27-commercial">'+d27DeskTitle('Finances',explain)+top+nav+main+'</div>';
+}

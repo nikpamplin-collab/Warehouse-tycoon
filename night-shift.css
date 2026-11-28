@@ -15,7 +15,7 @@ body[data-d27]>header,body[data-d27]>main>#tabs{border-color:var(--night-line)}
 body[data-d27]>main>#tabs button.active{background:#335360;border-color:#73a5b1;color:white}
 body[data-d27]>main>#tabs button:not(.active):hover{background:#283b49}
 body[data-d27]>footer,a{color:var(--night-muted)}
-.d27-home{background:radial-gradient(ellipse at 48% 46%,#e4ece8,#c6d2d0)}
+.d27-home{background:#dbe4cc}
 .d27-home h2{background:var(--night-raised);color:var(--night-type)}
 .d27-home.d27-map{background:#b9c8cb}
 .d27-panel,.panel,.metric,.contract,.d22-card,.modal{background:var(--night-raised);color:var(--night-type);border-color:var(--night-line)}
@@ -50,3 +50,35 @@ body[data-d27]>footer,a{color:var(--night-muted)}
 :is(button,select,input,summary,a):focus-visible{outline:3px solid #91dfec;outline-offset:2px}
 .d27-button.advance:focus-visible,.d27-report-continue:focus-visible{outline-color:white}
 .d27-info:focus-visible,.d27-step button:focus-visible,.d27-menu button:focus-visible,.d27-compare select:focus-visible{outline-color:#91dfec;outline-offset:-2px}
+
+.d27-indicators{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.d27-indicators i{display:grid;place-items:center;width:18px;height:18px;color:#182431;background:#e2dfd4;border:1px solid #a39b85;border-radius:50%}
+.d27-indicators i.gold{background:#e4af3e;border-color:#b88024}
+.d27-indicators i.auto{box-shadow:inset 0 0 0 1px #fff3d2}
+.d27-blobs .d27-indicators i{width:18px;height:18px}
+
+/* Commercial screens apply the same decision/data/details treatment as Ops. */
+body:is([data-d27=market],[data-d27=history]) #view{margin-inline:auto;max-width:760px}
+.d27-commercial h3{margin:0 0 4px;font-size:18px;line-height:1.15;color:var(--night-type)}
+.d27-commercial .d27-title{margin-bottom:7px;color:var(--night-type)}.d27-commercial .d27-title h2{font-size:clamp(24px,6vw,37px)}
+.d27-choice{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:5px 0 9px}
+.d27-choice button{min-height:44px;padding:4px;border-radius:8px;border:1px solid var(--night-line);background:var(--night-secondary);color:var(--night-type);font-weight:750}
+.d27-choice button[aria-pressed=true]{background:var(--night-teal);color:var(--night-teal-ink);border-color:transparent}
+.d27-tender,.d27-fin-card,.d27-fin-top,.d27-guide-card,.d27-empty{padding:8px 10px}
+.d27-tender-title{display:flex;align-items:flex-start;justify-content:space-between;gap:4px}.d27-tender-title>div{min-width:0}
+.d27-tender-title span,.d27-fin-card p{font-size:14px;color:var(--night-muted);margin:0}
+.d27-tender-title .d27-chip{font-size:12px;max-width:106px}
+.d27-tender-title .d27-chip.safe{color:#10422a}.d27-tender-title .d27-chip.close{color:#533506}
+.d27-spot{display:inline-block;background:#584728;color:#ffe098;padding:3px 6px;margin:4px 0;border-radius:6px;font-size:13px;font-weight:750}
+.d27-number-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:6px 0}
+.d27-number-strip>div{min-width:0;padding:5px 6px;border-radius:7px;background:var(--night-inset)}
+.d27-number-strip dt{font-size:12px;color:var(--night-muted);font-weight:700;line-height:1.1}
+.d27-number-strip dd{font-size:clamp(15px,4.5vw,21px);font-weight:800;margin:2px 0 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.d27-decision-actions{display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:5px}
+.d27-bids-tools{justify-content:space-between;margin:0 0 8px}
+.d27-quote-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#dialog .d27-quote-fields label{min-width:0;font-size:14px;line-height:1.2}
+#dialog .d27-quote-fields input{width:100%;min-width:0;min-height:44px;margin:4px 0 5px}
+.d27-estimate{font-weight:800}.d27-fin-card summary{cursor:pointer;font-weight:750;min-height:44px;padding:10px 0;border-top:1px solid var(--night-line)}
+.d27-fin-ledger{width:100%;border-collapse:collapse;font-size:14px}
+.d27-fin-ledger th{text-align:left}.d27-fin-ledger td{text-align:right;white-space:nowrap}.d27-fin-ledger :is(td,th){padding:3px;border-bottom:1px solid var(--night-line)}
